@@ -115,6 +115,15 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
+  // Pagination States
+  const [rowsPerPage, setRowsPerPage] = useState<number | 'all'>(5);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset to page 1 on filter/limit change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedEmployeeId, datePreset, startDate, endDate, selectedDayOfWeek, selectedStatus, searchTerm, rowsPerPage]);
+
   // Modals & Export
   const [editingReport, setEditingReport] = useState<DailyPerformanceReport | null>(null);
   const [viewingReport, setViewingReport] = useState<DailyPerformanceReport | null>(null);
@@ -283,6 +292,43 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
       { onboarding: 0, mobile: 0, internet: 0, atm: 0, merchant: 0, deposits: 0, fcy: 0 }
     );
   }, [filteredReports]);
+
+  // Pagination calculations
+  const totalRecords = filteredReports.length;
+  const isAll = rowsPerPage === 'all';
+  const limitNum = isAll ? totalRecords : Number(rowsPerPage);
+  const totalPages = isAll ? 1 : Math.ceil(totalRecords / limitNum);
+
+  const startRecordIndex = totalRecords === 0 ? 0 : (currentPage - 1) * limitNum + 1;
+  const endRecordIndex = Math.min(currentPage * limitNum, totalRecords);
+
+  const paginatedReports = useMemo(() => {
+    if (isAll) return filteredReports;
+    const startIndex = (currentPage - 1) * limitNum;
+    return filteredReports.slice(startIndex, startIndex + limitNum);
+  }, [filteredReports, currentPage, limitNum, isAll]);
+
+  const paginationText = isAll
+    ? `Showing all ${totalRecords} records`
+    : `Showing ${startRecordIndex}–${endRecordIndex} of ${totalRecords} records`;
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
 
   // Manager Single Action (Approve / Reject / Return)
   const handleQuickStatusChange = async (reportId: string, newStatus: 'Approved' | 'Rejected' | 'Returned') => {
@@ -632,24 +678,49 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
       {/* 3. BRANCH DAILY KPI PERFORMANCE TABLE WITH FILTERED SUMS */}
       <div className="p-6 rounded-3xl bg-[#08321E] border border-[#D4AF37]/40 shadow-xl text-white space-y-4">
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <Building2 className="w-5 h-5 text-[#D4AF37]" />
               Branch Employee Daily KPI Reports Register
             </h3>
             <p className="text-xs text-gray-300">
-              Showing <strong className="text-[#D4AF37]">{filteredReports.length}</strong> daily records. Permanent storage ensures past reports are never overwritten.
+              {paginationText} (sorted newest first). Permanent storage ensures past reports are never overwritten.
             </p>
           </div>
 
-          <button
-            onClick={onRefreshData}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors"
-            title="Refresh Records"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
+            {/* Rows per page selector dropdown */}
+            <div className="flex items-center space-x-2 text-xs text-gray-300">
+              <span>Rows per page:</span>
+              <select
+                id="rows-per-page-select-manager"
+                value={rowsPerPage}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setRowsPerPage(val === 'all' ? 'all' : Number(val));
+                }}
+                className="bg-black/40 border border-white/20 text-white font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+              >
+                <option value={5}>5 rows</option>
+                <option value={10}>10 rows</option>
+                <option value={15}>15 rows</option>
+                <option value={20}>20 rows</option>
+                <option value={25}>25 rows</option>
+                <option value={50}>50 rows</option>
+                <option value={100}>100 rows</option>
+                <option value="all">All rows</option>
+              </select>
+            </div>
+
+            <button
+              onClick={onRefreshData}
+              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors border border-white/10"
+              title="Refresh Records"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {filteredReports.length === 0 ? (
@@ -661,11 +732,12 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-white/10">
-            <table className="w-full text-left text-xs text-gray-300 min-w-[950px]">
-              
-              {/* Sticky Header */}
-              <thead className="bg-[#0B4228] text-[#D4AF37] font-bold uppercase text-[11px] sticky top-0 z-10">
+          <div className="space-y-4">
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
+              <table className="w-full text-left text-xs text-gray-300 min-w-[950px]">
+                
+                {/* Sticky Header */}
+                <thead className="bg-[#0B4228] text-[#D4AF37] font-bold uppercase text-[11px] sticky top-0 z-10">
                 <tr>
                   <th className="p-3.5">Date</th>
                   <th className="p-3.5">Day</th>
@@ -684,7 +756,7 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
 
               {/* Body */}
               <tbody className="divide-y divide-white/10 bg-black/20">
-                {filteredReports.map((report) => {
+                {paginatedReports.map((report) => {
                   const vals = getKpiValues(report);
                   const reportDateStr = report.reportDate || report.report_date || '';
                   const dayStr = report.dayOfWeek || report.day_of_week || 'Weekday';
@@ -877,7 +949,64 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
 
             </table>
           </div>
-        )}
+
+          {/* Pagination Controls */}
+          {!isAll && totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10 text-xs text-gray-300">
+              <div>
+                Showing <strong className="text-white">{startRecordIndex}–{endRecordIndex}</strong> of <strong className="text-[#D4AF37]">{totalRecords}</strong> records
+              </div>
+
+              <div className="flex items-center space-x-1">
+                {/* Previous Button */}
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  className="px-3 py-1.5 rounded-xl font-bold bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:hover:bg-white/5 disabled:cursor-not-allowed border border-white/10 transition-colors"
+                >
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                {getPageNumbers().map((pageNum, idx) => {
+                  if (pageNum === '...') {
+                    return (
+                      <span key={`dots-${idx}`} className="px-2 text-gray-500 font-bold">
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={`page-${pageNum}`}
+                      type="button"
+                      onClick={() => setCurrentPage(Number(pageNum))}
+                      className={`min-w-[32px] h-8 flex items-center justify-center rounded-xl font-bold transition-all ${
+                        currentPage === pageNum
+                          ? 'bg-[#D4AF37] text-[#08321E] shadow-md font-extrabold'
+                          : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  className="px-3 py-1.5 rounded-xl font-bold bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:hover:bg-white/5 disabled:cursor-not-allowed border border-white/10 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       </div>
 
