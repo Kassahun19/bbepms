@@ -1,0 +1,82 @@
+import fs from 'fs';
+
+// Let's create the master list of branches with unique SOL IDs directly extracted from the PDF document
+const branchDataList = [
+  // Page 1
+  { solId: "101", name: "MAIN (ዐብይ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-158-08-84/25/26", managerName: "Ato Zena Asefa", location: "ከወሎ ሰፈር አደባባይ ወደ ሩዋንዳ በሚወስደዉ ቡና ባንክ ህንፃ ላይ", region: "Addis Ababa" },
+  { solId: "102", name: "HAYAHULET MAZORIA (ሃያ ሁለት ማዞሪያ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-62-21-33", managerName: "Ato Zebene Abera", location: "ሃያሁለት ማዞሪያ ትራፊክ ጽ/ቤት አካባቢ ከቱሪስት ንግድ ስራ ድርጅት አጠገብ", region: "Addis Ababa" },
+  { solId: "103", name: "MESALEMIA (መሳለሚያ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "011-278-22-46", managerName: "Adamu Admasu", location: "መርካቶ አውቶቢስ ተራን እንዳለፉ የሸዋ ፀጋ ህንፃ ፊት ለፊት", region: "Addis Ababa" },
+  { solId: "104", name: "BOLEMEDHANI ALEM (ቦሌ መድኃኔዓለም)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-662-2447", managerName: "Ato Ashenafi Tadesse", location: "ቦሌ መድኃኒያለም ከኤድናሞል ወረድ ብሎ ቢርጋርደን ፊት ለፊት", region: "Addis Ababa" },
+  { solId: "105", name: "ADAMA (አዳማ)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "022-112-05-35", managerName: "Nebiyou Samuel", location: "ከፖስታ ቤት አደባባይ ወደ መብራት ኃይል በሚወስደው መንገድ ላይ፣ ህብረት ሥጋ ቤት", region: "Oromia" },
+  { solId: "106", name: "GENET (ገነት)", districtId: "DIST-SAD", districtName: "South A.A District", phone: "011-5-52-54-69", managerName: "Misganaw", location: "ከገነት ሆቴል ከፍ ብሎ ፅለረ ህንፃ", region: "Addis Ababa" },
+  { solId: "107", name: "BAHIR DAR (ባህር ዳር)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-2-22-22-00", managerName: "Mengistu Wolelaw", location: "ከጊዮርጊስ ቤ/ክ ወደ ፖፒረስ ሆቴል በሚወስደው መንገድ ላይ፣ ትራፊክ መብራት አካባቢ", region: "Amhara" },
+  { solId: "108", name: "AYER TENA (አየር ጤና)", districtId: "DIST-SAD", districtName: "South A.A District", phone: "011-3-48-65-00", managerName: "MELAKU TAMENE", location: "ከአየር ጤና አደባባይ ሳሚ ካፌን አለፍ ብሎ", region: "Addis Ababa" },
+  { solId: "109", name: "HABTE GIORGIS (ሀብተጊዮርጊስ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "011-1-55-82-24", managerName: "Ato Semere Tirfu", location: "ጊዮርጊስ አትክልት ተራ ከሊፋ ህንፃ ሥር", region: "Addis Ababa" },
+  { solId: "110", name: "ASIRA SIMINT MAZORIA (አስራስምንት ማዞሪያ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "011-2-80-07-97", managerName: "Addisu Abissa Degoma", location: "18 ማዞሪያ አደባባይ ኖክ fhንፃ ላይ", region: "Addis Ababa" },
+  { solId: "111", name: "BEKLO BET (በቅሎ ቤት)", districtId: "DIST-SAD", districtName: "South A.A District", phone: "011-4-16-32-30", managerName: "Ashenafi Lakew", location: "ከገቢዎች ባለሥልጣን ፊት ለፊት", region: "Addis Ababa" },
+  { solId: "112", name: "MEKELE (መቀሌ)", districtId: "DIST-MKL", districtName: "Mekele District", phone: "034-4-40-00-94", managerName: "Ato Aklilu G/Medhin", location: "ቐዳማይ ወያነ የገበያ ማእከል አካባቢ", region: "Tigray" },
+  { solId: "113", name: "MERKATO (መርካቶ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "011-2-78-14-35", managerName: "Ephrem Meka Sumega", location: "ጣና የገበያ አዳራሽ አጠገብ፣ ድር ተራ ህንፃ 1ኛ ፎቅ", region: "Addis Ababa" },
+  { solId: "114", name: "GONDER (ጐንደር)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-1-11-24-43", managerName: "Ato Eyasu", location: "አራዳ ቦምብ ተራ አካባቢ", region: "Amhara" },
+  { solId: "115", name: "HOSSANA (ሆሳእና)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-5-55-21-61", managerName: "Binyam Amado", location: "ከአደባባይ ወደ መናሃሪያ በሚወስደው መንገድ ቤተክህነት ፊት ለፊት", region: "Central Ethiopia" },
+  { solId: "116", name: "BICHENA (ብቸና)", districtId: "DIST-DMA", districtName: "Debre Markos Area Office", phone: "058-6-651053", managerName: "Ato Temesgen", location: "በላይ ዘለቀ ሃውልት ፊት ለፊት", region: "Amhara" },
+  { solId: "117", name: "KOBO (ቆቦ)", districtId: "DIST-DES", districtName: "Dessie District", phone: "033-3-34-12-74", managerName: "Ato yohannes Molla", location: "ፖሊስ ጣቢያ (ግንብ ቀበሌ አካባቢ) ዓለም ህንፃ ላይ", region: "Amhara" },
+  { solId: "118", name: "JIMMA (ጅማ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "047-1-12-20-85", managerName: "Desta W/senbet", location: "መርካቶ ጂጂ ህንፃ ላይ", region: "Oromia" },
+  { solId: "119", name: "HAWASSA (ሀዋሳ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "0462-20-55-85", managerName: "Alem Muluneh", location: "ፒያሳ አካባቢ ፒና ሆቴል ፊት ለፊት ታይም ካፌ አጠገብ", region: "Sidama" },
+  { solId: "120", name: "KOTEBE (ኮተቤ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-67-80-36", managerName: "Ato Yetemgeta Aregahgn", location: "ኮተቤ መምህራን ማሰልጠኛ ኮሌጅ ፊት ለፊት", region: "Addis Ababa" },
+  { solId: "121", name: "SHASHEMENE (ሻሸመኔ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-1-10-02-45", managerName: "Gemeda Negulie", location: "አቦስቶ አካባቢ ፀጋዬ ህንፃ", region: "Oromia" },
+
+  // Page 2
+  { solId: "122", name: "OLYMPIA (ኦሎምፒያ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-5-57-22-21", managerName: "Ato Million Kiflie", location: "ኦሎምፒያ ሸዋ ዳቦ ፊት ለፊት ኦሜዳድ አጠገብ", region: "Addis Ababa" },
+  { solId: "123", name: "GAMBELLA (ጋምቤላ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "047-5-51-00-79", managerName: "Dawit Haile Tamerasha", location: "ግራንድ ሪዞርት እና ስፓ አጠገብ አደባባዩ ጋር", region: "Gambela" },
+  { solId: "124", name: "DESSIE (ደሴ)", districtId: "DIST-DES", districtName: "Dessie District", phone: "033-1-12-00-50", managerName: "Girma Workneh", location: "ፒያሳ፣ አላሙዲን ህንፃ 1ኛ ፎቅ ላይ", region: "Amhara" },
+  { solId: "125", name: "DEBRE BIRIHAN (ደብረ ብርሃን)", districtId: "DIST-DBA", districtName: "Debre Birhan Area Office", phone: "011-6-81-13-64", managerName: "Gibreyesus Kassaye", location: "ኢትዮ በርኖስ ሆቴል ህንፃ ላይ", region: "Amhara" },
+  { solId: "126", name: "GERJI (ገርጂ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-39-40-11", managerName: "Ato Adinew Hageru", location: "ገርጂ ሮባ ዳቦ ቤት አጠገብ", region: "Addis Ababa" },
+  { solId: "127", name: "BALE GOBA (ባሌ ጎባ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "022-6-61-25-28", managerName: "Chernet Ayalkibet Argaw", location: "የዱሮ ፖስታ ቤት የነበረበት ህንፃ ላይ፣ ከንግድ ባንክ ዋናው ቅርንጫፍ ጐን", region: "Oromia" },
+  { solId: "128", name: "HALABA (አላባ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-5-56-06-43", managerName: "Simegne G/Mikael", location: "አስፈራው ህንፃ ላይ ያአብ ሥራ ሆቴል አካባቢ", region: "Central Ethiopia" },
+  { solId: "129", name: "BALE ROBE (ባሌ ሮቤ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "022-6-65-28-00", managerName: "Welensa Yakob", location: "ከመደወላቡ ዩኒቨርሲቲ ወደ አደባባይ በሚወስደው መንገድ ላይ፣ ደበበ ሆቴል ፊት ለፊት", region: "Oromia" },
+  { solId: "130", name: "GOJAM BERENDDA (ጐጃም በረንዳ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "0111-26-27-24", managerName: "Ato Henok Mengistu", location: "ከዮሐንስ ወደ ጐጃም በረንዳ በሚወስደው መንገድ ጐጐታ ሆቴል አጠገብ", region: "Addis Ababa" },
+  { solId: "131", name: "KOBO ROBIT (ቆቦ ሮቢት)", districtId: "DIST-DES", districtName: "Dessie District", phone: "033-1-13-01-68", managerName: "Abera Gugsa", location: "ከማዘጋጃ ቤት ፊት ለፊት", region: "Amhara" },
+  { solId: "132", name: "SHASHEMENE ARADA (ሻሸመኔ አራዳ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-2-11-00-52", managerName: "Ketema Abera", location: "አፖስቶ አካባቢ፣ ፍሬም ህንፃ ላይ", region: "Oromia" },
+  { solId: "133", name: "YIRGALEM (ይርጋለም)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-2-25-12-95", managerName: "Mulatu Shiguta", location: "መናኃሪያ መግቢያው ላይ፣ አንባሳ ሆቴል አጠገብ", region: "Sidama" },
+  { solId: "134", name: "BELAY ZELEKE (በላይ ዘለቀ)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-2-20-53-43", managerName: "Ato Wondifraw Melaku", location: "ከፖፒረስ ሆቴል ፊት ለፊት", region: "Amhara" },
+  { solId: "135", name: "BOLE RWANDA (ቦሌ ሩዋንዳ)", districtId: "DIST-SAD", districtName: "South A.A District", phone: "011-6-39-23-52", managerName: "Tegene Kesisa", location: "ቦሌ ሚካኤል Dasabshill ህንፃ ትንሽ ወረድ ብሎ", region: "Addis Ababa" },
+  { solId: "136", name: "DEBRE MARKOS (ደብረ ማርቆስ)", districtId: "DIST-DMA", districtName: "Debre Markos Area Office", phone: "058-7-71-16-45", managerName: "Abew", location: "ከመናኃሪያ ወደ ገበያ በሚወስደወ መንገድ ላይ ትንሽ ወረድ ብሎ", region: "Amhara" },
+  { solId: "137", name: "TABOR (ታቦር)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-2-12-00-37", managerName: "Asres Menchamo", location: "አቶቴ አካባቢ ሀይሌ ህንፃ ላይ", region: "Sidama" },
+  { solId: "138", name: "MOYALE (ሞያሌ)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "046-4-44-01-10", managerName: "Temesegen", location: "ፍቃዱ ሆቴል፣ (ወይም ስማርት ካፌ ፊት ለትፈ)", region: "Somale" },
+  { solId: "139", name: "DEJEN (ደጀን)", districtId: "DIST-DMA", districtName: "Debre Markos Area Office", phone: "058-776-00-19", managerName: "Mamaru gizachew", location: "የገበያ ማዕከል ፊት ለፊት (ፍትህ ጽ/ቤት አካባቢ)", region: "Amhara" },
+  { solId: "140", name: "MEKELE ENKODO (መቀሌ ኢንኮዶ)", districtId: "DIST-MKL", districtName: "Mekele District", phone: "034-4-40-67-49", managerName: "Mebrahtu Hailay G/Mariam", location: "ታሓገዝ ህንፃ ከፍ ብሎ ወደ ሓውዜን ኣደባባይ የሚወስድ መንገድ", region: "Tigray" },
+  { solId: "141", name: "BOLE ASRASIMINT (ቦሌ አስራ ስምንት)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-63-12-89", managerName: "YIBELTAL HASAB", location: "ከጐላጐል ወደ ቦሌ መድኃኒዓለም በሚወስደው መንገድ አውራሪስ ሆቴል አጠገብ", region: "Addis Ababa" },
+  { solId: "142", name: "NEKEMTE (ነቀምት)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "057-6-61-31-06", managerName: "Tariku Birassa", location: "ሁለተኛ ማዞሪያ አካባቢ", region: "Oromia" },
+  { solId: "143", name: "ADAMA DEMBELLA (አዳማ-ደምበላ)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "022-1-11-41-81", managerName: "Fikru Hailemariam", location: "Cinema Mormor፣ መሀማድ ኑር ህንፃ ላይ አጠገብ", region: "Oromia" },
+  { solId: "144", name: "DIRE DAWA (ድሬዳዋ)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "025-4-11-01-15", managerName: "Abeyu Negash", location: "ታይዋን አካባቢ፣ ሼክ ሀቢብ ሞል ህንፃ ላይ", region: "Dire Dawa" },
+
+  // Page 3
+  { solId: "145", name: "HARAR (ሐረር)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "025-4-66-00-35", managerName: "Mesay Dejene Hailu", location: "ማዘጋጀ ፊት ለፊት፣ ዋናው ንግድ ባንክ አጠገብ", region: "Hrari" },
+  { solId: "146", name: "LIDETA (ልደታ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "0115-57-62-60", managerName: "DESSALEGN Alene", location: "ከልደታ ወደ አብነት በሚወስደው መንገድ ላይ አህመድ የገበያ ማዕከል ህንፃ ግራውንድ ላይ", region: "Addis Ababa" },
+  { solId: "147", name: "DOLOMANA (ዶሎ መና)", districtId: "DIST-HWA", districtName: "Hawassa Area Office", phone: "022-6-68-00-25", managerName: "TAMIRAT", location: "ደሎመና ከተማ", region: "Oromia" },
+  { solId: "148", name: "ASSOSA (አሶሳ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "057-7-75-04-11", managerName: "Melese Tilahun Ayenew", location: "ዓርብ ገበያ ሠፈር፣ ከአንበሳ ሆቴል ትንሽ አለፍ ብሎ", region: "Benshangul Gumz" },
+  { solId: "149", name: "GHIMBI (ጊምቢ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "057-7-71-04-57", managerName: "Abdi Chali", location: "Oil Libya አካባቢ", region: "Oromia" },
+  { solId: "150", name: "ANGER GUTEE (አንገር ጉቴ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "057-6-34-01-91", managerName: "Desalign Olane", location: "አንገር ጉቴ ከተማ", region: "Oromia" },
+  { solId: "151", name: "SHOLA GEBEYA (ሾላ ገበያ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-67-36-48", managerName: "Ato Dejene Alemu", location: "ሾላ ገበያ ውስጥ በስተቀኝ በኩል ከሚካኤል ወደ ለም ሆቴል በሚወስደው መንገድ በስተቀኝ", region: "Addis Ababa" },
+  { solId: "152", name: "EMPERIAL (ኢምፔሪያል)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "0116-67-37-61", managerName: "Ato Nebiyou Alemu", location: "ከኢፔሪያል አደባባይ ወደ ወረዳ 17 ጤና ጣቢያ አቅጣጫ በግራ በኩል", region: "Addis Ababa" },
+  { solId: "153", name: "WORETA (ወረታ)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-4-46-11-55", managerName: "Samuel Maru", location: "መናኃሪያ መግቢያ አካባቢ", region: "Amhara" },
+  { solId: "154", name: "TOGOCHALE (ቶጎ ጫሌ)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "025-8-82-01-12", managerName: "Selam Girma", location: "ቶጐ ጫሌ", region: "Somale" },
+  { solId: "155", name: "WOLDIA (ወልድያ)", districtId: "DIST-DES", districtName: "Dessie District", phone: "033-331-1105/1418", managerName: "Getachew Adel", location: "ፒያሳ፣መቻሬ ሆቴል ፊት ለፊት", region: "Amhara" },
+  { solId: "156", name: "KOREM (ኮረም)", districtId: "DIST-MKL", districtName: "Mekele District", phone: "034-5-51-01-56", managerName: "Berihun Berhe", location: "ፒያሳ 02 ቀበሌ ኣካባቢ", region: "Tigray" },
+  { solId: "157", name: "WUKRO (ውቅሮ)", districtId: "DIST-MKL", districtName: "Mekele District", phone: "034-4-43-11-74", managerName: "Birhanu Desta Girmay", location: "ኣውተቡስ ተራ ኣካባቢ", region: "Tigray" },
+  { solId: "158", name: "MERAWI (መራዊ)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-330-04-73", managerName: "Ato Habtamu Abel", location: "መራዊ ከተማ", region: "Amhara" },
+  { solId: "159", name: "WELLO SEFER (ወሎ ሰፈር)", districtId: "DIST-SAD", districtName: "South A.A District", phone: "0114-70-04-61", managerName: "Tariku Wabe", location: "ሀረር መሶብ ሆቴል አጠገብ ፊት ለፊት ህንፃ ላይ", region: "Addis Ababa" },
+  { solId: "160", name: "SUMMIT (ሰሚት)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-667-84-93", managerName: "Meseret Manahile", location: "ከተባበሩት ነዳጅ ማደያ ወደ ሰሚት በሚወስደው መንገድ 200 ሜትር ገባ ብሎ", region: "Addis Ababa" },
+  { solId: "161", name: "MILLENNIUM (ሚሊኒየም)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-667-25-73", managerName: "H/Mariam", location: "ቦሌ ፍሬንድ ሺፕ ፊት ለፊት", region: "Addis Ababa" },
+  { solId: "162", name: "BONGA (ቦንጋ)", districtId: "DIST-JMA", districtName: "Jimma Area Office", phone: "047-331-11-93", managerName: "Habitamu Brihanu", location: "አደባባዮ ጋር፣ የከፋ ልማት ህንፃ ላይ", region: "South West" },
+  { solId: "163", name: "JIGJIGA (ጂግጂጋ)", districtId: "DIST-ADM", districtName: "Adama Area Office", phone: "025-278-00-00", managerName: "Elias Lakew", location: "ሰኢድ አብደላ የስብሰባ አደራሽ አጠገብ፤", region: "Somale" },
+  { solId: "164", name: "SEKOTA (ሰቆጣ)", districtId: "DIST-DES", districtName: "Dessie District", phone: "033-440-0009/67", managerName: "Dabash Dessie", location: "ማዞሪያ አካባቢ፣ኖክ ማደያ ፊት ለፊት", region: "Amhara" },
+  { solId: "165", name: "ALAMATA (አላማጣ)", districtId: "DIST-MKL", districtName: "Mekele District", phone: "034-7-74-00-71", managerName: "Tadese Shumye", location: "መኾኒ መንገድ ኣፍሪካ ሰፈር", region: "Tigray" },
+  { solId: "166", name: "GULELE (ጉለሌ)", districtId: "DIST-WAD", districtName: "West A.A District", phone: "011-2-73-42-37", managerName: "Dereje Siyoum Assefa", location: "ፖስተር አደባባይ፣ ካልዲስ አጠገብ", region: "Addis Ababa" },
+  { solId: "167", name: "SHALLA MENAFESHA (ሻላ መናፈሻ)", districtId: "DIST-EAD", districtName: "East A.A District", phone: "011-6-67-27-73", managerName: "Awoke Abebu", location: "ጌታሁን በሻ ህንፃ ወደ ቦሌ መድኃኒዓለም መንገድ አዝመራ ሽሮ ቤት አጠገብ አዲሱ መንገድ ላይ", region: "Addis Ababa" },
+
+  // Page 8 row 207 explicitly requested by user:
+  { solId: "311", name: "SHIMBIT (ሽምብጥ)", districtId: "DIST-BDR", districtName: "Bahir Dar District", phone: "058-320-16-23", managerName: "Gebrie Belay", location: "ሆም ላንድ ሆቴል ፊት ለፊት", region: "Amhara" }
+];
+
+console.log("Branch array elements ready:", branchDataList.length);

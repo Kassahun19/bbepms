@@ -1,0 +1,636 @@
+// =============================================================================
+// Bunna Bank S.C. Employee Performance Management System (EPMS)
+// Prisma Schema Definition for Supabase PostgreSQL
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN
+  HR_ADMIN
+  DISTRICT_MANAGER
+  BRANCH_MANAGER
+  SUPERVISOR
+  EMPLOYEE
+  ADMINISTRATOR
+  MANAGER
+}
+
+enum ApprovalStatus {
+  Draft
+  Submitted
+  Pending
+  Approved
+  Rejected
+  Returned
+  Suspended
+}
+
+enum PriorityTier {
+  Urgent
+  High
+  Normal
+}
+
+enum TargetRole {
+  ALL
+  MANAGER
+  EMPLOYEE
+  SUPERVISOR
+}
+
+enum KpiCategory {
+  Financial
+  DigitalBanking
+  CustomerAcquisition
+  OperationalExcellence
+}
+
+enum KpiUnit {
+  ETB
+  Count
+  Percentage
+  Score
+}
+
+enum TargetPeriod {
+  Monthly
+  Quarterly
+  SemiAnnual
+  Annual
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILED
+  WARNING
+}
+
+enum NotificationType {
+  approval
+  rejection
+  target
+  announcement
+  system
+}
+
+enum CompetitorAlertType {
+  RANK_LOSS
+  COMPETITOR_OVERTAKE
+  DEPOSIT_DECLINE
+  CUSTOMER_SLOWDOWN
+  DIGITAL_DROP
+  KPI_MISSED
+}
+
+enum SeverityLevel {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// -----------------------------------------------------------------------------
+// Core Organizational Models
+// -----------------------------------------------------------------------------
+
+model District {
+  id               String           @id @default(cuid())
+  solId            String?          @unique
+  name             String           @unique
+  code             String           @unique
+  region           String
+  status           String           @default("Active")
+  type             String           @default("District")
+  branchCount      Int              @default(0)
+  totalEmployees   Int              @default(0)
+  managerName      String           @default("Unassigned")
+  phone            String?
+  email            String?
+  secEmail         String?
+  location         String?
+  operationManager String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relationships
+  branches         Branch[]
+  users            User[]
+  reports          DailyPerformanceReport[]
+  targets          PerformanceTarget[]
+  areaRankings     AreaRanking[]
+
+  @@index([region])
+  @@index([code])
+}
+
+model Branch {
+  id             String           @id @default(cuid())
+  solId          String?          @unique
+  districtId     String
+  districtName   String
+  name           String           @unique
+  code           String           @unique
+  phone          String?
+  type           String           @default("Grade I")
+  employeeCount  Int              @default(0)
+  managerName    String           @default("Unassigned")
+  location       String           @default("Commercial Area")
+  region         String?
+  status         String           @default("Active")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  // Relationships
+  district       District         @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  users          User[]
+  reports        DailyPerformanceReport[]
+  targets        PerformanceTarget[]
+  competitorMonthlyPerformance CompetitorMonthlyPerformance[]
+
+  @@index([districtId])
+  @@index([code])
+  @@index([status])
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+}
+
+// -----------------------------------------------------------------------------
+// User & Authentication Models
+// -----------------------------------------------------------------------------
+
+model User {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  email          String           @unique
+  passwordHash   String?
+  firstName      String
+  middleName     String?
+  lastName       String
+  role           UserRole         @default(EMPLOYEE)
+  roleType       String?          @default("Non-Managerial")
+  managerId      String?
+  jobTitle       String           @default("Customer Service Officer")
+  districtId     String           @default("DIST-001")
+  districtName   String           @default("Addis Ababa District")
+  branchId       String           @default("BR-AAD-01")
+  branchName     String           @default("Addis Ababa Main HQ Branch")
+  departmentId   String?
+  gender         String           @default("Male")
+  age            Int              @default(30)
+  phone          String           @default("+251911000000")
+  avatarUrl      String?
+  status         String           @default("Active")
+  refreshToken   String?
+  telegramChatId String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  // Relationships
+  district       District?        @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  branch         Branch?          @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  department     Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager        User?            @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
+  subordinates   User[]           @relation("UserManager")
+  
+  reports        DailyPerformanceReport[] @relation("EmployeeReports")
+  reviewedReports DailyPerformanceReport[] @relation("ManagerReviews")
+  targets        PerformanceTarget[]
+  notifications  Notification[]
+  sentMessages   DirectMessage[]  @relation("SentMessages")
+  receivedMessages DirectMessage[] @relation("ReceivedMessages")
+  auditLogs      AuditLog[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([role])
+  @@index([branchId])
+  @@index([districtId])
+  @@index([telegramChatId])
+}
+
+// -----------------------------------------------------------------------------
+// KPI & Target Management Models
+// -----------------------------------------------------------------------------
+
+model Kpi {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  name        String
+  category    KpiCategory      @default(Financial)
+  unit        KpiUnit          @default(ETB)
+  weight      Float            @default(10.0)
+  description String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  targets     PerformanceTarget[]
+
+  @@index([category])
+  @@index([code])
+}
+
+model PerformanceTarget {
+  id          String           @id @default(cuid())
+  kpiId       String
+  kpiName     String
+  employeeId  String?
+  branchId    String?
+  districtId  String?
+  period      TargetPeriod     @default(Monthly)
+  year        Int
+  month       Int?
+  targetValue Float
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  kpi         Kpi              @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  employee    User?            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  branch      Branch?          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  district    District?        @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([branchId])
+  @@index([districtId])
+  @@index([year, month])
+}
+
+// -----------------------------------------------------------------------------
+// Daily Performance Reporting & Approval Workflow
+// -----------------------------------------------------------------------------
+
+model DailyPerformanceReport {
+  id                          String           @id @default(cuid())
+  employeeId                  String
+  employeeName                String
+  employeeUserId              String
+  branchId                    String
+  branchName                  String
+  districtId                  String
+  districtName                String
+  reportDate                  String           // YYYY-MM-DD
+  year                        Int
+  month                       Int
+  dayOfWeek                   String
+  status                      ApprovalStatus   @default(Pending)
+
+  // Financial Metrics (ETB)
+  depositsETB                 Float            @default(0.0)
+  foreignCurrencyETB          Float            @default(0.0)
+  digitalFinancialServicesETB Float            @default(0.0)
+
+  // Digital Banking Activations (Counts)
+  accountOpenings             Int              @default(0)
+  mobileBankingActivations    Int              @default(0)
+  internetBankingActivations  Int              @default(0)
+  merchantSolutions           Int              @default(0)
+  atmCardActivations          Int              @default(0)
+  
+  managerComment              String?
+  submittedAt                 DateTime         @default(now())
+  reviewedBy                  String?
+  reviewedAt                  DateTime?
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+
+  // Relationships
+  employee                    User             @relation("EmployeeReports", fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewer                    User?            @relation("ManagerReviews", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  branch                      Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  district                    District         @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  comments                    ReportComment[]
+  auditHistory                AuditHistoryEntry[]
+
+  @@index([employeeId])
+  @@index([employeeUserId])
+  @@index([branchId])
+  @@index([districtId])
+  @@index([reportDate])
+  @@index([status])
+  @@index([year, month])
+}
+
+model ReportComment {
+  id          String                  @id @default(cuid())
+  reportId    String
+  authorId    String
+  authorName  String
+  authorRole  UserRole
+  text        String
+  createdAt   DateTime                @default(now())
+
+  report      DailyPerformanceReport  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model AuditHistoryEntry {
+  id              String                  @id @default(cuid())
+  reportId        String
+  action          String
+  performedBy     String
+  performedByRole String
+  timestamp       DateTime                @default(now())
+  details         String
+
+  report          DailyPerformanceReport  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+// -----------------------------------------------------------------------------
+// Announcements, Notifications & Bank Holidays
+// -----------------------------------------------------------------------------
+
+model Announcement {
+  id          String       @id @default(cuid())
+  title       String
+  content     String
+  priority    PriorityTier @default(Normal)
+  targetRole  TargetRole   @default(ALL)
+  author      String       @default("System Administrator")
+  publishedAt DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([priority])
+  @@index([targetRole])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(system)
+  read      Boolean          @default(false)
+  link      String?
+  timestamp DateTime         @default(now())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+}
+
+model DirectMessage {
+  id           String   @id @default(cuid())
+  senderId     String
+  senderName   String
+  receiverId   String
+  receiverName String
+  message      String
+  read         Boolean  @default(false)
+  timestamp    DateTime @default(now())
+
+  sender       User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model BankHoliday {
+  id          String   @id @default(cuid())
+  name        String
+  date        String   // YYYY-MM-DD
+  description String
+  recurring   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String
+  userName  String
+  userRole  String
+  action    String
+  module    String
+  ipAddress String      @default("127.0.0.1")
+  timestamp DateTime    @default(now())
+  status    AuditStatus @default(SUCCESS)
+
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+// -----------------------------------------------------------------------------
+// Competitor Intelligence & Market Share Models
+// -----------------------------------------------------------------------------
+
+model CommercialBank {
+  id                      String             @id @default(cuid())
+  code                    String             @unique
+  name                    String             @unique
+  shortName               String
+  establishedYear         Int                @default(2015)
+  logoUrl                 String?
+  swiftCode               String?
+  status                  String             @default("Active")
+  totalBranchesNationwide Int                @default(50)
+  color                   String             @default("#003399")
+  isBunna                 Boolean            @default(false)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  branches                CompetitorBranch[]
+  performanceRecords      CompetitorMonthlyPerformance[]
+
+  @@index([code])
+}
+
+model CompetitorBranch {
+  id           String   @id @default(cuid())
+  bankId       String
+  bankName     String
+  bankCode     String
+  branchName   String
+  solId        String?
+  region       String
+  zone         String?
+  city         String
+  woreda       String?
+  districtId   String?
+  districtName String
+  latitude     Float
+  longitude    Float
+  openingDate  String?
+  status       String   @default("Active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bank         CommercialBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  @@index([bankId])
+  @@index([city])
+  @@index([region])
+}
+
+model CompetitorKpi {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  category    String   @default("Financial")
+  unit        String   @default("ETB")
+  bpiWeight   Float    @default(15.0)
+  description String
+  isCustom    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+model CompetitorMonthlyPerformance {
+  id           String         @id @default(cuid())
+  branchId     String
+  bankId       String
+  bankName     String
+  bankCode     String
+  branchName   String
+  city         String
+  districtName String
+  year         Int
+  month        Int
+  period       String         // YYYY-MM
+  bpiScore     Float          @default(0.0)
+
+  // Granular Metric Snapshot JSON
+  metricsJson  String         @default("{}")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  bank         CommercialBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  branch       Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([bankId])
+  @@index([period])
+  @@index([year, month])
+}
+
+model AreaRanking {
+  id            String   @id @default(cuid())
+  areaName      String
+  districtName  String
+  region        String
+  districtId    String?
+  totalBanks    Int      @default(0)
+  totalBranches Int      @default(0)
+  bunnaRank     Int      @default(1)
+  bunnaBpiScore Float    @default(0.0)
+  rankingsJson  String   @default("[]")
+  gapAnalysisJson String @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  district      District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+
+  @@index([areaName])
+  @@index([districtName])
+}
+
+model AiCompetitorInsight {
+  id                           String   @id @default(cuid())
+  areaName                     String
+  bunnaRank                    Int      @default(1)
+  totalCompetitors             Int      @default(0)
+  summary                      String
+  keyWeaknessKpi               String
+  fastestGrowingCompetitor     String
+  urgentAttentionBranch        String
+  managerFirstStep             String
+  bestPerformingDistrict       String
+  highestGrowthPotentialBranch String
+  recommendationsJson          String   @default("[]")
+  generatedAt                  DateTime @default(now())
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  @@index([areaName])
+}
+
+model CompetitorAlert {
+  id         String              @id @default(cuid())
+  type       CompetitorAlertType @default(KPI_MISSED)
+  title      String
+  message    String
+  areaName   String
+  branchName String
+  severity   SeverityLevel       @default(MEDIUM)
+  read       Boolean             @default(false)
+  timestamp  DateTime            @default(now())
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([type])
+  @@index([read])
+}
+
+// -----------------------------------------------------------------------------
+// System, Telegram & Support Models
+// -----------------------------------------------------------------------------
+
+model TelegramSession {
+  id        String   @id @default(cuid())
+  chatId    BigInt   @unique
+  state     String   @default("idle")
+  userId    String?
+  tempId    String?
+  sessionJson String @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatId])
+}
+
+model ContactInquiry {
+  id               String   @id @default(cuid())
+  fullName         String
+  emailOrPhone     String
+  branchOrDistrict String?
+  subject          String
+  message          String
+  status           String   @default("Pending")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}

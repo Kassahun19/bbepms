@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "Bank employees, managers, and administrators",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "firstName": { "type": "string" },
+        "middleName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMINISTRATOR", "MANAGER", "EMPLOYEE"] },
+        "jobTitle": { "type": "string" },
+        "districtId": { "type": "string" },
+        "districtName": { "type": "string" },
+        "branchId": { "type": "string" },
+        "branchName": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "role", "firstName"]
+    },
+    "employee_daily_kpi_reports": {
+      "title": "Employee Daily KPI Reports",
+      "description": "Normalized permanent employee daily KPI performance reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employee_id": { "type": "string" },
+        "employee_name": { "type": "string" },
+        "branch_id": { "type": "string" },
+        "sol_id": { "type": "string" },
+        "report_date": { "type": "string" },
+        "day_of_week": { "type": "string" },
+        "customer_onboarding": { "type": "number" },
+        "mobile_banking": { "type": "number" },
+        "internet_banking": { "type": "number" },
+        "atm_debit_cards": { "type": "number" },
+        "merchant_solutions": { "type": "number" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["id", "employee_id", "report_date"]
+    },
+    "dailyReports": {
+      "title": "Daily Reports",
+      "description": "Employee daily performance reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "branchId": { "type": "string" },
+        "branchName": { "type": "string" },
+        "reportDate": { "type": "string" },
+        "dayOfWeek": { "type": "string" },
+        "depositsETB": { "type": "number" },
+        "foreignCurrencyETB": { "type": "number" },
+        "digitalFinancialServicesETB": { "type": "number" },
+        "accountOpenings": { "type": "number" },
+        "mobileBankingActivations": { "type": "number" },
+        "internetBankingActivations": { "type": "number" },
+        "merchantSolutions": { "type": "number" },
+        "atmCardActivations": { "type": "number" },
+        "status": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "employeeId", "reportDate", "status"]
+    },
+    "districts": {
+      "title": "Districts",
+      "description": "Bank operational districts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "region": { "type": "string" },
+        "branchCount": { "type": "number" },
+        "totalEmployees": { "type": "number" },
+        "managerName": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "branches": {
+      "title": "Branches",
+      "description": "Bank branches under districts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "districtId": { "type": "string" },
+        "districtName": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "type": { "type": "string" },
+        "employeeCount": { "type": "number" },
+        "managerName": { "type": "string" }
+      },
+      "required": ["id", "name", "districtId"]
+    },
+    "targets": {
+      "title": "Targets",
+      "description": "KPI targets for employees and branches",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "kpiId": { "type": "string" },
+        "kpiName": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "branchId": { "type": "string" },
+        "period": { "type": "string" },
+        "targetValue": { "type": "number" }
+      },
+      "required": ["id", "kpiName", "targetValue"]
+    },
+    "announcements": {
+      "title": "Announcements",
+      "description": "Bank-wide or role-targeted announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "priority": { "type": "string" },
+        "targetRole": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "author": { "type": "string" }
+      },
+      "required": ["id", "title", "content"]
+    },
+    "holidays": {
+      "title": "Holidays",
+      "description": "Official bank holidays",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "recurring": { "type": "boolean" }
+      },
+      "required": ["id", "name", "date"]
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "description": "System activity audit logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "timestamp"]
+    }
+  }
+}

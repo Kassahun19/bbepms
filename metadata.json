@@ -1,0 +1,6 @@
+{
+  "name": "Bunna Bank S.C. EPMS",
+  "description": "AI-Powered Employee Performance Management System (EPMS) for Bunna Bank S.C. - Empowering Performance, Driving Excellence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
