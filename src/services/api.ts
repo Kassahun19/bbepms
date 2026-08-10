@@ -844,6 +844,7 @@ export const api = {
     // 1. Direct Cloud Firestore update
     try {
       await saveDocument('reports', id, { ...reportData, updatedAt: new Date().toISOString() });
+      await saveDocument('employee_daily_kpi_reports', id, { ...reportData, updatedAt: new Date().toISOString() });
       console.log('[Firestore] Report updated in Cloud Firestore:', id);
     } catch (e) {
       console.warn('[Firestore] Direct update warning:', e);
@@ -870,6 +871,7 @@ export const api = {
     // 1. Direct Cloud Firestore delete
     try {
       await deleteDocument('reports', id);
+      await deleteDocument('employee_daily_kpi_reports', id);
       console.log('[Firestore] Report deleted from Cloud Firestore:', id);
     } catch (e) {
       console.warn('[Firestore] Direct delete warning:', e);
@@ -916,6 +918,7 @@ export const api = {
       if (action === 'delete') {
         try {
           await deleteDocument('reports', reportId);
+          await deleteDocument('employee_daily_kpi_reports', reportId);
         } catch (e) {}
       } else {
         const updatePayload: any = {
@@ -929,6 +932,7 @@ export const api = {
         }
         try {
           await saveDocument('reports', reportId, updatePayload);
+          await saveDocument('employee_daily_kpi_reports', reportId, updatePayload);
         } catch (e) {}
       }
     }

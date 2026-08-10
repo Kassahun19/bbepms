@@ -186,8 +186,104 @@ if (!db.targets || db.targets.length === 0) {
 
 
 
+// =============================================================================
+// PERMANENT DAILY KPI REPORTING REST API & PERSISTENCE ENGINE
+// =============================================================================
+
+// Helper: Normalize Daily KPI Report object ensuring both snake_case and camelCase fields
+function normalizeKpiReport(input: any) {
+  if (!input || typeof input !== 'object') {
+    input = {};
+  }
+  const empId = String(input.employee_id || input.employeeId || input.employeeUserId || 'USR-4994');
+  const empName = String(input.employee_name || input.employeeName || 'Staff Member');
+  const branchId = String(input.branch_id || input.branchId || 'BR-360');
+  const branchName = String(input.branch_name || input.branchName || 'Hamusit Branch');
+  const solId = String(input.sol_id || input.solId || '360');
+  const reportDate = String(input.report_date || input.reportDate || input.date || new Date().toISOString().split('T')[0]);
+  
+  // Calculate day of week if not provided
+  let dayOfWeek = input.day_of_week || input.dayOfWeek;
+  if (!dayOfWeek) {
+    try {
+      const parts = reportDate.split('-');
+      if (parts.length === 3) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'long' });
+      } else {
+        dayOfWeek = 'Monday';
+      }
+    } catch (e) {
+      dayOfWeek = 'Monday';
+    }
+  }
+
+  const custOnboarding = Math.max(0, Number(input.customer_onboarding ?? input.customerOnboarding ?? input.accountOpenings ?? 0));
+  const mobBanking = Math.max(0, Number(input.mobile_banking ?? input.mobileBanking ?? input.mobileBankingActivations ?? 0));
+  const intBanking = Math.max(0, Number(input.internet_banking ?? input.internetBanking ?? input.internetBankingActivations ?? 0));
+  const atmCards = Math.max(0, Number(input.atm_debit_cards ?? input.atmDebitCards ?? input.atmCardActivations ?? input.atmCardsIssued ?? 0));
+  const merchant = Math.max(0, Number(input.merchant_solutions ?? input.merchantSolutions ?? input.merchantSolutionsActivations ?? 0));
+  const deposits = Math.max(0, Number(input.deposits_etb ?? input.depositsETB ?? 0));
+  const foreignCurr = Math.max(0, Number(input.foreignCurrencyETB ?? input.foreign_currency_etb ?? 0));
+  const digitalServices = Math.max(0, Number(input.digitalFinancialServicesETB ?? input.digital_financial_services_etb ?? 0));
+
+  const nowIso = new Date().toISOString();
+  const id = input.id || `KPI-RPT-${reportDate.replace(/-/g, '')}-${empId.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now().toString(36)}`;
+
+  return {
+    id,
+    employee_id: empId,
+    employeeId: empId,
+    employee_name: empName,
+    employeeName: empName,
+    employeeUserId: input.employeeUserId || empId,
+    branch_id: branchId,
+    branchId: branchId,
+    branch_name: branchName,
+    branchName: branchName,
+    sol_id: solId,
+    solId: solId,
+    districtId: input.districtId || 'DIST-BDR',
+    districtName: input.districtName || 'Bahir Dar District',
+    report_date: reportDate,
+    reportDate: reportDate,
+    date: reportDate,
+    day_of_week: dayOfWeek,
+    dayOfWeek: dayOfWeek,
+    year: input.year || Number(reportDate.split('-')[0]) || 2026,
+    month: input.month || Number(reportDate.split('-')[1]) || 8,
+    customer_onboarding: custOnboarding,
+    customerOnboarding: custOnboarding,
+    accountOpenings: custOnboarding,
+    mobile_banking: mobBanking,
+    mobileBanking: mobBanking,
+    mobileBankingActivations: mobBanking,
+    internet_banking: intBanking,
+    internetBanking: intBanking,
+    internetBankingActivations: intBanking,
+    atm_debit_cards: atmCards,
+    atmDebitCards: atmCards,
+    atmCardActivations: atmCards,
+    atmCardsIssued: atmCards,
+    merchant_solutions: merchant,
+    merchantSolutions: merchant,
+    merchantSolutionsActivations: merchant,
+    deposits_etb: deposits,
+    depositsETB: deposits,
+    foreignCurrencyETB: foreignCurr,
+    digitalFinancialServicesETB: digitalServices,
+    status: input.status || 'Pending',
+    managerComment: input.managerComment || '',
+    created_at: input.created_at || input.createdAt || input.submittedAt || nowIso,
+    createdAt: input.createdAt || input.created_at || input.submittedAt || nowIso,
+    submittedAt: input.submittedAt || input.created_at || input.createdAt || nowIso,
+    updated_at: input.updated_at || input.updatedAt || nowIso,
+    updatedAt: input.updatedAt || input.updated_at || nowIso
+  };
+}
+
 let lastSyncTime = 0;
-const SYNC_CACHE_MS = 5000;
+const SYNC_CACHE_MS = 3000;
 
 // Helper to save an individual document directly to Cloud Firestore collection
 async function saveFirestoreDoc(collName: string, id: string, data: any) {
@@ -196,7 +292,7 @@ async function saveFirestoreDoc(collName: string, id: string, data: any) {
     const docRef = doc(clientDb, collName, String(id));
     const cleanData = JSON.parse(JSON.stringify(data));
     await setDoc(docRef, cleanData, { merge: true });
-    console.log(`[Firestore Direct] Saved ${collName}/${id}`);
+    console.log(`[Firestore Direct] Saved document ${collName}/${id}`);
   } catch (err: any) {
     console.warn(`[Firestore Direct] Failed saving ${collName}/${id}:`, err?.message || err);
   }
@@ -208,9 +304,119 @@ async function deleteFirestoreDoc(collName: string, id: string) {
   try {
     const docRef = doc(clientDb, collName, String(id));
     await deleteDoc(docRef);
-    console.log(`[Firestore Direct] Deleted ${collName}/${id}`);
+    console.log(`[Firestore Direct] Deleted document ${collName}/${id}`);
   } catch (err: any) {
     console.warn(`[Firestore Direct] Failed deleting ${collName}/${id}:`, err?.message || err);
+  }
+}
+
+// Comprehensive sync from Production Cloud Firestore ensuring no report data loss across server restarts
+async function syncDatabaseFromFirestore() {
+  if (!clientDb) return;
+  try {
+    console.log('[Firestore] Initiating complete database sync from production Cloud Firestore...');
+    
+    // 1. Fetch individual report collections (both 'reports' and 'employee_daily_kpi_reports') and singleton state
+    const [reportsSnap, kpiReportsSnap, stateSnap] = await Promise.all([
+      getDocs(collection(clientDb, 'reports')).catch(e => {
+        console.warn('[Firestore] Error reading reports collection:', e?.message || e);
+        return null;
+      }),
+      getDocs(collection(clientDb, 'employee_daily_kpi_reports')).catch(e => {
+        console.warn('[Firestore] Error reading employee_daily_kpi_reports collection:', e?.message || e);
+        return null;
+      }),
+      getDoc(doc(clientDb, 'epms_state', 'singleton')).catch(e => {
+        console.warn('[Firestore] Error reading singleton state:', e?.message || e);
+        return null;
+      })
+    ]);
+
+    const reportMap = new Map<string, any>();
+
+    // Step A: Load base / fallback reports into reportMap
+    if (Array.isArray(db.reports)) {
+      for (const r of db.reports) {
+        if (r && (r.id || (r.employeeId && r.reportDate))) {
+          const norm = normalizeKpiReport(r);
+          const key = norm.id || `${norm.employeeId}_${norm.reportDate}`;
+          reportMap.set(key, norm);
+        }
+      }
+    }
+
+    // Step B: Merge singleton state document from Firestore if present
+    if (stateSnap && stateSnap.exists()) {
+      const cloudData = stateSnap.data();
+      if (cloudData) {
+        ['districts', 'branches', 'users', 'kpis', 'targets', 'holidays', 'announcements', 'auditLogs', 'notifications'].forEach((key) => {
+          if (Array.isArray(cloudData[key]) && cloudData[key].length > 0) {
+            db[key] = cloudData[key];
+          }
+        });
+
+        if (Array.isArray(cloudData.reports)) {
+          for (const r of cloudData.reports) {
+            if (r && (r.id || (r.employeeId && r.reportDate))) {
+              const norm = normalizeKpiReport(r);
+              const key = norm.id || `${norm.employeeId || norm.employee_id}_${norm.reportDate || norm.report_date}`;
+              reportMap.set(key, norm);
+            }
+          }
+        }
+      }
+    }
+
+    // Step C: Direct Firestore 'reports' collection documents (authoritative single-doc writes)
+    if (reportsSnap && !reportsSnap.empty) {
+      reportsSnap.docs.forEach(d => {
+        const data = d.data();
+        if (data && d.id !== 'test-connection-check') {
+          const norm = normalizeKpiReport({ id: d.id, ...data });
+          const key = d.id || `${norm.employeeId}_${norm.reportDate}`;
+          reportMap.set(key, norm);
+        }
+      });
+    }
+
+    // Step D: Direct Firestore 'employee_daily_kpi_reports' collection documents
+    if (kpiReportsSnap && !kpiReportsSnap.empty) {
+      kpiReportsSnap.docs.forEach(d => {
+        const data = d.data();
+        if (data && d.id !== 'test-connection-check') {
+          const norm = normalizeKpiReport({ id: d.id, ...data });
+          const key = d.id || `${norm.employeeId}_${norm.reportDate}`;
+          reportMap.set(key, norm);
+        }
+      });
+    }
+
+    const allReports = Array.from(reportMap.values());
+    allReports.sort((a: any, b: any) => {
+      const dateA = a.reportDate || a.report_date || '';
+      const dateB = b.reportDate || b.report_date || '';
+      return dateB.localeCompare(dateA);
+    });
+
+    db.reports = allReports;
+    db.dailyReports = allReports;
+    lastSyncTime = Date.now();
+    console.log(`[Firestore] Database sync complete. Loaded ${allReports.length} permanent KPI reports from production database.`);
+
+    // Also persist all loaded reports back to individual documents in Firestore if missing
+    for (const r of allReports) {
+      if (r && r.id && !r.id.startsWith('test-')) {
+        saveFirestoreDoc('reports', r.id, r);
+        saveFirestoreDoc('employee_daily_kpi_reports', r.id, r);
+      }
+    }
+
+    try {
+      fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
+    } catch (e) {}
+
+  } catch (err: any) {
+    console.warn('[Firestore] Sync error:', err?.message || err);
   }
 }
 
@@ -221,43 +427,14 @@ if (clientDb) {
     setTimeout(() => {
       console.warn('[Firestore] Initial fetch timeout safeguard triggered.');
       resolve();
-    }, 3500);
+    }, 4500);
   });
 
-  const fetchPromise = (async () => {
-    try {
-      // 1. Fetch reports collection
-      const reportsColRef = collection(clientDb, 'reports');
-      const reportsSnap = await getDocs(reportsColRef);
-      const firestoreReports = reportsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // 2. Fetch singleton
-      const docRef = doc(clientDb, 'epms_state', 'singleton');
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const cloudData = docSnap.data();
-        if (cloudData && cloudData.users && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
-          const localReports = Array.isArray(db.reports) ? db.reports : [];
-          const cloudReports = Array.isArray(cloudData.reports) ? cloudData.reports : [];
-          const activeReports = localReports.length >= cloudReports.length ? localReports : cloudReports;
-          db = { ...db, ...cloudData, reports: activeReports, dailyReports: activeReports };
-          lastSyncTime = Date.now();
-          console.log('[Firestore] Successfully synced database state from Firestore. Active reports count:', activeReports.length);
-        }
-      } else {
-        db.reports = firestoreReports;
-        db.dailyReports = firestoreReports;
-        await setDoc(docRef, db);
-      }
-    } catch (e: any) {
-      console.warn('[Firestore] Failed initial fetch from Firestore:', e?.message || e);
-    }
-  })();
-
+  const fetchPromise = syncDatabaseFromFirestore();
   dbPromise = Promise.race([fetchPromise, timeoutPromise]);
 }
 
-// Ensure database is fully synced before proceeding (critical for serverless / Vercel cold starts)
+// Ensure database is fully synced before proceeding (critical for serverless / Vercel cold starts / restarts)
 async function ensureDbSynced(force = false) {
   if (dbPromise) {
     await dbPromise;
@@ -268,36 +445,7 @@ async function ensureDbSynced(force = false) {
     return;
   }
 
-  if (clientDb) {
-    try {
-      // 1. Fetch reports collection directly
-      const reportsColRef = collection(clientDb, 'reports');
-      const reportsSnap = await getDocs(reportsColRef);
-      const firestoreReports = reportsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // 2. Fetch singleton document
-      const docRef = doc(clientDb, 'epms_state', 'singleton');
-      const fetchPromise = getDoc(docRef);
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Sync Timeout')), 2500));
-      
-      const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
-      if (docSnap && docSnap.exists()) {
-        const cloudData = docSnap.data();
-        if (cloudData && cloudData.users && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
-          const localReports = Array.isArray(db.reports) ? db.reports : [];
-          const cloudReports = Array.isArray(cloudData.reports) ? cloudData.reports : [];
-          const activeReports = localReports.length >= cloudReports.length ? localReports : cloudReports;
-          db = { ...db, ...cloudData, reports: activeReports, dailyReports: activeReports };
-          lastSyncTime = Date.now();
-        }
-      } else {
-        db.reports = firestoreReports;
-        db.dailyReports = firestoreReports;
-      }
-    } catch (e: any) {
-      console.warn('[Firestore] Live sync warning:', e?.message || e);
-    }
-  }
+  await syncDatabaseFromFirestore();
 }
 
 // Global middleware to sync Firestore database on every API/install request
@@ -585,7 +733,8 @@ const createCrud = (route: string, collection: string) => {
       if (existingIdx !== -1) {
         db.reports[existingIdx] = { ...db.reports[existingIdx], ...item, id: db.reports[existingIdx].id };
         await saveFirestoreDoc('reports', db.reports[existingIdx].id, db.reports[existingIdx]);
-        saveDb();
+        await saveFirestoreDoc('employee_daily_kpi_reports', db.reports[existingIdx].id, db.reports[existingIdx]);
+        await saveDb();
         return res.json(db.reports[existingIdx]);
       }
     }
@@ -594,7 +743,10 @@ const createCrud = (route: string, collection: string) => {
     if (!db[collection]) db[collection] = [];
     db[collection].push(item);
     await saveFirestoreDoc(collection, finalId, item);
-    saveDb();
+    if (collection === 'reports') {
+      await saveFirestoreDoc('employee_daily_kpi_reports', finalId, item);
+    }
+    await saveDb();
     res.json(item);
   });
   app.put(route + '/:id', async (req, res) => {
@@ -602,7 +754,10 @@ const createCrud = (route: string, collection: string) => {
     if (idx !== -1) {
       db[collection][idx] = { ...db[collection][idx], ...req.body };
       await saveFirestoreDoc(collection, req.params.id, db[collection][idx]);
-      saveDb();
+      if (collection === 'reports') {
+        await saveFirestoreDoc('employee_daily_kpi_reports', req.params.id, db[collection][idx]);
+      }
+      await saveDb();
       res.json(db[collection][idx]);
     } else res.status(404).json({ error: 'Not found' });
   });
@@ -611,7 +766,10 @@ const createCrud = (route: string, collection: string) => {
     if (idx !== -1) {
       db[collection].splice(idx, 1);
       await deleteFirestoreDoc(collection, req.params.id);
-      saveDb();
+      if (collection === 'reports') {
+        await deleteFirestoreDoc('employee_daily_kpi_reports', req.params.id);
+      }
+      await saveDb();
       res.json({ success: true });
     } else res.status(404).json({ error: 'Not found' });
   });
@@ -626,95 +784,6 @@ createCrud('/api/targets', 'targets');
 // =============================================================================
 // PERMANENT DAILY KPI REPORTING REST API & PERSISTENCE ENGINE
 // =============================================================================
-
-// Helper: Normalize Daily KPI Report object ensuring both snake_case and camelCase fields
-function normalizeKpiReport(input: any) {
-  const empId = String(input.employee_id || input.employeeId || input.employeeUserId || 'USR-4994');
-  const empName = String(input.employee_name || input.employeeName || 'Staff Member');
-  const branchId = String(input.branch_id || input.branchId || 'BR-360');
-  const branchName = String(input.branch_name || input.branchName || 'Hamusit Branch');
-  const solId = String(input.sol_id || input.solId || '360');
-  const reportDate = String(input.report_date || input.reportDate || input.date || new Date().toISOString().split('T')[0]);
-  
-  // Calculate day of week if not provided
-  let dayOfWeek = input.day_of_week || input.dayOfWeek;
-  if (!dayOfWeek) {
-    try {
-      const parts = reportDate.split('-');
-      if (parts.length === 3) {
-        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-        dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'long' });
-      } else {
-        dayOfWeek = 'Monday';
-      }
-    } catch (e) {
-      dayOfWeek = 'Monday';
-    }
-  }
-
-  const custOnboarding = Math.max(0, Number(input.customer_onboarding ?? input.customerOnboarding ?? input.accountOpenings ?? 0));
-  const mobBanking = Math.max(0, Number(input.mobile_banking ?? input.mobileBanking ?? input.mobileBankingActivations ?? 0));
-  const intBanking = Math.max(0, Number(input.internet_banking ?? input.internetBanking ?? input.internetBankingActivations ?? 0));
-  const atmCards = Math.max(0, Number(input.atm_debit_cards ?? input.atmDebitCards ?? input.atmCardActivations ?? input.atmCardsIssued ?? 0));
-  const merchant = Math.max(0, Number(input.merchant_solutions ?? input.merchantSolutions ?? input.merchantSolutionsActivations ?? 0));
-  const deposits = Math.max(0, Number(input.deposits_etb ?? input.depositsETB ?? 0));
-  const foreignCurr = Math.max(0, Number(input.foreignCurrencyETB ?? input.foreign_currency_etb ?? 0));
-  const digitalServices = Math.max(0, Number(input.digitalFinancialServicesETB ?? input.digital_financial_services_etb ?? 0));
-
-  const nowIso = new Date().toISOString();
-  const id = input.id || `KPI-RPT-${reportDate.replace(/-/g, '')}-${empId.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now().toString(36)}`;
-
-  return {
-    id,
-    employee_id: empId,
-    employeeId: empId,
-    employee_name: empName,
-    employeeName: empName,
-    employeeUserId: input.employeeUserId || empId,
-    branch_id: branchId,
-    branchId: branchId,
-    branch_name: branchName,
-    branchName: branchName,
-    sol_id: solId,
-    solId: solId,
-    districtId: input.districtId || 'DIST-BDR',
-    districtName: input.districtName || 'Bahir Dar District',
-    report_date: reportDate,
-    reportDate: reportDate,
-    date: reportDate,
-    day_of_week: dayOfWeek,
-    dayOfWeek: dayOfWeek,
-    year: input.year || Number(reportDate.split('-')[0]) || 2026,
-    month: input.month || Number(reportDate.split('-')[1]) || 8,
-    customer_onboarding: custOnboarding,
-    customerOnboarding: custOnboarding,
-    accountOpenings: custOnboarding,
-    mobile_banking: mobBanking,
-    mobileBanking: mobBanking,
-    mobileBankingActivations: mobBanking,
-    internet_banking: intBanking,
-    internetBanking: intBanking,
-    internetBankingActivations: intBanking,
-    atm_debit_cards: atmCards,
-    atmDebitCards: atmCards,
-    atmCardActivations: atmCards,
-    atmCardsIssued: atmCards,
-    merchant_solutions: merchant,
-    merchantSolutions: merchant,
-    merchantSolutionsActivations: merchant,
-    deposits_etb: deposits,
-    depositsETB: deposits,
-    foreignCurrencyETB: foreignCurr,
-    digitalFinancialServicesETB: digitalServices,
-    status: input.status || 'Pending',
-    managerComment: input.managerComment || '',
-    created_at: input.created_at || input.createdAt || input.submittedAt || nowIso,
-    createdAt: input.createdAt || input.created_at || input.submittedAt || nowIso,
-    submittedAt: input.submittedAt || input.created_at || input.createdAt || nowIso,
-    updated_at: input.updated_at || input.updatedAt || nowIso,
-    updatedAt: input.updatedAt || input.updated_at || nowIso
-  };
-}
 
 // Universal KPI Reports GET Handler
 const getKpiReportsHandler = (req: express.Request, res: express.Response) => {
@@ -907,7 +976,7 @@ const postKpiReportHandler = async (req: express.Request, res: express.Response)
     });
   }
 
-  if (existingIdx !== -1 && isEdit) {
+    if (existingIdx !== -1 && isEdit) {
     // Edit existing report
     const targetId = db.reports[existingIdx].id;
     const updated = normalizeKpiReport({
@@ -920,7 +989,7 @@ const postKpiReportHandler = async (req: express.Request, res: express.Response)
     db.reports[existingIdx] = updated;
     await saveFirestoreDoc('reports', targetId, updated);
     await saveFirestoreDoc('employee_daily_kpi_reports', targetId, updated);
-    saveDb();
+    await saveDb();
     return res.json(updated);
   }
 
@@ -929,7 +998,7 @@ const postKpiReportHandler = async (req: express.Request, res: express.Response)
   db.reports.unshift(newReport);
   await saveFirestoreDoc('reports', newReport.id, newReport);
   await saveFirestoreDoc('employee_daily_kpi_reports', newReport.id, newReport);
-  saveDb();
+  await saveDb();
 
   return res.status(201).json(newReport);
 };
@@ -969,7 +1038,7 @@ const putKpiReportHandler = async (req: express.Request, res: express.Response) 
   db.reports[idx] = updated;
   await saveFirestoreDoc('reports', req.params.id, updated);
   await saveFirestoreDoc('employee_daily_kpi_reports', req.params.id, updated);
-  saveDb();
+  await saveDb();
   res.json(updated);
 };
 app.put('/api/kpi-reports/:id', putKpiReportHandler);
@@ -983,7 +1052,7 @@ const deleteKpiReportHandler = async (req: express.Request, res: express.Respons
   db.reports.splice(idx, 1);
   await deleteFirestoreDoc('reports', req.params.id);
   await deleteFirestoreDoc('employee_daily_kpi_reports', req.params.id);
-  saveDb();
+  await saveDb();
   res.json({ success: true, message: 'Report deleted successfully' });
 };
 app.delete('/api/kpi-reports/:id', deleteKpiReportHandler);
@@ -1398,6 +1467,7 @@ app.post('/api/approvals/action', async (req, res) => {
     db.reports = db.reports.filter((r: any) => !reportIds.includes(r.id));
     for (const rid of reportIds) {
       await deleteFirestoreDoc('reports', rid);
+      await deleteFirestoreDoc('employee_daily_kpi_reports', rid);
     }
   } else {
     for (const r of db.reports) {
@@ -1409,11 +1479,12 @@ app.post('/api/approvals/action', async (req, res) => {
         r.updatedAt = new Date().toISOString();
         r.reviewedBy = managerId;
         await saveFirestoreDoc('reports', r.id, r);
+        await saveFirestoreDoc('employee_daily_kpi_reports', r.id, r);
       }
     }
   }
 
-  saveDb();
+  await saveDb();
   return res.json({ success: true, message: `Reports successfully ${action}d` });
 });
 
