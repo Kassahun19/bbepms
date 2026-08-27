@@ -31,6 +31,9 @@ import { api } from '../../services/api';
 import { DailyKpiEditModal } from './DailyKpiEditModal';
 import { downloadReportCSV, downloadReportExcel, printOrDownloadPDF } from '../../utils/exportUtils';
 import { translations } from '../../i18n/translations';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
+import { useDropdownDismiss } from '../../hooks/useDropdownDismiss';
 
 interface ManagerDailyKpiReportsTableProps {
   managerUser: User;
@@ -128,6 +131,16 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
   const [editingReport, setEditingReport] = useState<DailyPerformanceReport | null>(null);
   const [viewingReport, setViewingReport] = useState<DailyPerformanceReport | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const { containerRef: exportMenuRef } = useDropdownDismiss({
+    isOpen: showExportMenu,
+    onClose: () => setShowExportMenu(false),
+  });
+
+  const { contentRef: viewingReportRef, handleBackdropClick: handleViewingReportBackdropClick } = useModalDismiss({
+    isOpen: !!viewingReport,
+    onClose: () => setViewingReport(null),
+  });
 
   // Quick Action Loading
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -527,7 +540,7 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
           </div>
 
           {/* Export Button */}
-          <div className="relative">
+          <div className="relative" ref={exportMenuRef}>
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0B4228] to-[#08321E] border border-[#D4AF37]/50 text-white font-extrabold text-xs shadow-md hover:brightness-110 flex items-center space-x-2 transition-all"
@@ -888,23 +901,27 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
                             <Eye className="w-3.5 h-3.5" />
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => setEditingReport(report)}
-                            title="Edit Report"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#D4AF37] transition-colors"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
+                          {report.status !== 'Approved' && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingReport(report)}
+                              title="Edit Report"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#D4AF37] transition-colors"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(report.id, empNameStr, reportDateStr)}
-                            title="Delete Report"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {report.status !== 'Approved' && (
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(report.id, empNameStr, reportDateStr)}
+                              title="Delete Report"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
                         </div>
                       </td>
@@ -1025,8 +1042,14 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
 
       {/* 6. VIEW DETAILS MODAL */}
       {viewingReport && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-[#D4AF37]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl">
+        <div
+          onClick={handleViewingReportBackdropClick}
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={viewingReportRef}
+            className="bg-[#08321E] border border-[#D4AF37]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/20 text-[#D4AF37] uppercase">
@@ -1036,12 +1059,7 @@ export const ManagerDailyKpiReportsTable: React.FC<ManagerDailyKpiReportsTablePr
                   {viewingReport.employeeName} — {viewingReport.reportDate} ({viewingReport.dayOfWeek})
                 </h3>
               </div>
-              <button
-                onClick={() => setViewingReport(null)}
-                className="text-gray-400 hover:text-white p-1 rounded-lg bg-white/10"
-              >
-                ✕
-              </button>
+              <ModalCloseButton onClose={() => setViewingReport(null)} ariaLabel="Close staff daily KPI details" />
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">

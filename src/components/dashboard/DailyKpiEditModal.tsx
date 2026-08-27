@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  X,
   Save,
   AlertCircle,
   CheckCircle2,
@@ -16,6 +15,8 @@ import {
 } from 'lucide-react';
 import { DailyPerformanceReport } from '../../types';
 import { api } from '../../services/api';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface DailyKpiEditModalProps {
   report: DailyPerformanceReport;
@@ -30,34 +31,53 @@ export const DailyKpiEditModal: React.FC<DailyKpiEditModalProps> = ({
   onClose,
   onSaved
 }) => {
-  if (!isOpen) return null;
-
   const [customerOnboarding, setCustomerOnboarding] = useState<number>(
-    report.customerOnboarding ?? report.accountOpenings ?? 0
+    report?.customerOnboarding ?? report?.accountOpenings ?? 0
   );
   const [mobileBanking, setMobileBanking] = useState<number>(
-    report.mobileBanking ?? report.mobileBankingActivations ?? 0
+    report?.mobileBanking ?? report?.mobileBankingActivations ?? 0
   );
   const [internetBanking, setInternetBanking] = useState<number>(
-    report.internetBanking ?? report.internetBankingActivations ?? 0
+    report?.internetBanking ?? report?.internetBankingActivations ?? 0
   );
   const [atmDebitCards, setAtmDebitCards] = useState<number>(
-    report.atmDebitCards ?? report.atmCardsIssued ?? report.atmCardActivations ?? 0
+    report?.atmDebitCards ?? report?.atmCardsIssued ?? report?.atmCardActivations ?? 0
   );
   const [merchantSolutions, setMerchantSolutions] = useState<number>(
-    report.merchantSolutions ?? report.merchantSolutionsActivations ?? 0
+    report?.merchantSolutions ?? report?.merchantSolutionsActivations ?? 0
   );
   const [depositsETB, setDepositsETB] = useState<number>(
-    report.depositsETB ?? report.deposits_etb ?? 0
+    report?.depositsETB ?? report?.deposits_etb ?? 0
   );
   const [foreignCurrencyETB, setForeignCurrencyETB] = useState<number>(
-    report.foreignCurrencyETB ?? report.foreign_currency_etb ?? 0
+    report?.foreignCurrencyETB ?? report?.foreign_currency_etb ?? 0
   );
-  const [status, setStatus] = useState<string>(report.status || 'Pending');
-  const [managerComment, setManagerComment] = useState<string>(report.managerComment || '');
+  const [status, setStatus] = useState<string>(report?.status || 'Pending');
+  const [managerComment, setManagerComment] = useState<string>(report?.managerComment || '');
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const isDirty = report ? (
+    customerOnboarding !== (report.customerOnboarding ?? report.accountOpenings ?? 0) ||
+    mobileBanking !== (report.mobileBanking ?? report.mobileBankingActivations ?? 0) ||
+    internetBanking !== (report.internetBanking ?? report.internetBankingActivations ?? 0) ||
+    atmDebitCards !== (report.atmDebitCards ?? report.atmCardsIssued ?? report.atmCardActivations ?? 0) ||
+    merchantSolutions !== (report.merchantSolutions ?? report.merchantSolutionsActivations ?? 0) ||
+    depositsETB !== (report.depositsETB ?? report.deposits_etb ?? 0) ||
+    foreignCurrencyETB !== (report.foreignCurrencyETB ?? report.foreign_currency_etb ?? 0) ||
+    status !== (report.status || 'Pending') ||
+    managerComment !== (report.managerComment || '')
+  ) : false;
+
+  const { contentRef, handleBackdropClick, handleDismissRequest: requestClose } = useModalDismiss({
+    isOpen,
+    onClose,
+    hasUnsavedChanges: isDirty,
+    unsavedMessage: 'You have unsaved KPI changes. Are you sure you want to discard them and close?'
+  });
+
+  if (!isOpen || !report) return null;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,8 +128,14 @@ export const DailyKpiEditModal: React.FC<DailyKpiEditModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-gradient-to-b from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/50 rounded-3xl p-6 w-full max-w-xl text-white shadow-2xl space-y-5">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <div
+        ref={contentRef}
+        className="bg-gradient-to-b from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/50 rounded-3xl p-6 w-full max-w-xl text-white shadow-2xl space-y-5"
+      >
         
         {/* Header */}
         <div className="flex items-start justify-between border-b border-white/10 pb-4">
@@ -124,12 +150,7 @@ export const DailyKpiEditModal: React.FC<DailyKpiEditModalProps> = ({
               Employee: <strong className="text-[#C89A2B]">{report.employeeName}</strong> • {report.branchName || 'Hamusit Branch (SOL 360)'}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <ModalCloseButton onClose={requestClose} ariaLabel="Close edit daily KPI dialog" />
         </div>
 
         {errorMsg && (

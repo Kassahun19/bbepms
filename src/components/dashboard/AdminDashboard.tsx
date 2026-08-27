@@ -1,5 +1,5 @@
 import { BranchPerformanceDetailsModal } from './BranchPerformanceDetailsModal';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users,
   Building2,
@@ -27,6 +27,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Filter,
   ArrowUpDown,
   Phone,
@@ -51,10 +52,468 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { User, District, Branch, KPI, DailyPerformanceReport, AuditLog, BankHoliday, PerformanceTarget, getUserFullName } from '../../types';
+import { User, District, Branch, KPI, DailyPerformanceReport, AuditLog, BankHoliday, PerformanceTarget, getUserFullName, KpiGroup } from '../../types';
 import { AllProductsOverview } from './AllProductsOverview';
 import { BranchCampaignWidget } from './BranchCampaignWidget';
 import { CompetitorIntelligenceModule } from '../competitor/CompetitorIntelligenceModule';
+import { AdminPerformanceRankingDashboard } from './AdminPerformanceRankingDashboard';
+import { BankDocumentsManagementPanel } from './BankDocumentsManagementPanel';
+
+export interface KpiPresetOption {
+  code: string;
+  name: string;
+  category: KpiGroup;
+  defaultWeight: number;
+  unit: KPI['unit'];
+  description: string;
+}
+
+export const KPI_CATALOG_BY_GROUP: Record<KpiGroup, KpiPresetOption[]> = {
+  Finance: [
+    {
+      code: 'KPI-DEP',
+      name: 'Deposit Mobilization',
+      category: 'Finance',
+      defaultWeight: 20,
+      unit: 'ETB',
+      description: 'Total deposit mobilization target achievement including Demand, Savings, and Fixed Time Deposits (20% weight).'
+    },
+    {
+      code: 'KPI-FCY',
+      name: 'Foreign Currency Generation (FCY)',
+      category: 'Finance',
+      defaultWeight: 15,
+      unit: 'ETB',
+      description: 'Foreign Currency generation, exports trade finance, and remittance inflow mobilization (15% weight).'
+    },
+    {
+      code: 'KPI-DFS',
+      name: 'Digital Financing System (DFS)',
+      category: 'Finance',
+      defaultWeight: 20,
+      unit: 'ETB',
+      description: 'Digital loan disbursements, micro-advances, and DFS credit portfolio mobilization (20% weight).'
+    },
+    {
+      code: 'KPI-LOAN',
+      name: 'Gross Loan & Advance Portfolio',
+      category: 'Finance',
+      defaultWeight: 15,
+      unit: 'ETB',
+      description: 'Quality loan disbursements, SME financing, retail credit & advances portfolio growth (15% weight).'
+    },
+    {
+      code: 'KPI-NII',
+      name: 'Non-Interest Income & Commissions',
+      category: 'Finance',
+      defaultWeight: 10,
+      unit: 'ETB',
+      description: 'Service fees, letter of credit/guarantee commissions, and transaction charges (10% weight).'
+    },
+    {
+      code: 'KPI-NPL',
+      name: 'NPL Recovery & Loan Quality',
+      category: 'Finance',
+      defaultWeight: 10,
+      unit: 'ETB',
+      description: 'Non-performing loan recovery, overdue collections, and credit risk mitigation (10% weight).'
+    }
+  ],
+  Stakeholder: [
+    {
+      code: 'KPI-CUST',
+      name: 'Customer Base & Account Openings',
+      category: 'Stakeholder',
+      defaultWeight: 20,
+      unit: 'Count',
+      description: 'New customer onboarding, individual savings accounts, and active account growth (20% weight).'
+    },
+    {
+      code: 'KPI-CSQ',
+      name: 'Customer Service Quality & NPS',
+      category: 'Stakeholder',
+      defaultWeight: 15,
+      unit: 'Percentage',
+      description: 'Net Promoter Score (NPS), customer satisfaction index, and branch wait time reduction (15% weight).'
+    },
+    {
+      code: 'KPI-CRR',
+      name: 'Customer Retention & Reactivation',
+      category: 'Stakeholder',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Reactivation of dormant/inactive accounts and high-value customer relationship retention (10% weight).'
+    },
+    {
+      code: 'KPI-CORP',
+      name: 'Corporate & Institutional Partnerships',
+      category: 'Stakeholder',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Corporate payroll accounts, institutional partnerships, NGOs, and cooperative alliances (10% weight).'
+    }
+  ],
+  'Internal Business': [
+    {
+      code: 'KPI-DIG',
+      name: 'Digitals (Mobile, ATM, Merchant, Internet)',
+      category: 'Internal Business',
+      defaultWeight: 25,
+      unit: 'Count',
+      description: 'Digital banking activations including Mobile Banking, ATMs, Merchant POS & Internet Banking (25% weight).'
+    },
+    {
+      code: 'KPI-MB',
+      name: 'Mobile Banking Activations',
+      category: 'Internal Business',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Bunna Mobile banking app & USSD user registrations and active digital transactions (10% weight).'
+    },
+    {
+      code: 'KPI-ATM',
+      name: 'ATM & Debit Card Issuance',
+      category: 'Internal Business',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Bunna Card/Debit card issuance, PIN activations, and ATM cardholder onboarding (10% weight).'
+    },
+    {
+      code: 'KPI-POS',
+      name: 'Merchant POS & QR Code Onboarding',
+      category: 'Internal Business',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Merchant POS terminal deployment, QR code payment onboarding, and merchant digital volume (10% weight).'
+    },
+    {
+      code: 'KPI-IB',
+      name: 'Internet Banking Registrations',
+      category: 'Internal Business',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Corporate & retail Internet Banking enrollments and active digital workflow utilization (10% weight).'
+    },
+    {
+      code: 'KPI-OPS',
+      name: 'Operational Efficiency & Audit Compliance',
+      category: 'Internal Business',
+      defaultWeight: 15,
+      unit: 'Percentage',
+      description: 'Zero cash discrepancies, branch operational compliance, AML/KYC adherence, and audit scores (15% weight).'
+    }
+  ],
+  'Learning & Growth': [
+    {
+      code: 'KPI-TRN',
+      name: 'Staff Training & Skill Development',
+      category: 'Learning & Growth',
+      defaultWeight: 15,
+      unit: 'Count',
+      description: 'Mandatory banking compliance hours, product mastery, and professional certification completion (15% weight).'
+    },
+    {
+      code: 'KPI-STAFF',
+      name: 'Staff Performance & Appraisal Score',
+      category: 'Learning & Growth',
+      defaultWeight: 15,
+      unit: 'Percentage',
+      description: 'Individual employee target achievement rate, performance appraisal score, and supervisor rating (15% weight).'
+    },
+    {
+      code: 'KPI-INNOV',
+      name: 'Innovation & Process Optimization',
+      category: 'Learning & Growth',
+      defaultWeight: 10,
+      unit: 'Count',
+      description: 'Kaizen process improvement suggestions, digital idea submissions, and operational streamlining (10% weight).'
+    },
+    {
+      code: 'KPI-ENG',
+      name: 'Employee Engagement & Retention',
+      category: 'Learning & Growth',
+      defaultWeight: 10,
+      unit: 'Percentage',
+      description: 'Staff retention index, team engagement surveys, and branch workplace excellence (10% weight).'
+    }
+  ]
+};
+
+const KPI_GROUPS_LIST: { value: KpiGroup; label: string; description: string }[] = [
+  {
+    value: 'Finance',
+    label: 'Finance',
+    description: 'Financial & Balance Sheet Metrics (Deposits, Loans, FX, Capital, Yields)'
+  },
+  {
+    value: 'Stakeholder',
+    label: 'Stakeholder',
+    description: 'Customer & Stakeholder Relations (Service Quality, NPS, Accounts, Retention)'
+  },
+  {
+    value: 'Internal Business',
+    label: 'Internal Business',
+    description: 'Internal Business Processes (Digital Banking, Mobile/ATM Activations, Operations)'
+  },
+  {
+    value: 'Learning & Growth',
+    label: 'Learning & Growth',
+    description: 'Organizational & Human Capital (Staff Training, Skill Competency, Retention)'
+  }
+];
+
+interface KpiGroupDropdownProps {
+  value: KpiGroup | undefined;
+  onChange: (val: KpiGroup) => void;
+}
+
+const KpiGroupDropdown: React.FC<KpiGroupDropdownProps> = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+  const selectedGroup = KPI_GROUPS_LIST.find(g => g.value === value) || (value ? undefined : null);
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        id="kpi-group-dropdown-trigger"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 hover:border-[#C89A2B]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#C89A2B] shadow-inner cursor-pointer"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center space-x-2 truncate">
+          {selectedGroup ? (
+            <span className="font-bold text-white text-xs tracking-wide">{selectedGroup.label}</span>
+          ) : (
+            <span className="text-gray-400 text-xs italic">Select a KPI Group...</span>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-[#C89A2B] shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div
+          id="kpi-group-dropdown-menu"
+          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#C89A2B]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md flex flex-col space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
+          role="listbox"
+        >
+          {KPI_GROUPS_LIST.map((group) => {
+            const isSelected = group.value === value;
+            return (
+              <button
+                key={group.value}
+                id={`kpi-group-option-${group.value.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                type="button"
+                onClick={() => {
+                  onChange(group.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#C89A2B]/25 border border-[#C89A2B]/50 text-white shadow-sm'
+                    : 'bg-black/25 hover:bg-[#4A2C17] border border-white/5 text-gray-200 hover:text-white'
+                }`}
+                role="option"
+                aria-selected={isSelected}
+              >
+                <div className="space-y-0.5 pr-2">
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs font-bold ${isSelected ? 'text-[#C89A2B]' : 'text-white'}`}>
+                      {group.label}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-300 leading-tight">
+                    {group.description}
+                  </p>
+                </div>
+                {isSelected && (
+                  <Check className="w-4 h-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface KpiNameDropdownProps {
+  category: KpiGroup | undefined;
+  value: string;
+  onChangePreset: (preset: KpiPresetOption) => void;
+  onCustomInput: (name: string) => void;
+}
+
+const KpiNameDropdown: React.FC<KpiNameDropdownProps> = ({ category, value, onChangePreset, onCustomInput }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isCustomEditing, setIsCustomEditing] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const availableOptions = category ? KPI_CATALOG_BY_GROUP[category] || [] : [];
+  const selectedPreset = availableOptions.find(opt => opt.name === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+  // If no group is selected, remain disabled as requested
+  if (!category) {
+    return (
+      <div className="relative w-full">
+        <button
+          type="button"
+          disabled
+          id="kpi-name-disabled-trigger"
+          className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17]/40 border border-white/10 text-xs text-gray-400 flex items-center justify-between cursor-not-allowed opacity-60"
+        >
+          <span className="italic">Disabled — Please select a KPI Group first</span>
+          <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
+        </button>
+      </div>
+    );
+  }
+
+  if (isCustomEditing) {
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onCustomInput(e.target.value)}
+            placeholder="Type custom KPI indicator name..."
+            className="w-full px-3.5 py-2 rounded-xl bg-[#4A2C17] border border-[#C89A2B]/60 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
+            required
+            autoFocus
+          />
+          <button
+            type="button"
+            onClick={() => setIsCustomEditing(false)}
+            className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] text-[#C89A2B] font-semibold whitespace-nowrap cursor-pointer"
+          >
+            Presets
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        id="kpi-name-dropdown-trigger"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 hover:border-[#C89A2B]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#C89A2B] shadow-inner cursor-pointer"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center space-x-2 truncate">
+          {value ? (
+            <span className="font-bold text-white text-xs truncate">{value}</span>
+          ) : (
+            <span className="text-gray-400 text-xs italic">Select {category} KPI Name...</span>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-[#C89A2B] shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div
+          id="kpi-name-dropdown-menu"
+          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#C89A2B]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md max-h-64 overflow-y-auto space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
+          role="listbox"
+        >
+          <div className="px-2.5 py-1 text-[10px] font-bold text-[#C89A2B] uppercase tracking-wider border-b border-white/10">
+            Available {category} KPIs ({availableOptions.length})
+          </div>
+
+          {availableOptions.map((opt) => {
+            const isSelected = opt.name === value;
+            return (
+              <button
+                key={opt.code}
+                id={`kpi-name-option-${opt.code.toLowerCase()}`}
+                type="button"
+                onClick={() => {
+                  onChangePreset(opt);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#C89A2B]/25 border border-[#C89A2B]/50 text-white shadow-sm'
+                    : 'bg-black/25 hover:bg-[#4A2C17] border border-white/5 text-gray-200 hover:text-white'
+                }`}
+                role="option"
+                aria-selected={isSelected}
+              >
+                <div className="space-y-0.5 pr-2">
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs font-bold ${isSelected ? 'text-[#C89A2B]' : 'text-white'}`}>
+                      {opt.name}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-black/40 text-[#C89A2B] font-mono font-bold">
+                      {opt.code}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 text-emerald-300 font-bold">
+                      {opt.defaultWeight}%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-300 line-clamp-2 leading-tight">
+                    {opt.description}
+                  </p>
+                </div>
+                {isSelected && (
+                  <Check className="w-4 h-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                )}
+              </button>
+            );
+          })}
+
+          <div className="pt-1 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCustomEditing(true);
+                setIsOpen(false);
+              }}
+              className="w-full py-1.5 px-2 text-center rounded-lg bg-white/5 hover:bg-[#C89A2B]/20 text-[11px] text-[#C89A2B] font-semibold transition-colors cursor-pointer"
+            >
+              + Enter Custom Indicator Name
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface AdminDashboardProps {
   user: User;
@@ -94,8 +553,76 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenAiSummary
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'products' | 'competitor' | 'districts' | 'branches' | 'employees' | 'kpis' | 'reports' | 'audit' | 'holidays'
+    'overview' | 'rankings' | 'products' | 'competitor' | 'districts' | 'branches' | 'employees' | 'kpis' | 'reports' | 'audit' | 'holidays' | 'fiscalYears' | 'documents'
   >((propActiveTab as any) || 'overview');
+
+  const [fiscalYears, setFiscalYears] = useState<any[]>([]);
+  const [currentFiscalYear, setCurrentFiscalYear] = useState<any>(null);
+  const [comparisonData, setComparisonData] = useState<any>(null);
+  const [isNewFyModalOpen, setIsNewFyModalOpen] = useState(false);
+  const [newFyName, setNewFyName] = useState('');
+  const [newFyStartDate, setNewFyStartDate] = useState('');
+  const [newFyEndDate, setNewFyEndDate] = useState('');
+  const [newFyStatus, setNewFyStatus] = useState<'ACTIVE' | 'CLOSED'>('CLOSED');
+
+  React.useEffect(() => {
+    loadFiscalYearsData();
+  }, []);
+
+  const loadFiscalYearsData = async () => {
+    try {
+      const fying = await api.getFiscalYears();
+      setFiscalYears(fying);
+      const curr = await api.getCurrentFiscalYear();
+      setCurrentFiscalYear(curr);
+      const comp = await api.getPerformanceComparison();
+      setComparisonData(comp);
+    } catch (e) {}
+  };
+
+  const handleActivateFy = async (id: string) => {
+    try {
+      await api.activateFiscalYear(id);
+      showToast('Fiscal Year activated successfully.', 'success');
+      loadFiscalYearsData();
+      onRefreshData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to activate fiscal year', 'error');
+    }
+  };
+
+  const handleCloseFy = async (id: string) => {
+    try {
+      await api.closeFiscalYear(id);
+      showToast('Fiscal Year closed successfully.', 'success');
+      loadFiscalYearsData();
+      onRefreshData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to close fiscal year', 'error');
+    }
+  };
+
+  const handleCreateFy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFyName || !newFyStartDate || !newFyEndDate) return;
+    try {
+      await api.createFiscalYear({
+        name: newFyName,
+        startDate: newFyStartDate,
+        endDate: newFyEndDate,
+        status: newFyStatus
+      });
+      setIsNewFyModalOpen(false);
+      setNewFyName('');
+      setNewFyStartDate('');
+      setNewFyEndDate('');
+      showToast('Fiscal Year created successfully.', 'success');
+      loadFiscalYearsData();
+      onRefreshData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create fiscal year', 'error');
+    }
+  };
 
   React.useEffect(() => {
     if (propActiveTab) {
@@ -313,14 +840,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // KPI Handlers
   const handleUpdateKpiSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingKpi) return;
+    if (!editingKpi || !editingKpi.name || !editingKpi.code) {
+      showToast('Please provide both KPI Group, KPI Name, and KPI Code', 'error');
+      return;
+    }
     try {
-      await api.updateKPI(editingKpi.id, editingKpi);
-      showToast(`KPI indicator "${editingKpi.name}" updated successfully!`, 'success');
+      const exists = kpis.some(k => k.id === editingKpi.id);
+      if (exists) {
+        await api.updateKPI(editingKpi.id, editingKpi);
+        showToast(`KPI indicator "${editingKpi.name}" updated successfully!`, 'success');
+      } else {
+        await api.createKPI(editingKpi);
+        showToast(`KPI indicator "${editingKpi.name}" configured & added successfully!`, 'success');
+      }
       setEditingKpi(null);
       onRefreshData();
     } catch (err) {
-      showToast('Failed to update KPI', 'error');
+      showToast('Failed to save KPI configuration', 'error');
     }
   };
 
@@ -550,6 +1086,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 border-b border-white/10 text-xs font-bold text-gray-300">
         {[
           { id: 'overview', label: 'Executive Dashboard' },
+          { id: 'rankings', label: 'Performance Rankings' },
           { id: 'competitor', label: 'Competitor Intelligence' },
           { id: 'products', label: 'All Products Performance' },
           { id: 'districts', label: 'Districts' },
@@ -558,7 +1095,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           { id: 'kpis', label: 'KPI Management' },
           { id: 'reports', label: 'Daily Reports' },
           { id: 'holidays', label: 'Bank Holidays' },
-          { id: 'audit', label: 'System Audit Logs' }
+          { id: 'audit', label: 'System Audit Logs' },
+          { id: 'fiscalYears', label: 'Fiscal Year & YoY' },
+          { id: 'documents', label: 'Bank Documents' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -574,6 +1113,212 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ))}
       </div>
 
+      {/* TAB FOR FISCAL YEAR MANAGEMENT */}
+      {activeTab === 'fiscalYears' && (
+        <div className="space-y-6">
+          <div className="bg-[#4A2C17]/80 backdrop-blur-md rounded-2xl p-6 border border-[#C89A2B]/30 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center space-x-2">
+                  <CalendarIcon className="w-6 h-6 text-[#C89A2B]" />
+                  <span>Fiscal Year Management & Year-over-Year (YoY) Analytics</span>
+                </h3>
+                <p className="text-xs text-gray-300 mt-1">
+                  Bunna Bank Fiscal Year runs strictly from July 1 to June 30 of the following year. New fiscal years start from zero KPI achievements while preserving historical data as read-only.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsNewFyModalOpen(true)}
+                className="px-4 py-2.5 bg-[#C89A2B] text-[#6B3F1D] rounded-xl font-bold text-xs flex items-center space-x-2 shadow-lg hover:bg-[#D8B45C] transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create New Fiscal Year</span>
+              </button>
+            </div>
+
+            {/* YoY Summary Cards */}
+            {comparisonData && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+                <div className="bg-[#3A2211] rounded-xl p-5 border border-white/10 shadow-md">
+                  <span className="text-xs font-semibold text-gray-400">Current Active FY</span>
+                  <div className="text-xl font-bold text-[#C89A2B] mt-1">{comparisonData.currentFyName}</div>
+                  <span className="text-[10px] text-emerald-400 flex items-center mt-1">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Active & Accepting Reports
+                  </span>
+                </div>
+                <div className="bg-[#3A2211] rounded-xl p-5 border border-white/10 shadow-md">
+                  <span className="text-xs font-semibold text-gray-400">Previous Fiscal Year</span>
+                  <div className="text-xl font-bold text-gray-200 mt-1">{comparisonData.previousFyName}</div>
+                  <span className="text-[10px] text-gray-400 flex items-center mt-1">
+                    <Clock className="w-3 h-3 mr-1" /> Archived (Read-Only)
+                  </span>
+                </div>
+                <div className="bg-[#3A2211] rounded-xl p-5 border border-white/10 shadow-md">
+                  <span className="text-xs font-semibold text-gray-400">Deposit YoY Growth</span>
+                  <div className="text-2xl font-extrabold text-emerald-400 mt-1">
+                    {comparisonData.depositsGrowthPct >= 0 ? `+${comparisonData.depositsGrowthPct}%` : `${comparisonData.depositsGrowthPct}%`}
+                  </div>
+                  <span className="text-[10px] text-gray-300 mt-1">
+                    Current: ETB {comparisonData.depositsCurrent.toLocaleString()} vs Prev: ETB {comparisonData.depositsPrevious.toLocaleString()}
+                  </span>
+                </div>
+                <div className="bg-[#3A2211] rounded-xl p-5 border border-white/10 shadow-md">
+                  <span className="text-xs font-semibold text-gray-400">Approved Reports (Current FY)</span>
+                  <div className="text-2xl font-extrabold text-cyan-400 mt-1">{comparisonData.reportsCurrent}</div>
+                  <span className="text-[10px] text-gray-300 mt-1">Previous FY: {comparisonData.reportsPrevious} reports</span>
+                </div>
+              </div>
+            )}
+
+            {/* Fiscal Years Table */}
+            <div className="mt-8">
+              <h4 className="text-sm font-bold text-white mb-4">All Fiscal Years Roster</h4>
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full text-left text-xs text-gray-200">
+                  <thead className="bg-[#3A2211] text-gray-300 border-b border-white/10">
+                    <tr>
+                      <th className="px-4 py-3 font-bold">Fiscal Year ID</th>
+                      <th className="px-4 py-3 font-bold">Fiscal Year Name</th>
+                      <th className="px-4 py-3 font-bold">Start Date</th>
+                      <th className="px-4 py-3 font-bold">End Date</th>
+                      <th className="px-4 py-3 font-bold">Status</th>
+                      <th className="px-4 py-3 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 bg-[#4A2C17]/40">
+                    {fiscalYears.map((fy: any) => {
+                      const isActive = fy.isActive || fy.is_active === 1 || fy.status === 'ACTIVE';
+                      return (
+                        <tr key={fy.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-4 py-3 font-mono font-bold text-[#C89A2B]">{fy.id}</td>
+                          <td className="px-4 py-3 font-bold text-white">{fy.name}</td>
+                          <td className="px-4 py-3">{fy.startDate}</td>
+                          <td className="px-4 py-3">{fy.endDate}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              isActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+                            }`}>
+                              {isActive ? 'ACTIVE' : 'CLOSED (READ-ONLY)'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right space-x-2">
+                            {!isActive && (
+                              <button
+                                onClick={() => handleActivateFy(fy.id)}
+                                className="px-3 py-1.5 bg-[#C89A2B] text-[#6B3F1D] font-bold rounded-lg text-[10px] hover:bg-[#D8B45C]"
+                              >
+                                Activate FY
+                              </button>
+                            )}
+                            {isActive && (
+                              <button
+                                onClick={() => handleCloseFy(fy.id)}
+                                className="px-3 py-1.5 bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold rounded-lg text-[10px] hover:bg-rose-500/30"
+                              >
+                                Close FY & Archive
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* New Fiscal Year Modal */}
+          {isNewFyModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-2xl p-6 w-full max-w-md shadow-2xl text-white">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <CalendarIcon className="w-5 h-5 text-[#C89A2B]" />
+                    <span>Create New Fiscal Year</span>
+                  </h3>
+                  <button onClick={() => setIsNewFyModalOpen(false)} className="p-1 rounded-lg hover:bg-white/10 text-gray-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <form onSubmit={handleCreateFy} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Fiscal Year Name (e.g. FY 2027/28)</label>
+                    <input
+                      type="text"
+                      value={newFyName}
+                      onChange={(e) => setNewFyName(e.target.value)}
+                      placeholder="FY 2027/28"
+                      className="w-full px-3 py-2 rounded-xl bg-[#3A2211] border border-white/20 text-xs text-white focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Start Date (Must be July 1)</label>
+                    <input
+                      type="date"
+                      value={newFyStartDate}
+                      onChange={(e) => setNewFyStartDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#3A2211] border border-white/20 text-xs text-white focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">End Date (Must be June 30)</label>
+                    <input
+                      type="date"
+                      value={newFyEndDate}
+                      onChange={(e) => setNewFyEndDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#3A2211] border border-white/20 text-xs text-white focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-1">Initial Status</label>
+                    <select
+                      value={newFyStatus}
+                      onChange={(e: any) => setNewFyStatus(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[#3A2211] border border-white/20 text-xs text-white focus:outline-none"
+                    >
+                      <option value="CLOSED">CLOSED (Upcoming / Archived)</option>
+                      <option value="ACTIVE">ACTIVE (Current Operating FY)</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-3">
+                    <button type="button" onClick={() => setIsNewFyModalOpen(false)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
+                      Cancel
+                    </button>
+                    <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                      Create Fiscal Year
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB FOR PERFORMANCE RANKINGS */}
+      {activeTab === 'rankings' && (
+        <AdminPerformanceRankingDashboard
+          districts={districts}
+          branches={branches}
+          employees={employees}
+          reports={reports}
+          targets={targets}
+          onRefreshData={onRefreshData}
+          onViewBranchDetails={(b) => {
+            handleTabSelect('branches');
+          }}
+        />
+      )}
+
+      {/* TAB FOR BANK DOCUMENTS MANAGEMENT */}
+      {activeTab === 'documents' && (
+        <BankDocumentsManagementPanel currentUser={user} />
+      )}
+
       {/* TAB FOR COMPETITOR INTELLIGENCE */}
       {activeTab === 'competitor' && (
         <CompetitorIntelligenceModule userRole={user.role} userDistrict={user.districtName} userBranch={user.branchName} />
@@ -588,6 +1333,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'overview' && (
         <div className="space-y-8">
           
+          {/* Admin Performance Ranking Section */}
+          <AdminPerformanceRankingDashboard
+            districts={districts}
+            branches={branches}
+            employees={employees}
+            reports={reports}
+            targets={targets}
+            onRefreshData={onRefreshData}
+            onViewBranchDetails={(b) => {
+              handleTabSelect('branches');
+            }}
+          />
+
           {/* Enterprise & Branch Daily Campaign Analytics Engine */}
           <BranchCampaignWidget
             branchName="All Bunna Bank Network Branches"
@@ -1225,14 +1983,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <h3 className="font-bold text-lg text-white">Bunna Bank KPI Definitions & Weightings</h3>
             <button
               onClick={() => {
+                const defaultGroup: KpiGroup = 'Finance';
+                const defaultPreset = KPI_CATALOG_BY_GROUP[defaultGroup][0];
                 const newK: KPI = {
                   id: `KPI-${Date.now()}`,
-                  code: 'KPI-NEW',
-                  name: 'New Custom Performance Indicator',
-                  category: 'Financial',
-                  unit: 'ETB',
-                  description: 'Description of key performance metric',
-                  weight: 10
+                  code: defaultPreset.code,
+                  name: defaultPreset.name,
+                  category: defaultGroup,
+                  unit: defaultPreset.unit,
+                  description: defaultPreset.description,
+                  weight: defaultPreset.defaultWeight
                 };
                 setEditingKpi(newK);
               }}
@@ -2081,50 +2841,126 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
             </div>
             <form onSubmit={handleUpdateKpiSubmit} className="space-y-3.5">
+              {/* FIELD 1: KPI GROUP */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">KPI Code</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  1. KPI Group <span className="text-[#C89A2B]">*</span>
+                </label>
+                <KpiGroupDropdown
+                  value={editingKpi.category}
+                  onChange={(newCategory) => {
+                    const groupPresets = KPI_CATALOG_BY_GROUP[newCategory] || [];
+                    const matchingPreset = groupPresets.find(p => p.name.toLowerCase() === editingKpi.name.toLowerCase());
+                    if (matchingPreset) {
+                      setEditingKpi({
+                        ...editingKpi,
+                        category: newCategory,
+                        code: matchingPreset.code,
+                        weight: matchingPreset.defaultWeight,
+                        unit: matchingPreset.unit,
+                        description: matchingPreset.description
+                      });
+                    } else if (groupPresets.length > 0) {
+                      const firstPreset = groupPresets[0];
+                      setEditingKpi({
+                        ...editingKpi,
+                        category: newCategory,
+                        name: firstPreset.name,
+                        code: firstPreset.code,
+                        weight: firstPreset.defaultWeight,
+                        unit: firstPreset.unit,
+                        description: firstPreset.description
+                      });
+                    } else {
+                      setEditingKpi({
+                        ...editingKpi,
+                        category: newCategory,
+                        name: '',
+                        code: '',
+                        description: ''
+                      });
+                    }
+                  }}
+                />
+              </div>
+
+              {/* FIELD 2: KPI NAME (DYNAMICALLY FILTERED BY GROUP) */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  2. KPI Name <span className="text-[#C89A2B]">*</span>
+                </label>
+                <KpiNameDropdown
+                  category={editingKpi.category}
+                  value={editingKpi.name}
+                  onChangePreset={(preset) => {
+                    setEditingKpi({
+                      ...editingKpi,
+                      name: preset.name,
+                      code: preset.code,
+                      weight: preset.defaultWeight,
+                      unit: preset.unit,
+                      description: preset.description
+                    });
+                  }}
+                  onCustomInput={(customName) => {
+                    setEditingKpi({
+                      ...editingKpi,
+                      name: customName
+                    });
+                  }}
+                />
+              </div>
+
+              {/* FIELD 3: KPI CODE */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  3. KPI Code <span className="text-[#C89A2B]">*</span>
+                </label>
                 <input
                   type="text"
                   value={editingKpi.code}
                   onChange={(e) => setEditingKpi({ ...editingKpi, code: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+                  placeholder="e.g. KPI-DEP"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
                   required
                 />
               </div>
+
+              {/* FIELD 4: WEIGHTING PERCENTAGE (%) */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Indicator Name</label>
-                <input
-                  type="text"
-                  value={editingKpi.name}
-                  onChange={(e) => setEditingKpi({ ...editingKpi, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Weighting Percentage (%)</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  4. Weighting Percentage (%) <span className="text-[#C89A2B]">*</span>
+                </label>
                 <input
                   type="number"
+                  min={1}
+                  max={100}
                   value={editingKpi.weight}
                   onChange={(e) => setEditingKpi({ ...editingKpi, weight: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
                   required
                 />
               </div>
+
+              {/* FIELD 5: DESCRIPTION */}
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Description</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                  5. Description
+                </label>
                 <textarea
                   value={editingKpi.description}
                   onChange={(e) => setEditingKpi({ ...editingKpi, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+                  placeholder="Description of key performance metric..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
                   rows={3}
                 />
               </div>
+
               <div className="flex justify-end space-x-2 pt-2">
-                <button type="button" onClick={() => setEditingKpi(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
+                <button type="button" onClick={() => setEditingKpi(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300 hover:bg-white/20 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] text-xs font-bold transition-colors">
                   Save Metric
                 </button>
               </div>

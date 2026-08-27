@@ -1,6 +1,6 @@
 {
-  "name": "Bunna Bank S.C. EPMS",
-  "description": "AI-Powered Employee Performance Management System (EPMS) for Bunna Bank S.C. - Empowering Performance, Driving Excellence.",
+  "name": "Daily KPI Performance Management System",
+  "description": "Daily KPI Performance Management System (EPMS) - Real-time daily KPI tracking, multi-level approvals, and automated performance analytics.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

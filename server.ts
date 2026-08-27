@@ -37,8 +37,14 @@ app.get('/api/health', async (req, res) => {
 const _appFilename = typeof __filename !== 'undefined' ? __filename : process.cwd();
 const _appDirname = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
-import { checkDatabaseConnection, getPrismaClient } from './server/src/config/db';
-import installRoutes from './server/src/routes/installRoutes';
+import { checkDatabaseConnection, getPrismaClient } from './Backend/src/config/db';
+import installRoutes from './Backend/src/routes/installRoutes';
+import {
+  calculateDistrictRankings,
+  calculateBranchRankings,
+  calculateEmployeeRankings,
+  normalizeReport
+} from './Backend/src/services/performanceAnalytics';
 
 app.use('/install', installRoutes);
 app.use('/api', installRoutes);
@@ -96,7 +102,7 @@ for (const p of possiblePaths) {
 
 let db: any = {
   districts: [], branches: [], users: [], kpis: [], reports: [], targets: [], 
-  holidays: [], announcements: [], auditLogs: [], notifications: []
+  holidays: [], announcements: [], auditLogs: [], notifications: [], messages: [], bankMemos: []
 };
 
 // Initialize with static fallback data first
@@ -144,6 +150,85 @@ if (!db.holidays || db.holidays.length === 0) {
   ];
 }
 
+// =============================================================================
+// FISCAL YEAR MANAGEMENT & AUTOMATIC ROLLOVER ENGINE
+// =============================================================================
+if (!db.fiscal_years || db.fiscal_years.length === 0) {
+  db.fiscal_years = [
+    {
+      id: 'FY-2025-26',
+      name: 'FY 2025/26',
+      startDate: '2025-07-01',
+      endDate: '2026-06-30',
+      status: 'CLOSED',
+      isActive: false,
+      is_active: 0,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'FY-2026-27',
+      name: 'FY 2026/27',
+      startDate: '2026-07-01',
+      endDate: '2027-06-30',
+      status: 'ACTIVE',
+      isActive: true,
+      is_active: 1,
+      createdAt: new Date().toISOString()
+    }
+  ];
+}
+
+function getFiscalYearForDate(dateStr: string): string {
+  if (!dateStr) return 'FY-2026-27';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return 'FY-2026-27';
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const startYear = month >= 7 ? year : year - 1;
+  const endYear = startYear + 1;
+  const fyId = `FY-${startYear}-${String(endYear).slice(2)}`;
+  const fyName = `FY ${startYear}/${String(endYear).slice(2)}`;
+
+  if (!db.fiscal_years) db.fiscal_years = [];
+  let fy = db.fiscal_years.find((f: any) => f.id === fyId || f.name === fyName);
+  if (!fy) {
+    fy = {
+      id: fyId,
+      name: fyName,
+      startDate: `${startYear}-07-01`,
+      endDate: `${endYear}-06-30`,
+      status: 'ACTIVE',
+      isActive: true,
+      is_active: 1,
+      createdAt: new Date().toISOString()
+    };
+    db.fiscal_years.push(fy);
+  }
+  return fy.id;
+}
+
+function getCurrentActiveFiscalYear() {
+  if (!db.fiscal_years || db.fiscal_years.length === 0) {
+    db.fiscal_years = [
+      { id: 'FY-2025-26', name: 'FY 2025/26', startDate: '2025-07-01', endDate: '2026-06-30', status: 'CLOSED', isActive: false, is_active: 0 },
+      { id: 'FY-2026-27', name: 'FY 2026/27', startDate: '2026-07-01', endDate: '2027-06-30', status: 'ACTIVE', isActive: true, is_active: 1 }
+    ];
+  }
+  const active = db.fiscal_years.find((f: any) => f.isActive || f.is_active === 1 || f.status === 'ACTIVE');
+  return active || db.fiscal_years[db.fiscal_years.length - 1];
+}
+
+// Backfill fiscal_year_id on reports
+if (db.reports && Array.isArray(db.reports)) {
+  for (const r of db.reports) {
+    if (!r.fiscal_year_id && !r.fiscalYearId) {
+      const rDate = r.reportDate || r.report_date || r.date || '2026-08-01';
+      r.fiscal_year_id = getFiscalYearForDate(rDate);
+      r.fiscalYearId = r.fiscal_year_id;
+    }
+  }
+}
+
 // Seed annual employee plans / targets as source of truth
 if (!db.targets || db.targets.length === 0) {
   const employees = db.users || [];
@@ -184,7 +269,118 @@ if (!db.targets || db.targets.length === 0) {
   saveDb();
 }
 
+// =============================================================================
+// PERMANENT KPI TARGETS & ALLOCATIONS ENGINE
+// =============================================================================
 
+// Helper: Normalize Performance Target object ensuring both snake_case and camelCase, status lifecycle, and automatic period allocations
+function normalizeKpiTarget(input: any) {
+  if (!input || typeof input !== 'object') input = {};
+  const empId = String(input.employeeId || input.employee_id || input.employeeUserId || '').trim();
+  const empName = String(input.employeeName || input.employee_name || '');
+  const branchId = String(input.branchId || input.branch_id || 'BR-360').trim();
+  const branchName = String(input.branchName || input.branch_name || 'Hamusit Branch');
+  const solId = String(input.solId || input.sol_id || '360');
+  const districtId = String(input.districtId || input.district_id || 'DIST-001');
+  const kpiId = String(input.kpiId || input.kpi_id || 'KPI-001').trim();
+  const kpiName = String(input.kpiName || input.kpi_name || 'KPI Target');
+  const kpiCode = String(input.kpiCode || input.kpi_code || '');
+  const kpiCategory = String(input.kpiCategory || input.category || 'Financial');
+  const kpiUnit = String(input.kpiUnit || input.unit || 'ETB');
+  const kpiWeight = Number(input.kpiWeight ?? input.weight ?? 15);
+  const year = Number(input.year) || 2026;
+  const period = input.period || 'Annual';
+  
+  const targetVal = Number(input.targetValue ?? input.annualTarget ?? input.target ?? 0);
+  const annualTarget = period === 'Annual' 
+    ? targetVal 
+    : (Number(input.annualTarget) || (period === 'Semi-Annual' ? targetVal * 2 : period === 'Quarterly' ? targetVal * 4 : period === 'Monthly' ? targetVal * 12 : period === 'Weekly' ? targetVal * 52 : targetVal * 300));
+  
+  // Calculate period allocations (Annual / 300 for daily, /52 for weekly, /12 for monthly, /4 for quarterly, /2 for semiannual)
+  const daily = annualTarget > 0 ? Number((annualTarget / 300).toFixed(2)) : 0;
+  const weekly = annualTarget > 0 ? Number((annualTarget / 52).toFixed(2)) : 0;
+  const monthly = annualTarget > 0 ? Number((annualTarget / 12).toFixed(2)) : 0;
+  const quarterly = annualTarget > 0 ? Number((annualTarget / 4).toFixed(2)) : 0;
+  const semiAnnual = annualTarget > 0 ? Number((annualTarget / 2).toFixed(2)) : 0;
+  const annual = annualTarget;
+
+  const id = input.id || (empId ? `TGT-${empId}-${kpiId}` : `TGT-${branchId}-${kpiId}`);
+  const nowIso = new Date().toISOString();
+
+  // Workflow status: 'DRAFT' | 'PENDING_ACCEPTANCE' | 'ACCEPTED' | 'REJECTED'
+  const rawStatus = input.status || input.approvalStatus || (input.employeeResponse === 'REJECTED' ? 'REJECTED' : input.employeeResponse === 'ACCEPTED' ? 'ACCEPTED' : 'ACCEPTED');
+  const status = ['DRAFT', 'PENDING_ACCEPTANCE', 'ACCEPTED', 'REJECTED'].includes(rawStatus) ? rawStatus : 'ACCEPTED';
+
+  // Audit history
+  let auditHistory = Array.isArray(input.auditHistory) ? [...input.auditHistory] : [];
+  if (auditHistory.length === 0) {
+    auditHistory.push({
+      action: status === 'PENDING_ACCEPTANCE' ? 'SENT' : status === 'ACCEPTED' ? 'ACCEPTED' : 'CREATED',
+      performedBy: input.assignedBy || input.createdBy || 'Branch Manager',
+      performedByName: input.assignedByName || input.createdByName || 'Branch Manager',
+      performedAt: input.createdAt || input.created_at || nowIso,
+      newStatus: status,
+      notes: 'Initial target baseline registration'
+    });
+  }
+
+  return {
+    id,
+    kpiId,
+    kpi_id: kpiId,
+    kpiCode,
+    kpi_code: kpiCode,
+    kpiName,
+    kpi_name: kpiName,
+    kpiCategory,
+    kpiUnit,
+    kpiWeight,
+    employeeId: empId,
+    employee_id: empId,
+    employeeName: empName,
+    employee_name: empName,
+    branchId,
+    branch_id: branchId,
+    branchName,
+    branch_name: branchName,
+    solId,
+    sol_id: solId,
+    districtId,
+    district_id: districtId,
+    period,
+    year,
+    month: input.month || 8,
+    targetValue: targetVal,
+    annualTarget,
+    periodTargets: {
+      daily,
+      weekly,
+      monthly,
+      quarterly,
+      semiAnnual,
+      annual
+    },
+    status,
+    assignedBy: input.assignedBy || input.createdBy || 'Branch Manager',
+    assignedByName: input.assignedByName || input.createdByName || 'Branch Manager',
+    createdBy: input.createdBy || input.assignedBy || 'Branch Manager',
+    createdByName: input.createdByName || input.assignedByName || 'Branch Manager',
+    createdAt: input.createdAt || input.created_at || nowIso,
+    created_at: input.createdAt || input.created_at || nowIso,
+    sentBy: input.sentBy || (status === 'PENDING_ACCEPTANCE' ? (input.assignedBy || 'Branch Manager') : undefined),
+    sentByName: input.sentByName || (status === 'PENDING_ACCEPTANCE' ? (input.assignedByName || 'Branch Manager') : undefined),
+    sentAt: input.sentAt || (status === 'PENDING_ACCEPTANCE' ? nowIso : undefined),
+    employeeResponse: input.employeeResponse || (status === 'ACCEPTED' ? 'ACCEPTED' : status === 'REJECTED' ? 'REJECTED' : undefined),
+    employeeResponseDate: input.employeeResponseDate || (status === 'ACCEPTED' || status === 'REJECTED' ? (input.updatedAt || nowIso) : undefined),
+    rejectionReason: input.rejectionReason || '',
+    updatedBy: input.updatedBy || input.assignedBy || 'Branch Manager',
+    updatedByName: input.updatedByName || input.assignedByName || 'Branch Manager',
+    updatedAt: input.updatedAt || input.updated_at || nowIso,
+    updated_at: input.updatedAt || input.updated_at || nowIso,
+    revisionCount: Number(input.revisionCount || 0),
+    auditHistory
+  };
+}
 
 // =============================================================================
 // PERMANENT DAILY KPI REPORTING REST API & PERSISTENCE ENGINE
@@ -229,9 +425,15 @@ function normalizeKpiReport(input: any) {
 
   const nowIso = new Date().toISOString();
   const id = input.id || `KPI-RPT-${reportDate.replace(/-/g, '')}-${empId.replace(/[^a-zA-Z0-9]/g, '')}-${Date.now().toString(36)}`;
+  const fiscalYearId = input.fiscal_year_id || input.fiscalYearId || getFiscalYearForDate(reportDate);
+  const fyObj = (db.fiscal_years || []).find((f: any) => f.id === fiscalYearId);
+  const fiscalYearName = fyObj ? fyObj.name : 'FY 2026/27';
 
   return {
     id,
+    fiscal_year_id: fiscalYearId,
+    fiscalYearId: fiscalYearId,
+    fiscalYearName: fiscalYearName,
     employee_id: empId,
     employeeId: empId,
     employee_name: empName,
@@ -283,56 +485,91 @@ function normalizeKpiReport(input: any) {
 }
 
 let lastSyncTime = 0;
-const SYNC_CACHE_MS = 3000;
+const SYNC_CACHE_MS = 10 * 60 * 1000; // 10 minute cache to prevent aggressive Firestore polling
+let firestoreQuotaExhaustedUntil = 0;
+let firestoreQuotaLogged = false;
+
+function isFirestoreQuotaExhausted(): boolean {
+  return Date.now() < firestoreQuotaExhaustedUntil;
+}
+
+function handleFirestoreServerErr(err: any, context: string) {
+  const isQuota = 
+    err?.code === 'resource-exhausted' || 
+    err?.code === 8 ||
+    err?.message?.includes('RESOURCE_EXHAUSTED') ||
+    err?.message?.includes('Quota exceeded') ||
+    err?.message?.includes('quota');
+
+  if (isQuota) {
+    firestoreQuotaExhaustedUntil = Date.now() + 60 * 60 * 1000; // 1-hour backoff
+    if (!firestoreQuotaLogged) {
+      console.info(`[Firestore Quota Notice] Cloud Firestore quota threshold reached. Seamlessly utilizing local file persistence (epms_persistent_data.json).`);
+      firestoreQuotaLogged = true;
+    }
+  } else {
+    // Suppress noisy stream/network errors
+    if (err?.code !== 'unavailable' && err?.code !== 'cancelled') {
+      console.warn(`[Firestore Server Notice] ${context}:`, err?.message || err);
+    }
+  }
+}
 
 // Helper to save an individual document directly to Cloud Firestore collection
 async function saveFirestoreDoc(collName: string, id: string, data: any) {
-  if (!clientDb || !id) return;
+  if (!clientDb || !id || isFirestoreQuotaExhausted()) return;
   try {
     const docRef = doc(clientDb, collName, String(id));
     const cleanData = JSON.parse(JSON.stringify(data));
     await setDoc(docRef, cleanData, { merge: true });
-    console.log(`[Firestore Direct] Saved document ${collName}/${id}`);
   } catch (err: any) {
-    console.warn(`[Firestore Direct] Failed saving ${collName}/${id}:`, err?.message || err);
+    handleFirestoreServerErr(err, `saving ${collName}/${id}`);
   }
 }
 
 // Helper to delete an individual document directly from Cloud Firestore collection
 async function deleteFirestoreDoc(collName: string, id: string) {
-  if (!clientDb || !id) return;
+  if (!clientDb || !id || isFirestoreQuotaExhausted()) return;
   try {
     const docRef = doc(clientDb, collName, String(id));
     await deleteDoc(docRef);
-    console.log(`[Firestore Direct] Deleted document ${collName}/${id}`);
   } catch (err: any) {
-    console.warn(`[Firestore Direct] Failed deleting ${collName}/${id}:`, err?.message || err);
+    handleFirestoreServerErr(err, `deleting ${collName}/${id}`);
   }
 }
 
-// Comprehensive sync from Production Cloud Firestore ensuring no report data loss across server restarts
+// Comprehensive sync from Production Cloud Firestore ensuring no report or target data loss across server restarts
 async function syncDatabaseFromFirestore() {
-  if (!clientDb) return;
+  if (!clientDb || isFirestoreQuotaExhausted()) return;
   try {
-    console.log('[Firestore] Initiating complete database sync from production Cloud Firestore...');
+    console.log('[Firestore] Initiating database sync from production Cloud Firestore...');
     
-    // 1. Fetch individual report collections (both 'reports' and 'employee_daily_kpi_reports') and singleton state
-    const [reportsSnap, kpiReportsSnap, stateSnap] = await Promise.all([
+    // 1. Fetch individual report collections, target collections, and singleton state
+    const [reportsSnap, kpiReportsSnap, targetsSnap, kpiTargetsSnap, stateSnap] = await Promise.all([
       getDocs(collection(clientDb, 'reports')).catch(e => {
-        console.warn('[Firestore] Error reading reports collection:', e?.message || e);
+        handleFirestoreServerErr(e, 'reading reports collection');
         return null;
       }),
       getDocs(collection(clientDb, 'employee_daily_kpi_reports')).catch(e => {
-        console.warn('[Firestore] Error reading employee_daily_kpi_reports collection:', e?.message || e);
+        handleFirestoreServerErr(e, 'reading employee_daily_kpi_reports collection');
+        return null;
+      }),
+      getDocs(collection(clientDb, 'targets')).catch(e => {
+        handleFirestoreServerErr(e, 'reading targets collection');
+        return null;
+      }),
+      getDocs(collection(clientDb, 'employee_kpi_targets')).catch(e => {
+        handleFirestoreServerErr(e, 'reading employee_kpi_targets collection');
         return null;
       }),
       getDoc(doc(clientDb, 'epms_state', 'singleton')).catch(e => {
-        console.warn('[Firestore] Error reading singleton state:', e?.message || e);
+        handleFirestoreServerErr(e, 'reading singleton state');
         return null;
       })
     ]);
 
     const reportMap = new Map<string, any>();
+    const targetMap = new Map<string, any>();
 
     // Step A: Load base / fallback reports into reportMap
     if (Array.isArray(db.reports)) {
@@ -345,15 +582,34 @@ async function syncDatabaseFromFirestore() {
       }
     }
 
+    // Step A.2: Load base / fallback targets into targetMap
+    if (Array.isArray(db.targets)) {
+      for (const t of db.targets) {
+        if (t && (t.id || (t.employeeId && t.kpiId))) {
+          const norm = normalizeKpiTarget(t);
+          targetMap.set(norm.id, norm);
+        }
+      }
+    }
+
     // Step B: Merge singleton state document from Firestore if present
     if (stateSnap && stateSnap.exists()) {
       const cloudData = stateSnap.data();
       if (cloudData) {
-        ['districts', 'branches', 'users', 'kpis', 'targets', 'holidays', 'announcements', 'auditLogs', 'notifications'].forEach((key) => {
+        ['districts', 'branches', 'users', 'kpis', 'holidays', 'announcements', 'auditLogs', 'notifications', 'messages', 'bankMemos', 'fiscal_years'].forEach((key) => {
           if (Array.isArray(cloudData[key]) && cloudData[key].length > 0) {
             db[key] = cloudData[key];
           }
         });
+
+        if (Array.isArray(cloudData.targets)) {
+          for (const t of cloudData.targets) {
+            if (t && (t.id || (t.employeeId && t.kpiId))) {
+              const norm = normalizeKpiTarget(t);
+              targetMap.set(norm.id, norm);
+            }
+          }
+        }
 
         if (Array.isArray(cloudData.reports)) {
           for (const r of cloudData.reports) {
@@ -391,6 +647,28 @@ async function syncDatabaseFromFirestore() {
       });
     }
 
+    // Step E: Direct Firestore 'targets' collection documents
+    if (targetsSnap && !targetsSnap.empty) {
+      targetsSnap.docs.forEach(d => {
+        const data = d.data();
+        if (data && d.id !== 'test-connection-check') {
+          const norm = normalizeKpiTarget({ id: d.id, ...data });
+          targetMap.set(norm.id, norm);
+        }
+      });
+    }
+
+    // Step F: Direct Firestore 'employee_kpi_targets' collection documents
+    if (kpiTargetsSnap && !kpiTargetsSnap.empty) {
+      kpiTargetsSnap.docs.forEach(d => {
+        const data = d.data();
+        if (data && d.id !== 'test-connection-check') {
+          const norm = normalizeKpiTarget({ id: d.id, ...data });
+          targetMap.set(norm.id, norm);
+        }
+      });
+    }
+
     const allReports = Array.from(reportMap.values());
     allReports.sort((a: any, b: any) => {
       const dateA = a.reportDate || a.report_date || '';
@@ -398,25 +676,20 @@ async function syncDatabaseFromFirestore() {
       return dateB.localeCompare(dateA);
     });
 
+    const allTargets = Array.from(targetMap.values());
+
     db.reports = allReports;
     db.dailyReports = allReports;
+    db.targets = allTargets;
     lastSyncTime = Date.now();
-    console.log(`[Firestore] Database sync complete. Loaded ${allReports.length} permanent KPI reports from production database.`);
-
-    // Also persist all loaded reports back to individual documents in Firestore if missing
-    for (const r of allReports) {
-      if (r && r.id && !r.id.startsWith('test-')) {
-        saveFirestoreDoc('reports', r.id, r);
-        saveFirestoreDoc('employee_daily_kpi_reports', r.id, r);
-      }
-    }
+    console.log(`[Firestore] Database sync complete. Loaded ${allReports.length} permanent KPI reports and ${allTargets.length} permanent KPI targets.`);
 
     try {
       fs.writeFileSync(dataPath, JSON.stringify(db, null, 2));
     } catch (e) {}
 
   } catch (err: any) {
-    console.warn('[Firestore] Sync error:', err?.message || err);
+    handleFirestoreServerErr(err, 'sync database');
   }
 }
 
@@ -438,6 +711,10 @@ if (clientDb) {
 async function ensureDbSynced(force = false) {
   if (dbPromise) {
     await dbPromise;
+  }
+
+  if (isFirestoreQuotaExhausted()) {
+    return;
   }
 
   const now = Date.now();
@@ -621,16 +898,146 @@ async function saveDb() {
     // Read-only filesystem on Vercel serverless functions handled gracefully
   }
 
-  if (clientDb) {
+  if (clientDb && !isFirestoreQuotaExhausted()) {
     try {
       const docRef = doc(clientDb, 'epms_state', 'singleton');
       await setDoc(docRef, db);
       lastSyncTime = Date.now();
     } catch (e: any) {
-      console.warn('[Firestore] Background save failed:', e?.message || e);
+      handleFirestoreServerErr(e, 'background singleton saveDb');
     }
   }
 };
+
+// =============================================================================
+// FISCAL YEAR REST API ENDPOINTS
+// =============================================================================
+app.get('/api/fiscal-years', (req, res) => {
+  res.json(db.fiscal_years || []);
+});
+
+app.get('/api/fiscal-years/current', (req, res) => {
+  res.json(getCurrentActiveFiscalYear());
+});
+
+app.get('/api/fiscal-years/:id', (req, res) => {
+  const fy = (db.fiscal_years || []).find((f: any) => f.id === req.params.id);
+  if (!fy) return res.status(404).json({ error: 'Fiscal Year not found' });
+  res.json(fy);
+});
+
+app.post('/api/fiscal-years', async (req, res) => {
+  const { name, startDate, endDate, status } = req.body || {};
+  if (!name || !startDate || !endDate) {
+    return res.status(400).json({ error: 'Name, start date, and end date are required.' });
+  }
+  const id = `FY-${startDate.split('-')[0]}-${endDate.split('-')[0].slice(2)}`;
+  if ((db.fiscal_years || []).some((f: any) => f.id === id || f.name === name)) {
+    return res.status(409).json({ error: 'Fiscal Year already exists.' });
+  }
+  const newFy = {
+    id,
+    name,
+    startDate,
+    endDate,
+    status: status || 'CLOSED',
+    isActive: status === 'ACTIVE',
+    is_active: status === 'ACTIVE' ? 1 : 0,
+    createdAt: new Date().toISOString()
+  };
+  if (!db.fiscal_years) db.fiscal_years = [];
+  if (newFy.isActive) {
+    for (const f of db.fiscal_years) {
+      f.isActive = false;
+      f.is_active = 0;
+      f.status = 'CLOSED';
+    }
+  }
+  db.fiscal_years.push(newFy);
+  await saveDb();
+  res.status(201).json(newFy);
+});
+
+app.patch('/api/fiscal-years/:id/activate', async (req, res) => {
+  const fy = (db.fiscal_years || []).find((f: any) => f.id === req.params.id);
+  if (!fy) return res.status(404).json({ error: 'Fiscal Year not found' });
+
+  for (const f of db.fiscal_years) {
+    f.isActive = false;
+    f.is_active = 0;
+    f.status = 'CLOSED';
+  }
+  fy.isActive = true;
+  fy.is_active = 1;
+  fy.status = 'ACTIVE';
+  await saveDb();
+  res.json({ success: true, activeFiscalYear: fy });
+});
+
+app.patch('/api/fiscal-years/:id/close', async (req, res) => {
+  const fy = (db.fiscal_years || []).find((f: any) => f.id === req.params.id);
+  if (!fy) return res.status(404).json({ error: 'Fiscal Year not found' });
+  fy.isActive = false;
+  fy.is_active = 0;
+  fy.status = 'CLOSED';
+  await saveDb();
+  res.json({ success: true, fiscalYear: fy });
+});
+
+app.get('/api/performance/comparison', (req, res) => {
+  const currentFy = getCurrentActiveFiscalYear();
+  const prevFyId = currentFy.id === 'FY-2026-27' ? 'FY-2025-26' : 'FY-2025-26';
+  const previousFy = (db.fiscal_years || []).find((f: any) => f.id === prevFyId) || currentFy;
+
+  const currentReports = (db.reports || []).map(normalizeKpiReport).filter((r: any) => 
+    (r.fiscal_year_id === currentFy.id || r.fiscalYearId === currentFy.id) &&
+    (r.status === 'Approved' || r.status === 'approved')
+  );
+  const previousReports = (db.reports || []).map(normalizeKpiReport).filter((r: any) => 
+    (r.fiscal_year_id === previousFy.id || r.fiscalYearId === previousFy.id) &&
+    (r.status === 'Approved' || r.status === 'approved')
+  );
+
+  const depositsCurrent = currentReports.reduce((acc: number, r: any) => acc + (r.deposits_etb || r.depositsETB || 0), 0);
+  const depositsPrevious = previousReports.reduce((acc: number, r: any) => acc + (r.deposits_etb || r.depositsETB || 0), 0);
+  const depositsGrowthPct = depositsPrevious > 0 ? Number((((depositsCurrent - depositsPrevious) / depositsPrevious) * 100).toFixed(2)) : (depositsCurrent > 0 ? 100 : 0);
+
+  res.json({
+    currentFyId: currentFy.id,
+    currentFyName: currentFy.name,
+    previousFyId: previousFy.id,
+    previousFyName: previousFy.name,
+    depositsCurrent,
+    depositsPrevious,
+    depositsGrowthPct,
+    reportsCurrent: currentReports.length,
+    reportsPrevious: previousReports.length
+  });
+});
+
+app.get('/api/performance/comparison/:fiscalYearId', (req, res) => {
+  const targetFyId = req.params.fiscalYearId;
+  const targetFy = (db.fiscal_years || []).find((f: any) => f.id === targetFyId) || getCurrentActiveFiscalYear();
+  
+  const reports = (db.reports || []).map(normalizeKpiReport).filter((r: any) => 
+    (r.fiscal_year_id === targetFy.id || r.fiscalYearId === targetFy.id) &&
+    (r.status === 'Approved' || r.status === 'approved')
+  );
+
+  const totalDeposits = reports.reduce((acc: number, r: any) => acc + (r.deposits_etb || r.depositsETB || 0), 0);
+  const totalFcy = reports.reduce((acc: number, r: any) => acc + (r.foreignCurrencyETB || r.foreign_currency_etb || 0), 0);
+  const totalAccounts = reports.reduce((acc: number, r: any) => acc + (r.customer_onboarding || r.customerOnboarding || 0), 0);
+
+  res.json({
+    fiscalYearId: targetFy.id,
+    fiscalYearName: targetFy.name,
+    status: targetFy.status,
+    totalDeposits,
+    totalFcy,
+    totalAccounts,
+    approvedReportsCount: reports.length
+  });
+});
 
 app.post('/api/auth/login', (req, res) => {
   const { userId, password } = req.body;
@@ -775,11 +1182,1217 @@ const createCrud = (route: string, collection: string) => {
   });
 };
 
-createCrud('/api/districts', 'districts');
-createCrud('/api/branches', 'branches');
+// Specialized endpoints for Districts & Branches with dynamic filtering
+app.get('/api/districts', (req, res) => {
+  const districts = (db.districts && Array.isArray(db.districts) && db.districts.length > 0) 
+    ? db.districts 
+    : [];
+  res.json(districts);
+});
+
+app.get('/api/branches', (req, res) => {
+  const { districtId, query, search, type } = req.query as Record<string, string>;
+  let branches: any[] = db.branches || [];
+
+  if (districtId) {
+    const parentDist = (db.districts || []).find((d: any) => 
+      d.id === districtId || 
+      d.code === districtId || 
+      (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+    );
+
+    branches = branches.filter((b: any) => {
+      if (!b) return false;
+      if (b.districtId === districtId) return true;
+      if (parentDist) {
+        if (b.districtId === parentDist.id || b.districtId === parentDist.code) return true;
+        if (b.districtName && parentDist.name && b.districtName.toLowerCase().trim() === parentDist.name.toLowerCase().trim()) return true;
+        if (parentDist.code && b.districtId && b.districtId.includes(parentDist.code)) return true;
+      }
+      return false;
+    });
+  }
+
+  if (type && type !== 'ALL') {
+    branches = branches.filter((b: any) => b.type === type);
+  }
+
+  const q = (query || search || '').toLowerCase().trim();
+  if (q) {
+    branches = branches.filter((b: any) => 
+      (b.name && b.name.toLowerCase().includes(q)) ||
+      (b.code && b.code.toLowerCase().includes(q)) ||
+      (b.solId && b.solId.toLowerCase().includes(q)) ||
+      (b.type && b.type.toLowerCase().includes(q)) ||
+      (b.location && b.location.toLowerCase().includes(q)) ||
+      (b.managerName && b.managerName.toLowerCase().includes(q))
+    );
+  }
+
+  res.json(branches);
+});
+
 createCrud('/api/employees', 'users');
 createCrud('/api/kpis', 'kpis');
-createCrud('/api/targets', 'targets');
+
+// =============================================================================
+// BRANCH MANAGER MESSAGING & BANK MEMOS REST APIs
+// =============================================================================
+if (!db.messages) db.messages = [];
+if (!db.bankMemos) db.bankMemos = [];
+
+app.get('/api/branch-manager/employees', (req, res) => {
+  const { branchId, managerId } = req.query as Record<string, string>;
+  const employees = (db.users || []).filter((u: any) => {
+    if (branchId && u.branchId === branchId) return true;
+    if (managerId) {
+      const mgr = db.users.find((m: any) => m.id === managerId);
+      if (mgr && mgr.branchId && u.branchId === mgr.branchId) return true;
+    }
+    return false;
+  });
+  res.json({ success: true, employees });
+});
+
+app.post('/api/messages/send', async (req, res) => {
+  const { senderId, senderName, receiverId, subject, message } = req.body;
+  if (!senderId || !receiverId || !message) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const sender = (db.users || []).find((u: any) => u.id === senderId);
+  const receiver = (db.users || []).find((u: any) => u.id === receiverId);
+  if (!receiver) return res.status(404).json({ error: 'Recipient employee not found' });
+
+  if (sender && sender.role === 'BRANCH_MANAGER' && receiver.branchId !== sender.branchId) {
+    return res.status(403).json({ error: 'Branch managers can only message employees within their own branch.' });
+  }
+
+  const newMessage = {
+    id: `MSG-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    senderId,
+    senderName: senderName || sender?.name || 'Manager',
+    receiverId,
+    receiverName: receiver.name,
+    subject: subject || 'Message from Manager',
+    message,
+    read: false,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!db.messages) db.messages = [];
+  db.messages.unshift(newMessage);
+  await saveDb();
+  res.json({ success: true, message: newMessage });
+});
+
+app.post('/api/messages/broadcast', async (req, res) => {
+  const { senderId, senderName, branchId, subject, message } = req.body;
+  if (!senderId || !branchId || !message) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const sender = (db.users || []).find((u: any) => u.id === senderId);
+  const eligibleEmployees = (db.users || []).filter((u: any) => u.branchId === branchId && u.id !== senderId);
+
+  if (!db.messages) db.messages = [];
+  const createdMessages = [];
+
+  for (const emp of eligibleEmployees) {
+    const newMessage = {
+      id: `MSG-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      senderId,
+      senderName: senderName || sender?.name || 'Branch Manager',
+      receiverId: emp.id,
+      receiverName: emp.name,
+      subject: subject || 'Branch-Wide Announcement',
+      message,
+      read: false,
+      timestamp: new Date().toISOString()
+    };
+    db.messages.unshift(newMessage);
+    createdMessages.push(newMessage);
+  }
+
+  await saveDb();
+  res.json({ success: true, count: createdMessages.length, messages: createdMessages });
+});
+
+app.get('/api/messages/inbox/:userId', (req, res) => {
+  const { userId } = req.params;
+  if (!db.messages) db.messages = [];
+  const userMessages = db.messages.filter((m: any) => m.receiverId === userId);
+  res.json({ success: true, messages: userMessages });
+});
+
+app.patch('/api/messages/:id/read', async (req, res) => {
+  if (!db.messages) db.messages = [];
+  const msg = db.messages.find((m: any) => m.id === req.params.id);
+  if (msg) {
+    msg.read = true;
+    await saveDb();
+    res.json({ success: true, message: msg });
+  } else {
+    res.status(404).json({ error: 'Message not found' });
+  }
+});
+
+// Helper to check if a user role has document management / administrative authority
+function isDocumentAdmin(role?: string): boolean {
+  if (!role) return false;
+  const r = String(role).toUpperCase().trim();
+  return r === 'ADMIN' || r === 'SUPER_ADMIN' || r === 'HR_ADMIN' || r === 'ADMINISTRATOR';
+}
+
+// Comprehensive Bank Documents & Memos API Endpoints
+app.get('/api/documents', (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const { search, type, status, userRole, userDepartment, userDistrict, userBranch, userId, filterMode } = req.query;
+  let docs = [...db.bankMemos];
+
+  const isAdmin = isDocumentAdmin(userRole as string);
+
+  // If NON-ADMIN STAFF, enforce strict consumption restrictions
+  if (!isAdmin) {
+    // 1. Only published documents are accessible to staff
+    docs = docs.filter((d: any) => d.status === 'PUBLISHED');
+
+    // 2. Filter out documents removed from personal view by this staff member
+    if (userId) {
+      docs = docs.filter((d: any) => !(Array.isArray(d.hiddenBy) && d.hiddenBy.includes(String(userId))));
+    }
+
+    // 3. Target Audience Security Enforcement
+    docs = docs.filter((d: any) => {
+      const aud = d.targetAudience;
+      if (!aud || aud === 'ALL' || aud === 'Entire Bank (All Staff)' || aud === 'Entire Bank') return true;
+      const targetStr = String(aud).toLowerCase();
+      if (userDepartment && targetStr.includes(String(userDepartment).toLowerCase())) return true;
+      if (userDistrict && targetStr.includes(String(userDistrict).toLowerCase())) return true;
+      if (userBranch && targetStr.includes(String(userBranch).toLowerCase())) return true;
+      if (userId && targetStr.includes(String(userId).toLowerCase())) return true;
+      return false;
+    });
+
+    // 4. Personal Archive Filter (if requested)
+    if (filterMode === 'SAVED' && userId) {
+      docs = docs.filter((d: any) => Array.isArray(d.savedBy) && d.savedBy.includes(String(userId)));
+    }
+  }
+
+  // Common filters (search, type, status for admin)
+  if (search) {
+    const q = String(search).toLowerCase();
+    docs = docs.filter((d: any) =>
+      (d.title && d.title.toLowerCase().includes(q)) ||
+      (d.memoNumber && d.memoNumber.toLowerCase().includes(q)) ||
+      (d.referenceNumber && d.referenceNumber.toLowerCase().includes(q)) ||
+      (d.content && d.content.toLowerCase().includes(q)) ||
+      (d.subject && d.subject.toLowerCase().includes(q))
+    );
+  }
+
+  if (type && type !== 'ALL') {
+    const searchType = String(type).toUpperCase();
+    docs = docs.filter((d: any) =>
+      (d.category || '').toUpperCase() === searchType ||
+      (d.documentType || '').toUpperCase() === searchType
+    );
+  }
+
+  if (status && status !== 'ALL' && isAdmin) {
+    docs = docs.filter((d: any) => d.status === status);
+  }
+
+  res.json({ success: true, documents: docs });
+});
+
+app.get('/api/documents/:id', (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const doc = db.bankMemos.find((d: any) => d.id === req.params.id);
+  if (doc) {
+    res.json({ success: true, document: doc });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.post('/api/documents', async (req, res) => {
+  const role = req.body.userRole || req.body.role || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can create official bank documents.' });
+  }
+
+  const {
+    title, memoNumber, referenceNumber, documentType, category, subject, content,
+    importantInstructions, effectiveDate, issueDate, expiryDate, issuingDepartment,
+    authorizedIssuer, targetAudience, priority, fileUrl, fileName, fileType, fileSize,
+    status, version, publisher, createdBy
+  } = req.body;
+
+  if (!title || (!content && !subject)) {
+    return res.status(400).json({ error: 'Title and content/subject are required' });
+  }
+
+  const newDoc = {
+    id: `DOC-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    title,
+    memoNumber: memoNumber || referenceNumber || `BN-DOC-${Math.floor(1000 + Math.random() * 9000)}`,
+    referenceNumber: referenceNumber || memoNumber || `BN-REF-${Math.floor(1000 + Math.random() * 9000)}`,
+    documentType: documentType || category || 'Memo',
+    category: documentType || category || 'Memo',
+    subject: subject || title,
+    content: content || '',
+    importantInstructions: importantInstructions || '',
+    effectiveDate: effectiveDate || new Date().toISOString().split('T')[0],
+    issueDate: issueDate || new Date().toISOString().split('T')[0],
+    expiryDate: expiryDate || '',
+    issuingDepartment: issuingDepartment || 'Executive Directorate',
+    authorizedIssuer: authorizedIssuer || publisher || 'System Administrator',
+    targetAudience: targetAudience || 'ALL',
+    priority: priority || 'Normal',
+    fileUrl: fileUrl || '',
+    fileName: fileName || '',
+    fileType: fileType || 'PDF',
+    fileSize: fileSize || '2.4 MB',
+    status: status || 'DRAFT',
+    version: version || '1.0',
+    createdBy: createdBy || publisher || 'System Admin',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    publishedBy: status === 'PUBLISHED' ? (publisher || 'System Admin') : '',
+    publishedAt: status === 'PUBLISHED' ? new Date().toISOString() : '',
+    readBy: [],
+    savedBy: [],
+    hiddenBy: [],
+    versions: [],
+    auditTrail: [
+      { action: 'CREATED', by: createdBy || publisher || 'System Admin', timestamp: new Date().toISOString() }
+    ]
+  };
+
+  if (!db.bankMemos) db.bankMemos = [];
+  db.bankMemos.unshift(newDoc);
+  await saveDb();
+  res.json({ success: true, document: newDoc });
+});
+
+app.put('/api/documents/:id', async (req, res) => {
+  const role = req.body.userRole || req.body.role || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can modify official bank documents.' });
+  }
+
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const existing = db.bankMemos[idx];
+    const updatedBody = req.body;
+    
+    let versionsList = existing.versions || [];
+    if (updatedBody.content && updatedBody.content !== existing.content) {
+      versionsList.push({
+        version: existing.version || '1.0',
+        content: existing.content,
+        updatedAt: new Date().toISOString(),
+        updatedBy: updatedBody.updatedBy || 'Admin'
+      });
+    }
+
+    const auditTrail = existing.auditTrail || [];
+    auditTrail.push({
+      action: 'EDITED',
+      by: updatedBody.updatedBy || 'Admin',
+      timestamp: new Date().toISOString()
+    });
+
+    db.bankMemos[idx] = {
+      ...existing,
+      ...updatedBody,
+      versions: versionsList,
+      auditTrail,
+      updatedAt: new Date().toISOString()
+    };
+
+    await saveDb();
+    res.json({ success: true, document: db.bankMemos[idx] });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.delete('/api/documents/:id', async (req, res) => {
+  const role = req.query.userRole || req.body.userRole || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role as string)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can permanently delete central official bank documents.' });
+  }
+
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    if (db.bankMemos[idx].status !== 'DRAFT') {
+      return res.status(400).json({ error: 'Data-Retention Policy: Only DRAFT documents can be permanently deleted. Use Archive or Withdraw for official documents.' });
+    }
+    db.bankMemos.splice(idx, 1);
+    await saveDb();
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.post('/api/documents/:id/publish', async (req, res) => {
+  const role = req.body.userRole || req.body.role || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can publish official bank documents.' });
+  }
+
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    if (doc.status === 'PUBLISHED') {
+      return res.status(400).json({ error: 'Document is already published.' });
+    }
+    const publisherName = req.body.publisherName || 'System Administrator';
+    const targetAudience = req.body.targetAudience || doc.targetAudience || 'Entire Bank (All Staff)';
+    doc.status = 'PUBLISHED';
+    doc.publishedAt = new Date().toISOString();
+    doc.publishedBy = publisherName;
+    doc.targetAudience = targetAudience;
+    if (!doc.auditTrail) doc.auditTrail = [];
+    doc.auditTrail.push({
+      action: 'PUBLISHED',
+      by: publisherName,
+      timestamp: new Date().toISOString()
+    });
+
+    await createSystemNotification({
+      userId: 'ALL',
+      title: `New ${doc.documentType || 'Bank Document'} Published: ${doc.title}`,
+      message: `Ref: ${doc.memoNumber || doc.referenceNumber}. Effective: ${doc.effectiveDate}. Target: ${targetAudience}.`,
+      type: 'announcement',
+      link: '/memos'
+    });
+
+    // Broadcast published bank document via Telegram to eligible staff
+    try {
+      await broadcastBankDocumentTelegramNotification(doc);
+    } catch (tErr) {
+      console.warn('[Telegram Document Broadcast Warning]:', tErr);
+    }
+
+    await saveDb();
+    res.json({ success: true, document: doc });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.post('/api/documents/:id/withdraw', async (req, res) => {
+  const role = req.body.userRole || req.body.role || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can withdraw official bank documents.' });
+  }
+
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    doc.status = 'WITHDRAWN';
+    doc.withdrawnAt = new Date().toISOString();
+    if (!doc.auditTrail) doc.auditTrail = [];
+    doc.auditTrail.push({
+      action: 'WITHDRAWN',
+      by: req.body.userName || 'Admin',
+      timestamp: new Date().toISOString()
+    });
+    await saveDb();
+    res.json({ success: true, document: doc });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.post('/api/documents/:id/archive', async (req, res) => {
+  const role = req.body.userRole || req.body.role || req.headers['x-user-role'];
+  if (!isDocumentAdmin(role)) {
+    return res.status(403).json({ error: 'Access Denied: Only authorized Bank Administrators can archive official bank documents globally.' });
+  }
+
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    if (doc.status === 'ARCHIVED') {
+      return res.status(400).json({ error: 'Document is already archived globally.' });
+    }
+    doc.status = 'ARCHIVED';
+    doc.archivedAt = new Date().toISOString();
+    if (!doc.auditTrail) doc.auditTrail = [];
+    doc.auditTrail.push({
+      action: 'ARCHIVED_OFFICIAL',
+      by: req.body.userName || 'Admin',
+      timestamp: new Date().toISOString()
+    });
+    await saveDb();
+    res.json({ success: true, document: doc });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+// STAFF CONSUMPTION API: Save to Personal Archive
+app.post('/api/documents/:id/save-for-later', async (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    const { userId, userName } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required to save document to personal archive.' });
+    }
+    if (!doc.savedBy) doc.savedBy = [];
+    const userStr = String(userId);
+    let isSaved = false;
+    if (doc.savedBy.includes(userStr)) {
+      doc.savedBy = doc.savedBy.filter((uId: string) => uId !== userStr);
+      isSaved = false;
+    } else {
+      doc.savedBy.push(userStr);
+      isSaved = true;
+    }
+
+    if (!doc.auditTrail) doc.auditTrail = [];
+    doc.auditTrail.push({
+      action: isSaved ? 'SAVED_TO_PERSONAL_ARCHIVE' : 'REMOVED_FROM_PERSONAL_ARCHIVE',
+      userId: userStr,
+      by: userName || userStr,
+      timestamp: new Date().toISOString()
+    });
+
+    await saveDb();
+    res.json({
+      success: true,
+      isSaved,
+      message: isSaved ? 'Document saved to your personal archive.' : 'Document removed from your personal archive.',
+      document: doc
+    });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+// STAFF CONSUMPTION API: Hide / Remove from Personal View ONLY
+app.post('/api/documents/:id/hide', async (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    const { userId, userName } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required to remove document from personal view.' });
+    }
+    const userStr = String(userId);
+    if (!doc.hiddenBy) doc.hiddenBy = [];
+    if (!doc.hiddenBy.includes(userStr)) {
+      doc.hiddenBy.push(userStr);
+    }
+
+    if (!doc.auditTrail) doc.auditTrail = [];
+    doc.auditTrail.push({
+      action: 'REMOVED_FROM_PERSONAL_LIST',
+      userId: userStr,
+      by: userName || userStr,
+      timestamp: new Date().toISOString()
+    });
+
+    await saveDb();
+    res.json({
+      success: true,
+      message: 'Document removed from your personal view. The central official bank document remains available to other authorized recipients.',
+      documentId: doc.id
+    });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.post('/api/documents/:id/read', async (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((d: any) => d.id === req.params.id);
+  if (idx !== -1) {
+    const doc = db.bankMemos[idx];
+    const { userId, userName } = req.body;
+    if (userId) {
+      const userStr = String(userId);
+      if (!doc.readBy) doc.readBy = [];
+      if (!doc.readBy.includes(userStr)) {
+        doc.readBy.push(userStr);
+      }
+      if (!doc.auditTrail) doc.auditTrail = [];
+      doc.auditTrail.push({
+        action: 'VIEWED',
+        userId: userStr,
+        by: userName || userStr,
+        timestamp: new Date().toISOString()
+      });
+      await saveDb();
+    }
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.get('/api/documents/:id/versions', (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const doc = db.bankMemos.find((d: any) => d.id === req.params.id);
+  if (doc) {
+    res.json({ success: true, versions: doc.versions || [], auditTrail: doc.auditTrail || [] });
+  } else {
+    res.status(404).json({ error: 'Document not found' });
+  }
+});
+
+app.get('/api/bank-memos', (req, res) => {
+
+  if (!db.bankMemos) db.bankMemos = [];
+  res.json({ success: true, memos: db.bankMemos });
+});
+
+app.post('/api/bank-memos', async (req, res) => {
+  const { title, memoNumber, content, category, targetAudience, fileUrl, fileName, fileType, publisher, status } = req.body;
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Title and content are required' });
+  }
+  const newMemo = {
+    id: `MEMO-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    title,
+    memoNumber: memoNumber || `BN-MEMO-${Math.floor(1000 + Math.random() * 9000)}`,
+    content,
+    category: category || 'Memo',
+    targetAudience: targetAudience || 'ALL',
+    fileUrl: fileUrl || '',
+    fileName: fileName || '',
+    fileType: fileType || 'PDF',
+    publisher: publisher || 'System Administrator',
+    status: status || 'Published',
+    publishedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  };
+  if (!db.bankMemos) db.bankMemos = [];
+  db.bankMemos.unshift(newMemo);
+  await saveDb();
+  res.json({ success: true, memo: newMemo });
+});
+
+app.put('/api/bank-memos/:id', async (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((m: any) => m.id === req.params.id);
+  if (idx !== -1) {
+    db.bankMemos[idx] = { ...db.bankMemos[idx], ...req.body, updatedAt: new Date().toISOString() };
+    await saveDb();
+    res.json({ success: true, memo: db.bankMemos[idx] });
+  } else {
+    res.status(404).json({ error: 'Memo not found' });
+  }
+});
+
+app.delete('/api/bank-memos/:id', async (req, res) => {
+  if (!db.bankMemos) db.bankMemos = [];
+  const idx = db.bankMemos.findIndex((m: any) => m.id === req.params.id);
+  if (idx !== -1) {
+    db.bankMemos.splice(idx, 1);
+    await saveDb();
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Memo not found' });
+  }
+});
+
+// =============================================================================
+// DEDICATED EPMS KPI ANNUAL TARGETS & PERIOD ALLOCATION REST API
+// =============================================================================
+
+// Helper to allocate period targets from annual target
+app.post('/api/targets/allocate', (req, res) => {
+  const { annualTarget } = req.body;
+  const safeAnnual = Math.max(0, Number(annualTarget) || 0);
+  const daily = safeAnnual > 0 ? Number((safeAnnual / 300).toFixed(2)) : 0;
+  const weekly = safeAnnual > 0 ? Number((safeAnnual / 52).toFixed(2)) : 0;
+  const monthly = safeAnnual > 0 ? Number((safeAnnual / 12).toFixed(2)) : 0;
+  const quarterly = safeAnnual > 0 ? Number((annualTarget / 4).toFixed(2)) : 0;
+  const semiAnnual = safeAnnual > 0 ? Number((annualTarget / 2).toFixed(2)) : 0;
+  const annual = safeAnnual;
+
+  res.json({
+    annualTarget: safeAnnual,
+    allocations: {
+      daily,
+      weekly,
+      monthly,
+      quarterly,
+      semiAnnual,
+      annual
+    }
+  });
+});
+
+// GET /api/targets - List all targets or filter by employeeId / branchId / kpiId / status / year
+app.get('/api/targets', (req, res) => {
+  let list = (db.targets || []).map(normalizeKpiTarget);
+  const { employeeId, employee_id, branchId, branch_id, kpiId, kpi_id, status, year } = req.query as Record<string, string>;
+
+  const empFilter = employeeId || employee_id;
+  if (empFilter) {
+    const empLower = empFilter.trim().toLowerCase();
+    list = list.filter(t => 
+      (t.employeeId && t.employeeId.toLowerCase() === empLower) ||
+      (t.employee_id && t.employee_id.toLowerCase() === empLower)
+    );
+  }
+
+  const brFilter = branchId || branch_id;
+  if (brFilter) {
+    const brLower = brFilter.trim().toLowerCase();
+    list = list.filter(t => 
+      (t.branchId && t.branchId.toLowerCase() === brLower) ||
+      (t.branch_id && t.branch_id.toLowerCase() === brLower)
+    );
+  }
+
+  const kFilter = kpiId || kpi_id;
+  if (kFilter) {
+    list = list.filter(t => t.kpiId === kFilter || t.kpi_id === kFilter);
+  }
+
+  if (status) {
+    const statusUpper = status.toUpperCase();
+    list = list.filter(t => (t.status || 'ACCEPTED').toUpperCase() === statusUpper);
+  }
+
+  if (year) {
+    list = list.filter(t => String(t.year) === String(year));
+  }
+
+  res.json(list);
+});
+
+// GET /api/targets/employee/:employeeId
+app.get('/api/targets/employee/:employeeId', (req, res) => {
+  const empLower = req.params.employeeId.trim().toLowerCase();
+  const list = (db.targets || [])
+    .map(normalizeKpiTarget)
+    .filter(t => 
+      (t.employeeId && t.employeeId.toLowerCase() === empLower) ||
+      (t.employee_id && t.employee_id.toLowerCase() === empLower)
+    );
+  res.json(list);
+});
+
+// GET /api/targets/branch/:branchId
+app.get('/api/targets/branch/:branchId', (req, res) => {
+  const brLower = req.params.branchId.trim().toLowerCase();
+  const list = (db.targets || [])
+    .map(normalizeKpiTarget)
+    .filter(t => 
+      (t.branchId && t.branchId.toLowerCase() === brLower) ||
+      (t.branch_id && t.branch_id.toLowerCase() === brLower)
+    );
+  res.json(list);
+});
+
+// Helper: Push Notification
+async function createSystemNotification(notification: {
+  userId: string;
+  title: string;
+  message: string;
+  type: 'approval' | 'rejection' | 'target' | 'announcement' | 'system';
+  link?: string;
+}) {
+  if (!db.notifications) db.notifications = [];
+  const notifObj = {
+    id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    userId: notification.userId,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    read: false,
+    timestamp: new Date().toISOString(),
+    link: notification.link || ''
+  };
+  db.notifications.unshift(notifObj);
+  await saveFirestoreDoc('notifications', notifObj.id, notifObj);
+  return notifObj;
+}
+
+// POST /api/targets - Save single target or list of targets permanently (Supports Draft or Target Saving)
+app.post('/api/targets', async (req, res) => {
+  try {
+    const rawBody = req.body;
+    let targetsToSave: any[] = [];
+
+    if (Array.isArray(rawBody)) {
+      targetsToSave = rawBody;
+    } else if (rawBody && Array.isArray(rawBody.targets)) {
+      targetsToSave = rawBody.targets;
+    } else if (rawBody && typeof rawBody === 'object') {
+      targetsToSave = [rawBody];
+    }
+
+    if (!db.targets) db.targets = [];
+
+    const savedResults: any[] = [];
+    const nowIso = new Date().toISOString();
+
+    for (const raw of targetsToSave) {
+      if (!raw || typeof raw !== 'object') continue;
+      const normalized = normalizeKpiTarget(raw);
+
+      // Find existing index by ID or by employeeId + kpiId
+      const existingIdx = db.targets.findIndex((t: any) => {
+        if (t.id && normalized.id && t.id === normalized.id) return true;
+        const sameEmp = String(t.employeeId || t.employee_id || '').toLowerCase() === normalized.employeeId.toLowerCase();
+        const sameKpi = String(t.kpiId || t.kpi_id || '') === normalized.kpiId;
+        const sameYear = Number(t.year || 2026) === Number(normalized.year || 2026);
+        return sameEmp && sameKpi && sameYear;
+      });
+
+      if (existingIdx !== -1) {
+        const existing = db.targets[existingIdx];
+        const auditHistory = Array.isArray(existing.auditHistory) ? [...existing.auditHistory] : [];
+        
+        // Add audit history entry if status or values changed
+        if (existing.status !== normalized.status || Number(existing.targetValue) !== Number(normalized.targetValue)) {
+          auditHistory.unshift({
+            action: normalized.status === 'PENDING_ACCEPTANCE' ? 'SENT' : 'UPDATED',
+            performedBy: normalized.updatedBy || normalized.assignedBy || 'Branch Manager',
+            performedByName: normalized.updatedByName || normalized.assignedByName || 'Branch Manager',
+            performedAt: nowIso,
+            previousStatus: existing.status || 'ACCEPTED',
+            newStatus: normalized.status,
+            targetValue: normalized.targetValue,
+            notes: `Target value set to ${normalized.targetValue} (${normalized.period})`
+          });
+        }
+
+        db.targets[existingIdx] = {
+          ...existing,
+          ...normalized,
+          id: existing.id || normalized.id,
+          updatedAt: nowIso,
+          auditHistory
+        };
+        const targetId = db.targets[existingIdx].id;
+        await saveFirestoreDoc('targets', targetId, db.targets[existingIdx]);
+        await saveFirestoreDoc('employee_kpi_targets', targetId, db.targets[existingIdx]);
+        savedResults.push(db.targets[existingIdx]);
+      } else {
+        db.targets.push(normalized);
+        await saveFirestoreDoc('targets', normalized.id, normalized);
+        await saveFirestoreDoc('employee_kpi_targets', normalized.id, normalized);
+        savedResults.push(normalized);
+      }
+    }
+
+    await saveDb();
+    console.log(`[Targets API] Successfully saved ${savedResults.length} KPI target(s) to permanent storage.`);
+    return res.json(Array.isArray(rawBody) ? savedResults : savedResults[0]);
+  } catch (err: any) {
+    console.error('[Targets API Error]:', err);
+    res.status(500).json({ error: 'Failed to save KPI targets', details: err?.message || err });
+  }
+});
+
+// POST /api/targets/send - Branch Manager sends KPI targets to employee (Workflow: Status becomes PENDING_ACCEPTANCE)
+app.post('/api/targets/send', async (req, res) => {
+  try {
+    const { targets, employeeId, branchId, sentBy, sentByName, notes } = req.body;
+    let targetsToSend: any[] = [];
+
+    if (Array.isArray(targets)) {
+      targetsToSend = targets;
+    } else if (targets && typeof targets === 'object') {
+      targetsToSend = [targets];
+    } else if (employeeId) {
+      // Find all targets for this employee in db.targets
+      const empLower = String(employeeId).trim().toLowerCase();
+      targetsToSend = (db.targets || []).filter((t: any) => 
+        (t.employeeId && t.employeeId.toLowerCase() === empLower) ||
+        (t.employee_id && t.employee_id.toLowerCase() === empLower)
+      );
+    }
+
+    if (!targetsToSend || targetsToSend.length === 0) {
+      return res.status(400).json({ error: 'No targets provided to send.' });
+    }
+
+    if (!db.targets) db.targets = [];
+    const nowIso = new Date().toISOString();
+    const updatedTargets: any[] = [];
+    let targetEmployeeId = employeeId;
+    let targetEmployeeName = '';
+
+    for (const raw of targetsToSend) {
+      const normalized = normalizeKpiTarget({
+        ...raw,
+        status: 'PENDING_ACCEPTANCE',
+        sentBy: sentBy || 'Branch Manager',
+        sentByName: sentByName || 'Branch Manager',
+        sentAt: nowIso,
+        updatedBy: sentBy || 'Branch Manager',
+        updatedByName: sentByName || 'Branch Manager',
+        updatedAt: nowIso
+      });
+
+      if (!targetEmployeeId && normalized.employeeId) {
+        targetEmployeeId = normalized.employeeId;
+      }
+      if (!targetEmployeeName && normalized.employeeName) {
+        targetEmployeeName = normalized.employeeName;
+      }
+
+      const existingIdx = db.targets.findIndex((t: any) => {
+        if (t.id && normalized.id && t.id === normalized.id) return true;
+        const sameEmp = String(t.employeeId || t.employee_id || '').toLowerCase() === normalized.employeeId.toLowerCase();
+        const sameKpi = String(t.kpiId || t.kpi_id || '') === normalized.kpiId;
+        const sameYear = Number(t.year || 2026) === Number(normalized.year || 2026);
+        return sameEmp && sameKpi && sameYear;
+      });
+
+      const auditEntry = {
+        action: 'SENT',
+        performedBy: sentBy || 'Branch Manager',
+        performedByName: sentByName || 'Branch Manager',
+        performedAt: nowIso,
+        previousStatus: existingIdx !== -1 ? db.targets[existingIdx].status : 'DRAFT',
+        newStatus: 'PENDING_ACCEPTANCE',
+        targetValue: normalized.targetValue,
+        notes: notes || `Submitted targets to employee for acceptance`
+      };
+
+      if (existingIdx !== -1) {
+        const existing = db.targets[existingIdx];
+        const auditHistory = Array.isArray(existing.auditHistory) ? [...existing.auditHistory] : [];
+        auditHistory.unshift(auditEntry);
+
+        db.targets[existingIdx] = {
+          ...existing,
+          ...normalized,
+          id: existing.id || normalized.id,
+          status: 'PENDING_ACCEPTANCE',
+          sentBy: sentBy || 'Branch Manager',
+          sentByName: sentByName || 'Branch Manager',
+          sentAt: nowIso,
+          updatedAt: nowIso,
+          auditHistory
+        };
+        const targetId = db.targets[existingIdx].id;
+        await saveFirestoreDoc('targets', targetId, db.targets[existingIdx]);
+        await saveFirestoreDoc('employee_kpi_targets', targetId, db.targets[existingIdx]);
+        updatedTargets.push(db.targets[existingIdx]);
+      } else {
+        normalized.auditHistory = [auditEntry];
+        db.targets.push(normalized);
+        await saveFirestoreDoc('targets', normalized.id, normalized);
+        await saveFirestoreDoc('employee_kpi_targets', normalized.id, normalized);
+        updatedTargets.push(normalized);
+      }
+    }
+
+    await saveDb();
+
+    // Create Notification for the Employee
+    if (targetEmployeeId) {
+      await createSystemNotification({
+        userId: targetEmployeeId,
+        title: '🎯 New KPI Targets Awaiting Review',
+        message: `Branch Manager has assigned and submitted ${updatedTargets.length} KPI target(s) for FY 2026. Please review and accept or provide feedback.`,
+        type: 'target',
+        link: 'my_targets'
+      });
+    }
+
+    console.log(`[Targets API] Sent ${updatedTargets.length} target(s) to employee ${targetEmployeeId}. Status: PENDING_ACCEPTANCE.`);
+    return res.json({
+      success: true,
+      message: `Successfully submitted ${updatedTargets.length} KPI target(s) to employee for acceptance.`,
+      targets: updatedTargets
+    });
+  } catch (err: any) {
+    console.error('[Targets Send Error]:', err);
+    res.status(500).json({ error: 'Failed to send KPI targets', details: err?.message || err });
+  }
+});
+
+// POST /api/targets/:id/respond - Employee responds to a specific target (ACCEPT or REJECT)
+app.post('/api/targets/:id/respond', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { action, rejectionReason, employeeId, employeeName } = req.body;
+
+    if (!action || !['ACCEPT', 'REJECT'].includes(action)) {
+      return res.status(400).json({ error: "Action must be either 'ACCEPT' or 'REJECT'." });
+    }
+
+    if (action === 'REJECT' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({ error: 'A mandatory rejection reason must be provided when rejecting KPI targets.' });
+    }
+
+    if (!db.targets) db.targets = [];
+    const idx = db.targets.findIndex((t: any) => String(t.id) === String(id));
+
+    if (idx === -1) {
+      return res.status(404).json({ error: 'Target not found' });
+    }
+
+    const target = db.targets[idx];
+    const nowIso = new Date().toISOString();
+    const newStatus = action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED';
+    const auditHistory = Array.isArray(target.auditHistory) ? [...target.auditHistory] : [];
+
+    auditHistory.unshift({
+      action: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED',
+      performedBy: employeeId || target.employeeId || 'Employee',
+      performedByName: employeeName || target.employeeName || 'Employee',
+      performedAt: nowIso,
+      previousStatus: target.status,
+      newStatus,
+      rejectionReason: action === 'REJECT' ? rejectionReason.trim() : undefined,
+      notes: action === 'ACCEPT' ? 'Employee officially accepted proposed KPI target' : `Employee rejected target. Reason: ${rejectionReason.trim()}`
+    });
+
+    db.targets[idx] = {
+      ...target,
+      status: newStatus,
+      employeeResponse: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED',
+      employeeResponseDate: nowIso,
+      rejectionReason: action === 'REJECT' ? rejectionReason.trim() : '',
+      updatedBy: employeeId || target.employeeId || 'Employee',
+      updatedByName: employeeName || target.employeeName || 'Employee',
+      updatedAt: nowIso,
+      auditHistory
+    };
+
+    const updatedTarget = db.targets[idx];
+    await saveFirestoreDoc('targets', id, updatedTarget);
+    await saveFirestoreDoc('employee_kpi_targets', id, updatedTarget);
+    await saveDb();
+
+    // Create Notification for Branch Manager
+    const managerId = target.assignedBy || target.createdBy || 'USR-BM360';
+    if (action === 'ACCEPT') {
+      await createSystemNotification({
+        userId: managerId,
+        title: '✅ KPI Target Accepted',
+        message: `${employeeName || target.employeeName || 'Employee'} accepted the KPI target for ${target.kpiName}.`,
+        type: 'target',
+        link: 'employee_targets'
+      });
+    } else {
+      await createSystemNotification({
+        userId: managerId,
+        title: '⚠️ KPI Target Rejected by Employee',
+        message: `${employeeName || target.employeeName || 'Employee'} rejected the proposed KPI target for ${target.kpiName}. Reason: "${rejectionReason.trim()}". Please review and adjust.`,
+        type: 'target',
+        link: 'employee_targets'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: action === 'ACCEPT' ? 'KPI target accepted successfully.' : 'KPI target rejected and returned to Branch Manager.',
+      target: updatedTarget
+    });
+  } catch (err: any) {
+    console.error('[Target Respond Error]:', err);
+    res.status(500).json({ error: 'Failed to record response for KPI target', details: err?.message || err });
+  }
+});
+
+// POST /api/targets/batch-respond - Employee responds to all/multiple targets at once
+app.post('/api/targets/batch-respond', async (req, res) => {
+  try {
+    const { targetIds, employeeId, employeeName, action, rejectionReason } = req.body;
+
+    if (!action || !['ACCEPT', 'REJECT'].includes(action)) {
+      return res.status(400).json({ error: "Action must be either 'ACCEPT' or 'REJECT'." });
+    }
+
+    if (action === 'REJECT' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({ error: 'A mandatory rejection reason must be provided when rejecting KPI targets.' });
+    }
+
+    if (!db.targets) db.targets = [];
+    const nowIso = new Date().toISOString();
+    const newStatus = action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED';
+    const updatedTargets: any[] = [];
+    let branchManagerId = 'USR-BM360';
+
+    const idsToUpdate = Array.isArray(targetIds) && targetIds.length > 0
+      ? targetIds
+      : (db.targets || [])
+          .filter((t: any) => {
+            const sameEmp = String(t.employeeId || t.employee_id || '').toLowerCase() === String(employeeId || '').toLowerCase();
+            return sameEmp && t.status === 'PENDING_ACCEPTANCE';
+          })
+          .map((t: any) => t.id);
+
+    if (idsToUpdate.length === 0) {
+      return res.status(400).json({ error: 'No pending targets found for response.' });
+    }
+
+    for (const id of idsToUpdate) {
+      const idx = db.targets.findIndex((t: any) => String(t.id) === String(id));
+      if (idx !== -1) {
+        const target = db.targets[idx];
+        if (target.assignedBy) branchManagerId = target.assignedBy;
+        const auditHistory = Array.isArray(target.auditHistory) ? [...target.auditHistory] : [];
+
+        auditHistory.unshift({
+          action: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED',
+          performedBy: employeeId || target.employeeId || 'Employee',
+          performedByName: employeeName || target.employeeName || 'Employee',
+          performedAt: nowIso,
+          previousStatus: target.status,
+          newStatus,
+          rejectionReason: action === 'REJECT' ? rejectionReason.trim() : undefined,
+          notes: action === 'ACCEPT' ? 'Employee officially accepted proposed KPI targets' : `Employee rejected targets. Reason: ${rejectionReason.trim()}`
+        });
+
+        db.targets[idx] = {
+          ...target,
+          status: newStatus,
+          employeeResponse: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED',
+          employeeResponseDate: nowIso,
+          rejectionReason: action === 'REJECT' ? rejectionReason.trim() : '',
+          updatedBy: employeeId || target.employeeId || 'Employee',
+          updatedByName: employeeName || target.employeeName || 'Employee',
+          updatedAt: nowIso,
+          auditHistory
+        };
+
+        const updated = db.targets[idx];
+        await saveFirestoreDoc('targets', updated.id, updated);
+        await saveFirestoreDoc('employee_kpi_targets', updated.id, updated);
+        updatedTargets.push(updated);
+      }
+    }
+
+    await saveDb();
+
+    // Create Notification for Branch Manager
+    if (action === 'ACCEPT') {
+      await createSystemNotification({
+        userId: branchManagerId,
+        title: '✅ Employee Accepted All KPI Targets',
+        message: `${employeeName || 'Employee'} accepted all ${updatedTargets.length} proposed KPI targets for FY 2026. Targets are now active.`,
+        type: 'target',
+        link: 'employee_targets'
+      });
+    } else {
+      await createSystemNotification({
+        userId: branchManagerId,
+        title: '⚠️ KPI Targets Rejected by Employee',
+        message: `${employeeName || 'Employee'} rejected ${updatedTargets.length} proposed KPI target(s). Reason: "${rejectionReason.trim()}". Please review feedback and revise.`,
+        type: 'target',
+        link: 'employee_targets'
+      });
+    }
+
+    console.log(`[Targets API] Batch response processed. ${updatedTargets.length} targets updated to ${newStatus}.`);
+    return res.json({
+      success: true,
+      message: action === 'ACCEPT' ? 'All KPI targets accepted and activated successfully.' : 'KPI targets rejected and returned to Branch Manager with feedback.',
+      targets: updatedTargets
+    });
+  } catch (err: any) {
+    console.error('[Batch Respond Error]:', err);
+    res.status(500).json({ error: 'Failed to process batch response', details: err?.message || err });
+  }
+});
+
+// Notifications Endpoints
+app.get('/api/notifications', (req, res) => {
+  const userId = req.query.userId as string;
+  let list = db.notifications || [];
+  if (userId) {
+    const userLower = userId.trim().toLowerCase();
+    list = list.filter((n: any) => !n.userId || n.userId.toLowerCase() === userLower || n.userId === 'ALL');
+  }
+  // Sort latest first
+  list = [...list].sort((a: any, b: any) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+  res.json(list);
+});
+
+app.post('/api/notifications/mark-read', async (req, res) => {
+  const { notificationId, userId } = req.body;
+  if (!db.notifications) db.notifications = [];
+  if (notificationId) {
+    const notif = db.notifications.find((n: any) => n.id === notificationId);
+    if (notif) {
+      notif.read = true;
+      await saveFirestoreDoc('notifications', notif.id, notif);
+    }
+  } else if (userId) {
+    const userLower = userId.trim().toLowerCase();
+    for (const notif of db.notifications) {
+      if (notif.userId && (notif.userId.toLowerCase() === userLower || notif.userId === 'ALL')) {
+        notif.read = true;
+        await saveFirestoreDoc('notifications', notif.id, notif);
+      }
+    }
+  }
+  await saveDb();
+  res.json({ success: true });
+});
+
+// PUT /api/targets/:id - Update target by ID
+app.put('/api/targets/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!db.targets) db.targets = [];
+    const idx = db.targets.findIndex((t: any) => String(t.id) === String(id));
+
+    if (idx !== -1) {
+      const merged = { ...db.targets[idx], ...req.body, id };
+      const normalized = normalizeKpiTarget(merged);
+      db.targets[idx] = normalized;
+      await saveFirestoreDoc('targets', id, normalized);
+      await saveFirestoreDoc('employee_kpi_targets', id, normalized);
+      await saveDb();
+      return res.json(normalized);
+    }
+
+    // If not found in memory, create it
+    const normalized = normalizeKpiTarget({ ...req.body, id });
+    db.targets.push(normalized);
+    await saveFirestoreDoc('targets', id, normalized);
+    await saveFirestoreDoc('employee_kpi_targets', id, normalized);
+    await saveDb();
+    res.json(normalized);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to update KPI target', details: err?.message || err });
+  }
+});
+
+// DELETE /api/targets/:id - Delete target
+app.delete('/api/targets/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!db.targets) db.targets = [];
+    const idx = db.targets.findIndex((t: any) => String(t.id) === String(id));
+    if (idx !== -1) {
+      db.targets.splice(idx, 1);
+      await deleteFirestoreDoc('targets', id);
+      await deleteFirestoreDoc('employee_kpi_targets', id);
+      await saveDb();
+      return res.json({ success: true });
+    }
+    res.status(404).json({ error: 'Target not found' });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to delete KPI target', details: err?.message || err });
+  }
+});
 
 // =============================================================================
 // PERMANENT DAILY KPI REPORTING REST API & PERSISTENCE ENGINE
@@ -789,6 +2402,26 @@ createCrud('/api/targets', 'targets');
 const getKpiReportsHandler = (req: express.Request, res: express.Response) => {
   console.log('[DEBUG] db.reports length:', db.reports?.length);
   let list = (db.reports || []).map(normalizeKpiReport);
+
+  const callerRole = (req.headers['x-user-role'] as string || req.query.userRole as string || '').toUpperCase();
+  const callerId = (req.headers['x-user-id'] as string || req.query.userId as string || '').trim().toLowerCase();
+  const callerBranch = (req.headers['x-branch-id'] as string || req.query.userBranchId as string || '').trim().toLowerCase();
+
+  // Enforce Backend Privacy Rules:
+  // - An employee can only view their own individual performance reports
+  if (callerRole === 'EMPLOYEE' && callerId) {
+    list = list.filter((r: any) => 
+      (r.employeeId && r.employeeId.toLowerCase() === callerId) || 
+      (r.employee_id && r.employee_id.toLowerCase() === callerId) ||
+      (r.employeeUserId && r.employeeUserId.toLowerCase() === callerId)
+    );
+  } else if (callerRole === 'MANAGER' && callerBranch) {
+    // Branch manager can view all reports in their branch
+    list = list.filter((r: any) =>
+      (r.branchId && r.branchId.toLowerCase() === callerBranch) ||
+      (r.branch_id && r.branch_id.toLowerCase() === callerBranch)
+    );
+  }
 
   const {
     employeeId,
@@ -977,6 +2610,15 @@ const postKpiReportHandler = async (req: express.Request, res: express.Response)
   }
 
     if (existingIdx !== -1 && isEdit) {
+    // Check report immutability: approved reports cannot be modified
+    const existing = db.reports[existingIdx];
+    if (existing.status === 'Approved' || existing.status === 'approved') {
+      return res.status(403).json({
+        error: 'Approved reports are immutable and read-only. Editing an already approved report is strictly prohibited.',
+        code: 'APPROVED_REPORT_IMMUTABLE'
+      });
+    }
+
     // Edit existing report
     const targetId = db.reports[existingIdx].id;
     const updated = normalizeKpiReport({
@@ -1027,6 +2669,16 @@ const putKpiReportHandler = async (req: express.Request, res: express.Response) 
   const idx = (db.reports || []).findIndex((r: any) => String(r.id) === String(req.params.id));
   if (idx === -1) return res.status(404).json({ error: 'KPI report not found' });
 
+  // Enforce Report Immutability: Approved reports cannot be edited
+  const currentReport = db.reports[idx];
+  if (currentReport.status === 'Approved' || currentReport.status === 'approved') {
+    // Only allow status changes from authorized approval endpoint, reject direct edits
+    return res.status(403).json({
+      error: 'Approved reports are immutable and read-only. Editing an already approved report is strictly prohibited.',
+      code: 'APPROVED_REPORT_IMMUTABLE'
+    });
+  }
+
   const updated = normalizeKpiReport({
     ...db.reports[idx],
     ...req.body,
@@ -1048,6 +2700,14 @@ app.put('/api/reports/:id', putKpiReportHandler);
 const deleteKpiReportHandler = async (req: express.Request, res: express.Response) => {
   const idx = (db.reports || []).findIndex((r: any) => String(r.id) === String(req.params.id));
   if (idx === -1) return res.status(404).json({ error: 'KPI report not found' });
+
+  // Enforce Immutability: Approved reports cannot be deleted
+  if (db.reports[idx].status === 'Approved' || db.reports[idx].status === 'approved') {
+    return res.status(403).json({
+      error: 'Approved reports cannot be deleted. They form part of the permanent audit record.',
+      code: 'APPROVED_REPORT_IMMUTABLE'
+    });
+  }
 
   db.reports.splice(idx, 1);
   await deleteFirestoreDoc('reports', req.params.id);
@@ -1198,27 +2858,28 @@ function calculatePerformanceMetrics(reports: any[], targets: any[], employeeId?
   const scaleFactor = totalDaysInYear > 0 ? (validDaysInPeriod / totalDaysInYear) : 1;
 
   // Find annual target
-  const findAnnualTarget = (kpiNameKey: string, defaultVal: number) => {
+  const findAnnualTarget = (kpiId: string, kpiNameKey: string, defaultVal: number) => {
     if (!employeeId) return defaultVal;
+    const empLower = String(employeeId).toLowerCase();
     const t = (targets || []).find((tr: any) => 
-      String(tr.employeeId || '').toLowerCase() === String(employeeId).toLowerCase() &&
-      (tr.kpiName || '').toLowerCase().includes(kpiNameKey.toLowerCase())
+      (String(tr.employeeId || tr.employee_id || '').toLowerCase() === empLower) &&
+      (tr.kpiId === kpiId || tr.kpi_id === kpiId || (tr.kpiName || tr.kpi_name || '').toLowerCase().includes(kpiNameKey.toLowerCase()))
     );
-    return t ? Number(t.targetValue || t.target || 0) : defaultVal;
+    return t ? Number(t.annualTarget ?? t.targetValue ?? t.target ?? defaultVal) : defaultVal;
   };
 
   // 1. Deposits target (Special rule: User ID 2213 and 2725 have ETB 6.6M, others have ETB 5.6M)
   const isSpecialDeposit = (employeeId === '2213' || employeeId === '2725' || employeeId === 'USR-2213' || employeeId === 'USR-2725');
   const defaultDeposit = isSpecialDeposit ? 6600000 : 5600000;
   
-  const annualDeposit = findAnnualTarget('deposit', defaultDeposit);
-  const annualFcy = findAnnualTarget('foreign', 500);
-  const annualDfs = findAnnualTarget('digital financing', 200000);
-  const annualCust = findAnnualTarget('customer', 240);
-  const annualMobile = findAnnualTarget('mobile', 200);
-  const annualAtm = findAnnualTarget('atm', 0);
-  const annualMerchant = findAnnualTarget('merchant', 3);
-  const annualInternet = findAnnualTarget('internet', 10);
+  const annualDeposit = findAnnualTarget('KPI-001', 'deposit', defaultDeposit);
+  const annualFcy = findAnnualTarget('KPI-002', 'foreign', 500);
+  const annualDfs = findAnnualTarget('KPI-003', 'digital financing', 200000);
+  const annualCust = findAnnualTarget('KPI-004', 'customer', 240);
+  const annualMobile = findAnnualTarget('KPI-005', 'mobile', 200);
+  const annualAtm = findAnnualTarget('KPI-008', 'atm', 0);
+  const annualMerchant = findAnnualTarget('KPI-007', 'merchant', 3);
+  const annualInternet = findAnnualTarget('KPI-006', 'internet', 10);
 
   // Scaled Targets for Selected Period Range
   const targetDeposit = Number((annualDeposit * scaleFactor).toFixed(2));
@@ -1247,7 +2908,8 @@ function calculatePerformanceMetrics(reports: any[], targets: any[], employeeId?
     internetBanking: periodReports.reduce((s, r) => s + (r.internet_banking || r.internetBanking || r.internetBankingActivations || 0), 0)
   };
 
-  const calcAch = (act: number, tgt: number) => tgt > 0 ? Math.min(200, Number(((act / tgt) * 100).toFixed(2))) : (act > 0 ? 100 : 100);
+  // Performance (%) = (Actual Achievement ÷ Applicable Target) × 100 - Uncapped, allowing > 100%
+  const calcAch = (act: number, tgt: number) => tgt > 0 ? Number(((act / tgt) * 100).toFixed(2)) : (act > 0 ? 100 : 100);
 
   const achDeposit = calcAch(actuals.deposits, targetDeposit);
   const achFcy = calcAch(actuals.fcy, targetFcy);
@@ -1393,6 +3055,14 @@ app.get('/api/kpi-reports/employee/:employeeId/summary', (req, res) => {
   });
 });
 
+// Route aliases for convenience
+app.get('/api/analytics/employee/:employeeId', (req, res) => {
+  res.redirect(`/api/kpi-reports/employee/${encodeURIComponent(req.params.employeeId)}/summary`);
+});
+app.get('/api/performance/employee/:employeeId', (req, res) => {
+  res.redirect(`/api/kpi-reports/employee/${encodeURIComponent(req.params.employeeId)}/summary`);
+});
+
 // GET /api/kpi-reports/branch/:branchId/summary - Live Branch Aggregated Summary, Employee Breakdown & Branch Performance
 app.get('/api/kpi-reports/branch/:branchId/summary', (req, res) => {
   const branchId = String(req.params.branchId).trim().toLowerCase();
@@ -1509,17 +3179,262 @@ app.post('/api/reports/export', (req, res) => {
 });
 
 app.get('/api/analytics/overview', (req, res) => {
-  const reports = db.reports || [];
-  const totalDeposits = reports.reduce((sum: number, r: any) => sum + Number(r.depositsETB || 0), 0);
-  const totalApproved = reports.filter((r: any) => r.status === 'Approved').length;
+  const reports = (db.reports || []).map(normalizeReport).filter(Boolean);
+  const approvedReports = reports.filter((r: any) => r.status === 'Approved' || r.status === 'approved');
+  const totalDeposits = approvedReports.reduce((sum: number, r: any) => sum + Number(r.depositsETB || 0), 0);
+  const totalApproved = approvedReports.length;
+
+  const districtRankings = calculateDistrictRankings(
+    db.districts || [],
+    db.branches || [],
+    db.users || [],
+    db.reports || [],
+    db.targets || [],
+    '2026-01-01',
+    '2026-12-31'
+  );
+  const avgPerformance = districtRankings.length > 0
+    ? Number((districtRankings.reduce((sum, d) => sum + d.performanceScore, 0) / districtRankings.length).toFixed(2))
+    : 94.2;
+
   res.json({
-    overallAchievementRate: 94.2,
-    totalDepositMobilized: totalDeposits || 1850000000,
+    overallAchievementRate: avgPerformance,
+    totalDepositMobilized: totalDeposits,
     totalApprovedReports: totalApproved,
     activeEmployees: (db.users || []).length,
+    activeBranches: (db.branches || []).length,
+    activeDistricts: (db.districts || []).length,
     timestamp: new Date().toISOString()
   });
 });
+
+// Admin Analytics & Performance Endpoints
+app.get('/api/admin/dashboard', (req, res) => {
+  const { startDate, endDate, period } = req.query as Record<string, string>;
+  const ranges = getPeriodRanges('2026-08-09');
+  let start = startDate || ranges.annual.start;
+  let end = endDate || ranges.annual.end;
+  if (period && (ranges as any)[period]) {
+    start = (ranges as any)[period].start;
+    end = (ranges as any)[period].end;
+  }
+
+  const reports = (db.reports || []).map(normalizeReport).filter(Boolean);
+  const approvedReports = reports.filter((r: any) => 
+    (r.status === 'Approved' || r.status === 'approved') && r.reportDate >= start && r.reportDate <= end
+  );
+
+  const totalDeposits = approvedReports.reduce((sum: number, r: any) => sum + r.depositsETB, 0);
+  const totalFcy = approvedReports.reduce((sum: number, r: any) => sum + r.foreignCurrencyETB, 0);
+  const totalDfs = approvedReports.reduce((sum: number, r: any) => sum + r.digitalFinancialServicesETB, 0);
+  const totalAccounts = approvedReports.reduce((sum: number, r: any) => sum + r.customerOnboarding, 0);
+  const totalMobile = approvedReports.reduce((sum: number, r: any) => sum + r.mobileBanking, 0);
+  const totalAtm = approvedReports.reduce((sum: number, r: any) => sum + r.atmDebitCards, 0);
+  const totalMerchant = approvedReports.reduce((sum: number, r: any) => sum + r.merchantSolutions, 0);
+  const totalInternet = approvedReports.reduce((sum: number, r: any) => sum + r.internetBanking, 0);
+
+  const pendingCount = reports.filter((r: any) => r.status === 'Pending').length;
+  const approvedCount = reports.filter((r: any) => r.status === 'Approved' || r.status === 'approved').length;
+  const rejectedCount = reports.filter((r: any) => r.status === 'Rejected').length;
+
+  const districtRankings = calculateDistrictRankings(
+    db.districts || [],
+    db.branches || [],
+    db.users || [],
+    db.reports || [],
+    db.targets || [],
+    start,
+    end
+  );
+
+  const avgPerformance = districtRankings.length > 0
+    ? Number((districtRankings.reduce((sum, d) => sum + d.performanceScore, 0) / districtRankings.length).toFixed(2))
+    : 0;
+
+  res.json({
+    success: true,
+    period: { startDate: start, endDate: end },
+    counts: {
+      totalDistricts: (db.districts || []).length,
+      totalBranches: (db.branches || []).length,
+      totalEmployees: (db.users || []).length,
+      totalReports: reports.length,
+      pendingReports: pendingCount,
+      approvedReports: approvedCount,
+      rejectedReports: rejectedCount,
+      approvalRate: reports.length > 0 ? Number(((approvedCount / reports.length) * 100).toFixed(1)) : 100
+    },
+    mobilizedActuals: {
+      totalDepositsETB: totalDeposits,
+      totalForeignCurrencyETB: totalFcy,
+      totalDigitalServicesETB: totalDfs,
+      totalAccountsOpened: totalAccounts,
+      totalMobileBanking: totalMobile,
+      totalAtmCards: totalAtm,
+      totalMerchantSolutions: totalMerchant,
+      totalInternetBanking: totalInternet
+    },
+    overallPerformanceScore: avgPerformance,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Helper: Apply dynamic ranking filters (type: 'top' | 'bottom' | 'all', limit: number | 'all')
+function filterAndLimitRankings(rankings: any[], type?: string, limitParam?: string | number) {
+  let list = [...rankings];
+  const rankingType = (String(type || 'top')).toLowerCase();
+
+  if (rankingType === 'bottom') {
+    // Sort ascending (lowest performance score first)
+    list.sort((a, b) => {
+      if (a.performanceScore !== b.performanceScore) {
+        return a.performanceScore - b.performanceScore;
+      }
+      if (a.achievementPercentage !== b.achievementPercentage) {
+        return a.achievementPercentage - b.achievementPercentage;
+      }
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  } else {
+    // Sort descending (top performance score first)
+    list.sort((a, b) => {
+      if (b.performanceScore !== a.performanceScore) {
+        return b.performanceScore - a.performanceScore;
+      }
+      if (b.achievementPercentage !== a.achievementPercentage) {
+        return b.achievementPercentage - a.achievementPercentage;
+      }
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  }
+
+  // Re-index ranks for the requested view
+  list = list.map((item, idx) => ({
+    ...item,
+    rank: idx + 1
+  }));
+
+  // Apply limit if specified and not 'all'
+  if (limitParam !== undefined && limitParam !== null && String(limitParam).toLowerCase() !== 'all') {
+    const parsedLimit = parseInt(String(limitParam), 10);
+    if (!isNaN(parsedLimit) && parsedLimit > 0) {
+      // Limit capped to safe maximum (500) to prevent denial of service
+      const safeLimit = Math.min(parsedLimit, 500);
+      list = list.slice(0, safeLimit);
+    }
+  }
+
+  return list;
+}
+
+const handleDistrictRankings = (req: any, res: any) => {
+  const { startDate, endDate, period, type, limit } = req.query as Record<string, string>;
+  const ranges = getPeriodRanges('2026-08-09');
+  let start = startDate || ranges.annual.start;
+  let end = endDate || ranges.annual.end;
+  if (period && (ranges as any)[period]) {
+    start = (ranges as any)[period].start;
+    end = (ranges as any)[period].end;
+  }
+
+  const allRankings = calculateDistrictRankings(
+    db.districts || [],
+    db.branches || [],
+    db.users || [],
+    db.reports || [],
+    db.targets || [],
+    start,
+    end
+  );
+
+  const rankings = filterAndLimitRankings(allRankings, type, limit);
+
+  res.json({
+    success: true,
+    period: { startDate: start, endDate: end },
+    type: type || 'top',
+    limit: limit || 'all',
+    totalDistricts: allRankings.length,
+    returnedCount: rankings.length,
+    rankings
+  });
+};
+
+app.get('/api/admin/performance/districts', handleDistrictRankings);
+app.get('/api/performance/rankings/districts', handleDistrictRankings);
+
+const handleBranchRankings = (req: any, res: any) => {
+  const { districtId, startDate, endDate, period, type, limit } = req.query as Record<string, string>;
+  const ranges = getPeriodRanges('2026-08-09');
+  let start = startDate || ranges.annual.start;
+  let end = endDate || ranges.annual.end;
+  if (period && (ranges as any)[period]) {
+    start = (ranges as any)[period].start;
+    end = (ranges as any)[period].end;
+  }
+
+  const allRankings = calculateBranchRankings(
+    db.branches || [],
+    db.districts || [],
+    db.users || [],
+    db.reports || [],
+    db.targets || [],
+    districtId,
+    start,
+    end
+  );
+
+  const rankings = filterAndLimitRankings(allRankings, type, limit);
+
+  res.json({
+    success: true,
+    period: { startDate: start, endDate: end },
+    type: type || 'top',
+    limit: limit || 'all',
+    totalBranches: allRankings.length,
+    returnedCount: rankings.length,
+    rankings
+  });
+};
+
+app.get('/api/admin/performance/branches', handleBranchRankings);
+app.get('/api/performance/rankings/branches', handleBranchRankings);
+
+const handleEmployeeRankings = (req: any, res: any) => {
+  const { districtId, branchId, startDate, endDate, period, type, limit } = req.query as Record<string, string>;
+  const ranges = getPeriodRanges('2026-08-09');
+  let start = startDate || ranges.annual.start;
+  let end = endDate || ranges.annual.end;
+  if (period && (ranges as any)[period]) {
+    start = (ranges as any)[period].start;
+    end = (ranges as any)[period].end;
+  }
+
+  const allRankings = calculateEmployeeRankings(
+    db.users || [],
+    db.reports || [],
+    db.targets || [],
+    districtId,
+    branchId,
+    start,
+    end
+  );
+
+  const rankings = filterAndLimitRankings(allRankings, type, limit);
+
+  res.json({
+    success: true,
+    period: { startDate: start, endDate: end },
+    type: type || 'top',
+    limit: limit || 'all',
+    totalEmployees: allRankings.length,
+    returnedCount: rankings.length,
+    rankings
+  });
+};
+
+app.get('/api/admin/performance/employees', handleEmployeeRankings);
+app.get('/api/performance/rankings/employees', handleEmployeeRankings);
 
 app.get('/api/auth/branch-manager-status/:branchId', (req, res) => {
   const hasManager = db.users.some(u => u.role === 'MANAGER' && u.branchId === req.params.branchId);
@@ -1702,6 +3617,101 @@ app.get('/api/telegram/config', (req, res) => {
   });
 });
 
+// Endpoint to generate a short-lived 6-digit linking code for account connection
+app.post('/api/telegram/generate-link-code', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required to generate a link code' });
+    }
+    const user = (db.users || []).find((u: any) => u.userId === userId || u.id === userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Employee account not found' });
+    }
+
+    if (!db.linkCodes) db.linkCodes = [];
+    // Filter out old codes for this user
+    db.linkCodes = db.linkCodes.filter((lc: any) => lc.userId !== user.userId && lc.userId !== user.id);
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // Valid for 15 minutes
+    const linkCodeObj = {
+      code,
+      userId: user.userId || user.id,
+      userName: `${user.firstName} ${user.lastName}`,
+      userRole: user.role,
+      createdAt: new Date().toISOString(),
+      expiresAt
+    };
+
+    db.linkCodes.push(linkCodeObj);
+    await saveFirestoreDoc('telegram_link_codes', code, linkCodeObj);
+
+    const botUsername = 'bbepmsbot';
+    const linkUrl = `https://t.me/${botUsername}?start=link_${code}`;
+
+    res.json({
+      success: true,
+      code,
+      expiresAt: new Date(expiresAt).toISOString(),
+      linkUrl,
+      botUsername
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
+// Endpoint to verify and link a Telegram Chat ID with an employee account via code
+app.post('/api/telegram/verify-link-code', async (req, res) => {
+  try {
+    const { code, chatId } = req.body;
+    if (!code || !chatId) {
+      return res.status(400).json({ error: 'Both code and chatId are required' });
+    }
+    const result = await verifyAndLinkTelegramCode(code, Number(chatId));
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
+// Endpoint to unlink a Telegram account
+app.post('/api/telegram/unlink-account', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+    const user = (db.users || []).find((u: any) => u.userId === userId || u.id === userId);
+    if (user) {
+      const oldChatId = user.telegramChatId;
+      delete user.telegramChatId;
+      await saveDb();
+      await saveFirestoreDoc('users', user.id || user.userId, user);
+
+      if (!db.auditLogs) db.auditLogs = [];
+      db.auditLogs.unshift({
+        id: `ALOG-${Date.now()}`,
+        userId: user.userId,
+        userName: `${user.firstName} ${user.lastName}`,
+        action: 'TELEGRAM_UNLINKED',
+        details: `Unlinked Telegram account (Chat ID: ${oldChatId})`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: 'Telegram account unlinked successfully.' });
+    } else {
+      res.status(404).json({ error: 'Employee account not found' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || String(err) });
+  }
+});
+
 // Real-time live health and connection status of Telegram webhook
 app.get('/api/telegram/status', async (req, res) => {
   try {
@@ -1728,7 +3738,8 @@ app.get('/api/telegram/status', async (req, res) => {
       pendingUpdates: webhookData?.result?.pending_update_count || 0,
       lastErrorDate: webhookData?.result?.last_error_date ? new Date(webhookData.result.last_error_date * 1000).toISOString() : null,
       lastErrorMessage: webhookData?.result?.last_error_message || null,
-      linkedUsersCount: db.users.filter((u: any) => !!u.telegramChatId).length
+      linkedUsersCount: (db.users || []).filter((u: any) => !!u.telegramChatId).length,
+      activeLinkCodesCount: (db.linkCodes || []).length
     });
   } catch (err: any) {
     res.status(500).json({
@@ -1818,6 +3829,65 @@ const saveSession = async (chatId: number, session: TelegramSession) => {
   }
 };
 
+const verifyAndLinkTelegramCode = async (code: string, chatId: number): Promise<{ success: boolean; message: string; user?: any }> => {
+  if (!db.linkCodes) db.linkCodes = [];
+  const cleanCode = code.trim().replace(/^link_/i, '');
+  const idx = db.linkCodes.findIndex((lc: any) => lc.code === cleanCode);
+  
+  if (idx === -1) {
+    // Check Firestore fallback
+    if (clientDb) {
+      try {
+        const docSnap = await getDoc(doc(clientDb, 'telegram_link_codes', cleanCode));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.expiresAt > Date.now()) {
+            const emp = (db.users || []).find((u: any) => u.userId === data.userId || u.id === data.userId);
+            if (emp) {
+              emp.telegramChatId = chatId;
+              await saveDb();
+              await saveFirestoreDoc('users', emp.id || emp.userId, emp);
+              return { success: true, message: 'Account linked successfully!', user: emp };
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    return { success: false, message: 'Invalid or expired 6-digit linking code. Please generate a new code in EPMS.' };
+  }
+
+  const linkData = db.linkCodes[idx];
+  if (Date.now() > linkData.expiresAt) {
+    db.linkCodes.splice(idx, 1);
+    return { success: false, message: 'Linking code has expired. Please click Connect Telegram in EPMS to get a fresh code.' };
+  }
+
+  const emp = (db.users || []).find((u: any) => u.userId === linkData.userId || u.id === linkData.userId);
+  if (!emp) {
+    return { success: false, message: 'Associated employee account not found.' };
+  }
+
+  // Remove chatId from any previous account to prevent multi-account mapping collision
+  (db.users || []).forEach((u: any) => { if (u.telegramChatId === chatId) delete u.telegramChatId; });
+
+  emp.telegramChatId = chatId;
+  db.linkCodes.splice(idx, 1);
+  await saveDb();
+  await saveFirestoreDoc('users', emp.id || emp.userId, emp);
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `ALOG-${Date.now()}`,
+    userId: emp.userId,
+    userName: `${emp.firstName} ${emp.lastName}`,
+    action: 'TELEGRAM_LINKED',
+    details: `Linked Telegram account (Chat ID: ${chatId}) via short-lived 6-digit code`,
+    timestamp: new Date().toISOString()
+  });
+
+  return { success: true, message: 'Account linked successfully!', user: emp };
+};
+
 const getPublicKeyboard = () => ({
   keyboard: [
     [{ text: '🏠 Home' }, { text: 'ℹ️ About' }, { text: '📞 Contact' }],
@@ -1826,37 +3896,47 @@ const getPublicKeyboard = () => ({
   resize_keyboard: true
 });
 
+const getEmployeeKeyboard = () => ({
+  keyboard: [
+    [{ text: '📊 My Performance' }, { text: '🎯 My KPIs' }],
+    [{ text: '📅 Daily Performance' }, { text: '📈 Reports' }],
+    [{ text: '🔔 Notifications' }, { text: '📄 Bank Documents' }],
+    [{ text: '👤 My Profile' }, { text: '⚙️ Settings' }]
+  ],
+  resize_keyboard: true
+});
+
+const getManagerKeyboard = () => ({
+  keyboard: [
+    [{ text: '📊 Manager Dashboard' }, { text: '👥 My Employees' }],
+    [{ text: '🎯 KPI Management' }, { text: '📈 Performance' }],
+    [{ text: '✅ Approvals' }, { text: '📄 Reports' }],
+    [{ text: '🔔 Messages & Notifications' }, { text: '👤 My Profile' }],
+    [{ text: '⚙️ Settings' }]
+  ],
+  resize_keyboard: true
+});
+
+const getAdminKeyboard = () => ({
+  keyboard: [
+    [{ text: '📊 Admin Dashboard' }, { text: '👥 Employees' }],
+    [{ text: '🎯 KPI Management' }, { text: '📄 Bank Documents' }],
+    [{ text: '📈 Reports' }, { text: '🔔 Notifications' }],
+    [{ text: '📋 Audit Logs' }, { text: '⚙️ Settings' }]
+  ],
+  resize_keyboard: true
+});
+
 const getRoleKeyboard = (user: any) => {
   if (!user) return getPublicKeyboard();
-  const r = user.role || 'EMPLOYEE';
-  if (r === 'ADMINISTRATOR') {
-    return {
-      keyboard: [
-        [{ text: '📊 System Overview' }, { text: '👥 Staff Directory' }, { text: '🏦 Branches & Districts' }],
-        [{ text: '📋 Global Reports' }, { text: '📢 Broadcast News' }, { text: '⚙️ System Logs' }],
-        [{ text: '👤 My Profile' }, { text: '🔒 Logout' }]
-      ],
-      resize_keyboard: true
-    };
-  } else if (r === 'MANAGER') {
-    return {
-      keyboard: [
-        [{ text: '📊 Dashboard' }, { text: '👥 Team Members' }, { text: '📈 Branch Targets' }],
-        [{ text: '📋 Submission Audit' }, { text: '📢 Announcements' }, { text: '🧠 AI Performance Coach' }],
-        [{ text: '👤 My Profile' }, { text: '🔒 Logout' }]
-      ],
-      resize_keyboard: true
-    };
-  } else {
-    return {
-      keyboard: [
-        [{ text: '📊 Dashboard' }, { text: '👤 My Profile' }, { text: '📈 Goals & KPIs' }],
-        [{ text: '📢 Announcements' }, { text: '🔔 Notifications' }, { text: '🧠 AI Performance Coach' }],
-        [{ text: '📋 Submit Daily Report' }, { text: '🔒 Logout' }]
-      ],
-      resize_keyboard: true
-    };
+  const role = (user.role || '').toUpperCase();
+  if (role === 'ADMINISTRATOR' || role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'HR_ADMIN') {
+    return getAdminKeyboard();
   }
+  if (role === 'MANAGER' || role === 'BRANCH_MANAGER' || role === 'DISTRICT_MANAGER') {
+    return getManagerKeyboard();
+  }
+  return getEmployeeKeyboard();
 };
 
 // --- MODERN BANKING-GRADE TELEGRAM UI RENDERING ENGINE ---
@@ -1977,6 +4057,202 @@ const getPerformanceStats = (user: any) => {
     
     overallPct
   };
+};
+
+// Period performance calculator using real-time Firestore data and (Actual/Target) * 100 formula
+const getPeriodPerformanceView = (user: any, periodKey: string = 'today') => {
+  if (!user) {
+    return {
+      text: drawHeader('Performance Analysis') + 
+            `🔒 <b>Authentication Required</b>\n\n` +
+            `Please log in or link your Telegram account to view real-time performance analytics.`,
+      reply_markup: { inline_keyboard: [[{ text: '🔐 Secure Login', callback_data: 'btn_login' }]] }
+    };
+  }
+
+  const periodConfig: Record<string, { title: string; label: string; scale: number }> = {
+    today: { title: "Today's Performance", label: '📅 Today (1-Day Scale)', scale: 1 / 300 },
+    weekly: { title: 'Weekly Performance', label: '📈 Weekly (6-Day Scale)', scale: 6 / 300 },
+    monthly: { title: 'Monthly Performance', label: '📊 Monthly (25-Day Scale)', scale: 25 / 300 },
+    quarterly: { title: 'Quarterly Performance', label: '📆 Quarterly (75-Day Scale)', scale: 75 / 300 },
+    semiAnnual: { title: 'Semi-Annual Performance', label: '📋 Semi-Annual (150-Day Scale)', scale: 150 / 300 },
+    annual: { title: 'Annual Performance', label: '🏆 Annual (300-Day Scale)', scale: 1.0 }
+  };
+
+  const config = periodConfig[periodKey] || periodConfig['today'];
+  const scale = config.scale;
+
+  // Calculate Date Boundaries
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+
+  let startDate = todayStr;
+  let endDate = todayStr;
+
+  if (periodKey === 'today') {
+    startDate = todayStr;
+    endDate = todayStr;
+  } else if (periodKey === 'weekly') {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 6);
+    startDate = d.toISOString().split('T')[0];
+  } else if (periodKey === 'monthly') {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    startDate = `${y}-${m}-01`;
+  } else if (periodKey === 'quarterly') {
+    const qMonth = Math.floor(now.getMonth() / 3) * 3 + 1;
+    const y = now.getFullYear();
+    const m = String(qMonth).padStart(2, '0');
+    startDate = `${y}-${m}-01`;
+  } else if (periodKey === 'semiAnnual') {
+    const sMonth = now.getMonth() < 6 ? 1 : 7;
+    const y = now.getFullYear();
+    const m = String(sMonth).padStart(2, '0');
+    startDate = `${y}-${m}-01`;
+  } else if (periodKey === 'annual') {
+    const y = now.getFullYear();
+    startDate = `${y}-01-01`;
+    endDate = `${y}-12-31`;
+  }
+
+  const isMgr = user.role === 'MANAGER';
+  const isAdm = user.role === 'ADMINISTRATOR';
+  const reportsList = db.reports || [];
+
+  // Filter reports from Firestore by employee/branch and date
+  const filteredReports = reportsList.filter((r: any) => {
+    const rDate = r.reportDate || r.submissionDate || r.report_date || '';
+    if (rDate && (rDate < startDate || rDate > endDate)) return false;
+    
+    if (isAdm) return true;
+    if (isMgr) return r.branchId === user.branchId;
+    return r.employeeUserId === user.userId || r.employeeId === user.id || r.employee_id === user.id;
+  });
+
+  // Calculate actual totals
+  let actDep = 0;
+  let actFcy = 0;
+  let actAcc = 0;
+  let actMob = 0;
+  let actAtm = 0;
+  let actInternet = 0;
+
+  filteredReports.forEach((r: any) => {
+    actDep += Number(r.depositsETB || r.deposits_etb || 0);
+    actFcy += Number(r.foreignCurrencyETB || r.foreign_currency_etb || 0);
+    actAcc += Number(r.accountOpenings || r.customerOnboarding || r.customer_onboarding || 0);
+    actMob += Number(r.mobileBankingActivations || r.mobile_banking || 0);
+    actAtm += Number(r.atmCardActivations || r.atmCardsIssued || r.atm_debit_cards || 0);
+    actInternet += Number(r.internetBankingActivations || r.internet_banking || 0);
+  });
+
+  // Fetch Annual Targets from db.targets
+  const userTargets = db.targets || [];
+  const empId = user.id || user.userId;
+  const isSpecialDeposit = (empId === '2213' || empId === '2725' || empId === 'USR-2213' || empId === 'USR-2725');
+  
+  let annualDep = isSpecialDeposit ? 6600000 : 5600000;
+  let annualFcy = 500;
+  let annualAcc = 240;
+  let annualMob = 200;
+  let annualAtm = 200;
+  let annualInternet = 10;
+
+  const matched = isMgr
+    ? userTargets.filter((t: any) => t.branchId === user.branchId)
+    : userTargets.filter((t: any) => t.employeeId === empId || t.employeeId === user.userId);
+
+  matched.forEach((t: any) => {
+    const kpi = (t.kpiCode || t.kpiId || t.kpiName || '').toLowerCase();
+    const val = Number(t.targetValue || t.annualTarget || t.target || 0);
+    if (val > 0) {
+      if (kpi.includes('dep') || kpi.includes('deposit')) annualDep = val;
+      else if (kpi.includes('fcy') || kpi.includes('foreign')) annualFcy = val;
+      else if (kpi.includes('acc') || kpi.includes('cust') || kpi.includes('onboard')) annualAcc = val;
+      else if (kpi.includes('mob') || kpi.includes('digital')) annualMob = val;
+      else if (kpi.includes('atm')) annualAtm = val;
+      else if (kpi.includes('internet')) annualInternet = val;
+    }
+  });
+
+  // Scale Targets for Period
+  const tgtDep = annualDep * scale;
+  const tgtFcy = annualFcy * scale;
+  const tgtAcc = annualAcc * scale;
+  const tgtMob = annualMob * scale;
+  const tgtAtm = annualAtm * scale;
+  const tgtInternet = annualInternet * scale;
+
+  // Formula: (Actual / Target) * 100
+  const calcPct = (act: number, tgt: number) => {
+    if (tgt <= 0) return act > 0 ? 100 : 100;
+    return (act / tgt) * 100;
+  };
+
+  const pctDep = calcPct(actDep, tgtDep);
+  const pctFcy = calcPct(actFcy, tgtFcy);
+  const pctAcc = calcPct(actAcc, tgtAcc);
+  const pctMob = calcPct(actMob, tgtMob);
+  const pctAtm = calcPct(actAtm, tgtAtm);
+  const pctInternet = calcPct(actInternet, tgtInternet);
+
+  const overallPct = (pctDep + pctFcy + pctAcc + pctMob + pctAtm + pctInternet) / 6;
+
+  const getStatus = (pct: number) => pct >= 100 ? '🟢 Exceeded' : pct >= 75 ? '🟡 On Track' : '🔴 Needs Attention';
+
+  let text = drawHeader(config.title) +
+             `👤 <b>Name:</b> <b>${user.firstName} ${user.lastName}</b>\n` +
+             `💼 <b>Position:</b> ${user.jobTitle || user.role}\n` +
+             `🏢 <b>Branch:</b> ${user.branchName || 'Hamusit Branch'}\n` +
+             `📅 <b>Scale:</b> <code>${config.label}</code>\n` +
+             `📋 <b>Reports Evaluated:</b> <code>${filteredReports.length}</code> logs\n\n` +
+             `🏆 <b>PERIOD OVERALL PERFORMANCE: ${overallPct.toFixed(1)}%</b>\n` +
+             `${drawProgressBar(overallPct, 10)}\n` +
+             `• Evaluation: <b>${getStatusBadge(overallPct)}</b>\n\n` +
+             `<b>📊 REAL-TIME KPI METRICS ((Actual / Target) * 100):</b>\n\n` +
+             `💵 <b>Deposit Mobilization (ETB):</b>\n` +
+             `   • Actual: <code>${actDep.toLocaleString()}</code> ETB\n` +
+             `   • Target: <code>${Math.round(tgtDep).toLocaleString()}</code> ETB\n` +
+             `   • Performance: <b>${pctDep.toFixed(1)}%</b> (${getStatus(pctDep)})\n\n` +
+             `💱 <b>Foreign Currency Inflow (FCY):</b>\n` +
+             `   • Actual: <code>${actFcy.toLocaleString()}</code> ETB/USD\n` +
+             `   • Target: <code>${tgtFcy.toFixed(1)}</code> ETB/USD\n` +
+             `   • Performance: <b>${pctFcy.toFixed(1)}%</b> (${getStatus(pctFcy)})\n\n` +
+             `👥 <b>Account Openings / Customer Base:</b>\n` +
+             `   • Actual: <code>${actAcc}</code> accounts\n` +
+             `   • Target: <code>${tgtAcc.toFixed(1)}</code> accounts\n` +
+             `   • Performance: <b>${pctAcc.toFixed(1)}%</b> (${getStatus(pctAcc)})\n\n` +
+             `📲 <b>Mobile Banking Activations:</b>\n` +
+             `   • Actual: <code>${actMob}</code> users\n` +
+             `   • Target: <code>${tgtMob.toFixed(1)}</code> users\n` +
+             `   • Performance: <b>${pctMob.toFixed(1)}%</b> (${getStatus(pctMob)})\n\n` +
+             `💳 <b>ATM Cards Issued:</b>\n` +
+             `   • Actual: <code>${actAtm}</code> cards\n` +
+             `   • Target: <code>${tgtAtm.toFixed(1)}</code> cards\n` +
+             `   • Performance: <b>${pctAtm.toFixed(1)}%</b> (${getStatus(pctAtm)})\n\n` +
+             `🌐 <b>Internet Banking:</b>\n` +
+             `   • Actual: <code>${actInternet}</code> users\n` +
+             `   • Target: <code>${tgtInternet.toFixed(1)}</code> users\n` +
+             `   • Performance: <b>${pctInternet.toFixed(1)}%</b> (${getStatus(pctInternet)})\n\n` +
+             `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n` +
+             `⚡ <i>Synchronized live with Firestore (bbepms.vercel.app).</i>`;
+
+  const inline_keyboard = [
+    [
+      { text: periodKey === 'today' ? '✅ Today' : '📅 Today', callback_data: 'period_today' },
+      { text: periodKey === 'weekly' ? '✅ Weekly' : '📈 Weekly', callback_data: 'period_weekly' },
+      { text: periodKey === 'monthly' ? '✅ Monthly' : '📊 Monthly', callback_data: 'period_monthly' }
+    ],
+    [
+      { text: periodKey === 'quarterly' ? '✅ Quarterly' : '📆 Quarterly', callback_data: 'period_quarterly' },
+      { text: periodKey === 'semiAnnual' ? '✅ Semi-Annual' : '📋 Semi-Annual', callback_data: 'period_semiAnnual' },
+      { text: periodKey === 'annual' ? '✅ Annual' : '🏆 Annual', callback_data: 'period_annual' }
+    ],
+    [{ text: '◀️ Back to Main Menu', callback_data: 'menu_home' }]
+  ];
+
+  return { text, reply_markup: { inline_keyboard } };
 };
 
 // UI Screen content generators
@@ -2614,6 +4890,95 @@ function isDuplicateCallback(queryId: string): boolean {
   return false;
 }
 
+async function broadcastBankDocumentTelegramNotification(docObj: any) {
+  const token = process.env.TELEGRAM_BOT_TOKEN || '8966989429:AAGpqUHIKmYNfjGG5KBE7P83X6kLTk1QK_4';
+  if (!token) return;
+
+  const targetAudience = docObj.targetAudience || 'ALL';
+  const linkedUsers = (db.users || []).filter((u: any) => !!u.telegramChatId);
+
+  const eligibleUsers = linkedUsers.filter((u: any) => {
+    if (targetAudience === 'ALL' || targetAudience === 'Entire Bank' || targetAudience === 'All Staff' || targetAudience === 'Entire Bank (All Staff)') return true;
+    if (targetAudience === u.branchId || targetAudience === u.branchName) return true;
+    if (targetAudience === u.districtId || targetAudience === u.districtName) return true;
+    if (targetAudience === u.role) return true;
+    return false;
+  });
+
+  const msgText = drawHeader('📢 NEW BANK DOCUMENT') +
+    `<b>Bunna Bank S.C.</b>\n\n` +
+    `📄 <b>Memo Ref:</b> <code>${docObj.memoNumber || docObj.referenceNumber || docObj.id}</code>\n` +
+    `🏷️ <b>Category:</b> ${docObj.category || docObj.documentType || 'Memo'}\n` +
+    `📌 <b>Subject:</b> <b>${docObj.title || docObj.subject}</b>\n` +
+    `📅 <b>Effective Date:</b> <code>${docObj.effectiveDate || 'Immediate'}</code>\n` +
+    `🏢 <b>Issuer:</b> ${docObj.issuingDepartment || 'Executive Directorate'}\n` +
+    `🎯 <b>Target Audience:</b> ${docObj.targetAudience || 'Entire Bank'}\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `<i>Tap below to view full official document contents in Telegram:</i>`;
+
+  const inline_keyboard = [
+    [
+      { text: '📄 Read Document', callback_data: `doc_view_${docObj.id}` },
+      { text: '🚀 Open EPMS Portal', web_app: { url: getWebPortalUrl() } }
+    ]
+  ];
+
+  for (const emp of eligibleUsers) {
+    try {
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: emp.telegramChatId,
+          text: msgText,
+          parse_mode: 'HTML',
+          reply_markup: { inline_keyboard }
+        })
+      });
+    } catch (err) {
+      console.warn(`[Telegram Document Broadcast Fail to Chat ${emp.telegramChatId}]:`, err);
+    }
+  }
+}
+
+let isTelegramPollingActive = false;
+
+async function startTelegramPollingLoop(token: string) {
+  if (isTelegramPollingActive) return;
+  isTelegramPollingActive = true;
+  console.log('[Telegram Bot] Long-polling listener loop activated...');
+
+  while (isTelegramPollingActive) {
+    try {
+      const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data: any = await res.json();
+        if (data && data.ok && Array.isArray(data.result)) {
+          for (const update of data.result) {
+            lastUpdateId = Math.max(lastUpdateId, Number(update.update_id) || 0);
+            await ensureDbSynced();
+            if (update.message && update.message.chat && update.message.chat.id) {
+              await handleTelegramMessage(token, update.message);
+            } else if (update.callback_query && update.callback_query.message) {
+              await handleTelegramCallbackQuery(token, update.callback_query);
+            }
+          }
+        }
+      } else {
+        const errJson: any = await res.json().catch(() => ({}));
+        if (errJson?.error_code === 409) {
+          await new Promise(r => setTimeout(r, 6000));
+        } else {
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      }
+    } catch (err: any) {
+      await new Promise(r => setTimeout(r, 4000));
+    }
+  }
+}
+
 async function syncTelegramWebhook(token: string) {
   const webhookUrl = 'https://bbepms.vercel.app/api/telegram/webhook';
   try {
@@ -2635,7 +5000,22 @@ async function syncTelegramWebhook(token: string) {
 async function startTelegramBot() {
   const defaultProdToken = '8966989429:AAGpqUHIKmYNfjGG5KBE7P83X6kLTk1QK_4';
   const token = process.env.TELEGRAM_BOT_TOKEN || defaultProdToken;
-  await syncTelegramWebhook(token);
+  try {
+    const infoRes = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+    const info: any = await infoRes.json();
+    const currentWebhook = info?.result?.url || '';
+
+    if (!currentWebhook || info?.result?.last_error_message) {
+      console.log(`[Telegram Bot] Webhook is missing or reporting errors. Activating direct polling listener...`);
+      await fetch(`https://api.telegram.org/bot${token}/deleteWebhook`);
+      startTelegramPollingLoop(token);
+    } else {
+      console.log(`[Telegram Bot] Webhook active on ${currentWebhook}.`);
+      startTelegramPollingLoop(token);
+    }
+  } catch (e) {
+    startTelegramPollingLoop(token);
+  }
 }
 
 async function answerCallbackQuery(token: string, id: string) {
@@ -2786,6 +5166,193 @@ async function processTelegramCallbackQuery(token: string, query: any, session: 
     return;
   }
 
+  // KPI Target Acceptance/Rejection Callbacks
+  if (data.startsWith('kpi_accept_')) {
+    const rawId = data.replace('kpi_accept_', '');
+    const parts = rawId.split('_');
+    const targetId = parts[0];
+    
+    const target = (db.targets || []).find((t: any) => String(t.id) === String(targetId));
+    if (!target) {
+      await sendOrEdit(token, chatId, `⚠️ <b>Target Not Found:</b> The requested KPI target does not exist.`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    if (target.status === 'ACCEPTED') {
+      await sendOrEdit(token, chatId, drawHeader('Target Status') + `🟢 <b>Target Already Accepted</b>\n\nThis target was previously accepted on ${target.acceptedAt ? new Date(target.acceptedAt).toLocaleDateString() : 'earlier date'}.`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    target.status = 'ACCEPTED';
+    target.acceptedAt = nowIso;
+    target.updatedAt = nowIso;
+
+    if (!target.auditHistory) target.auditHistory = [];
+    target.auditHistory.unshift({
+      action: 'ACCEPTED',
+      performedBy: user?.userId || 'Employee',
+      performedByName: user ? `${user.firstName} ${user.lastName}` : 'Employee',
+      performedAt: nowIso,
+      previousStatus: 'PENDING_ACCEPTANCE',
+      newStatus: 'ACCEPTED',
+      notes: 'Accepted via Telegram Bot'
+    });
+
+    await saveDb();
+    await saveFirestoreDoc('targets', target.id, target);
+
+    if (!db.auditLogs) db.auditLogs = [];
+    db.auditLogs.unshift({
+      id: `ALOG-${Date.now()}`,
+      userId: user?.userId || 'Employee',
+      userName: user ? `${user.firstName} ${user.lastName}` : 'Employee',
+      action: 'TELEGRAM_KPI_ACCEPTED',
+      details: `Accepted KPI target ${target.kpiName || target.id} via Telegram`,
+      timestamp: nowIso
+    });
+
+    // Notify Manager
+    const mgr = (db.users || []).find((u: any) => u.branchId === target.branchId && (u.role === 'MANAGER' || u.role === 'BRANCH_MANAGER'));
+    if (mgr && mgr.telegramChatId) {
+      const mgrMsg = drawHeader('KPI TARGET ACCEPTED') +
+        `✅ <b>KPI Target Accepted by Employee</b>\n\n` +
+        `👤 <b>Employee:</b> ${target.employeeName || user?.firstName || 'Staff'}\n` +
+        `🏢 <b>Branch:</b> ${target.branchName || mgr.branchName}\n` +
+        `🎯 <b>Target:</b> ${target.kpiName || 'KPI'} (${target.targetValue} ${target.unit || ''})\n\n` +
+        `Status: 🟢 <b>ACCEPTED</b>`;
+      try {
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: mgr.telegramChatId, text: mgrMsg, parse_mode: 'HTML' })
+        });
+      } catch (e) {}
+    }
+
+    await sendOrEdit(token, chatId, drawHeader('Target Accepted') +
+      `✅ <b>KPI TARGET FORMALLY ACCEPTED</b>\n\n` +
+      `Dear <b>${user ? user.firstName : 'Employee'}</b>,\n` +
+      `You have successfully accepted the assigned target:\n\n` +
+      `• <b>KPI:</b> ${target.kpiName || 'Target'}\n` +
+      `• <b>Assigned Value:</b> <code>${target.targetValue} ${target.unit || ''}</code>\n` +
+      `• <b>Status:</b> 🟢 <b>ACCEPTED on ${new Date().toLocaleDateString()}</b>\n\n` +
+      `Your acceptance has been synchronized with your Branch Manager and the EPMS system.`, { inline_keyboard: [[{ text: '🎯 View All My KPIs', callback_data: 'menu_targets' }]] }, messageId);
+    return;
+  }
+
+  if (data.startsWith('kpi_reject_')) {
+    const rawId = data.replace('kpi_reject_', '');
+    const parts = rawId.split('_');
+    const targetId = parts[0];
+
+    const target = (db.targets || []).find((t: any) => String(t.id) === String(targetId));
+    if (!target) {
+      await sendOrEdit(token, chatId, `⚠️ <b>Target Not Found.</b>`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    if (target.status === 'REJECTED') {
+      await sendOrEdit(token, chatId, drawHeader('Target Status') + `🔴 <b>Target Already Rejected</b>\n\nThis target was marked as rejected earlier.`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    target.status = 'REJECTED';
+    target.rejectedAt = nowIso;
+    target.updatedAt = nowIso;
+
+    if (!target.auditHistory) target.auditHistory = [];
+    target.auditHistory.unshift({
+      action: 'REJECTED',
+      performedBy: user?.userId || 'Employee',
+      performedByName: user ? `${user.firstName} ${user.lastName}` : 'Employee',
+      performedAt: nowIso,
+      previousStatus: 'PENDING_ACCEPTANCE',
+      newStatus: 'REJECTED',
+      notes: 'Rejected via Telegram Bot'
+    });
+
+    await saveDb();
+    await saveFirestoreDoc('targets', target.id, target);
+
+    // Notify Manager
+    const mgr = (db.users || []).find((u: any) => u.branchId === target.branchId && (u.role === 'MANAGER' || u.role === 'BRANCH_MANAGER'));
+    if (mgr && mgr.telegramChatId) {
+      const mgrMsg = drawHeader('KPI TARGET REJECTED') +
+        `❌ <b>KPI Target Rejected by Employee</b>\n\n` +
+        `👤 <b>Employee:</b> ${target.employeeName || user?.firstName || 'Staff'}\n` +
+        `🏢 <b>Branch:</b> ${target.branchName || mgr.branchName}\n` +
+        `🎯 <b>Target:</b> ${target.kpiName || 'KPI'} (${target.targetValue} ${target.unit || ''})\n\n` +
+        `Status: 🔴 <b>REJECTED</b> (Requires Manager Review)`;
+      try {
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: mgr.telegramChatId, text: mgrMsg, parse_mode: 'HTML' })
+        });
+      } catch (e) {}
+    }
+
+    await sendOrEdit(token, chatId, drawHeader('Target Rejected') +
+      `❌ <b>KPI TARGET REJECTED</b>\n\n` +
+      `You have marked the assigned target as rejected:\n\n` +
+      `• <b>KPI:</b> ${target.kpiName || 'Target'}\n` +
+      `• <b>Status:</b> 🔴 <b>REJECTED</b>\n\n` +
+      `Your Branch Manager has been notified to review and adjust your target allocation.`, { inline_keyboard: [[{ text: '🎯 View All My KPIs', callback_data: 'menu_targets' }]] }, messageId);
+    return;
+  }
+
+  // Bank Document View Handler
+  if (data.startsWith('doc_view_')) {
+    const docId = data.replace('doc_view_', '');
+    const docObj = (db.bankMemos || []).find((d: any) => d.id === docId);
+
+    if (!docObj) {
+      await sendOrEdit(token, chatId, `⚠️ <b>Document Not Found:</b> The requested official document is unavailable.`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    // Role check for target audience access permission
+    const aud = docObj.targetAudience || 'ALL';
+    let isPermitted = true;
+    if (aud !== 'ALL' && aud !== 'Entire Bank' && aud !== 'All Staff') {
+      if (user) {
+        if (aud !== user.branchId && aud !== user.branchName && aud !== user.districtId && aud !== user.districtName && aud !== user.role) {
+          isPermitted = false;
+        }
+      }
+    }
+
+    if (!isPermitted) {
+      await sendOrEdit(token, chatId, drawHeader('Access Denied') + `🔒 <b>Restricted Document:</b> You do not have authorization to access documents designated for <code>${aud}</code>.`, { inline_keyboard: [] }, messageId);
+      return;
+    }
+
+    const text = drawHeader('OFFICIAL BANK DOCUMENT') +
+      `📄 <b>Title:</b> <b>${docObj.title || docObj.subject}</b>\n` +
+      `📌 <b>Memo Ref:</b> <code>${docObj.memoNumber || docObj.referenceNumber || docObj.id}</code>\n` +
+      `🏷️ <b>Category:</b> ${docObj.category || docObj.documentType || 'Memo'}\n` +
+      `📅 <b>Effective Date:</b> <code>${docObj.effectiveDate || 'Immediate'}</code>\n` +
+      `🏢 <b>Issuer:</b> ${docObj.issuingDepartment || docObj.authorizedIssuer || 'Executive Directorate'}\n` +
+      `🎯 <b>Target Audience:</b> ${docObj.targetAudience || 'Entire Bank'}\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `<b>DOCUMENT CONTENT:</b>\n` +
+      `${docObj.content || docObj.subject || 'Official document text content available on EPMS portal.'}\n\n` +
+      `${docObj.importantInstructions ? `<b>⚠️ IMPORTANT INSTRUCTIONS:</b>\n${docObj.importantInstructions}\n\n` : ''}` +
+      `━━━━━━━━━━━━━━━━━━━━`;
+
+    const inline_keyboard = [
+      [
+        { text: '📄 Back to Documents', callback_data: 'menu_bank_documents' },
+        { text: '🚀 Open EPMS Portal', web_app: { url: getWebPortalUrl() } }
+      ]
+    ];
+
+    await sendOrEdit(token, chatId, text, { inline_keyboard }, messageId);
+    return;
+  }
+
   if (data.startsWith('audit_approve_')) {
     const reportId = data.replace('audit_approve_', '');
     const report = (db.reports || []).find((r: any) => r.id === reportId);
@@ -2879,6 +5446,14 @@ async function processTelegramCallbackQuery(token: string, query: any, session: 
     return;
   }
 
+  // Period Performance views
+  if (data.startsWith('period_')) {
+    const periodKey = data.replace('period_', '');
+    const view = getPeriodPerformanceView(user, periodKey);
+    await sendOrEdit(token, chatId, view.text, view.reply_markup, messageId);
+    return;
+  }
+
   // Main navigation flows (SPA-like replacement)
   if (data === 'menu_home') {
     const view = getHomeView(user);
@@ -2960,8 +5535,61 @@ async function processTelegramMessage(token: string, message: any, session: Tele
     session.regData = undefined;
     session.repData = undefined;
     session.annData = undefined;
-    
-    await send("🏦 <b>Bunna Bank S.C. EPMS Companion Bot Active</b>\n\nConnected with <b>bbepms.vercel.app</b> 🚀\nUse the buttons below or send <code>/link &lt;id&gt; &lt;password&gt;</code> to authenticate.", getPublicKeyboard());
+
+    // Check for deep-link linking code parameter e.g. "/start link_123456" or "/start 123456"
+    const startParam = text.replace('/start', '').trim();
+    if (startParam) {
+      const linkResult = await verifyAndLinkTelegramCode(startParam, chatId);
+      if (linkResult.success) {
+        const linkedUser = linkResult.user;
+        session.userId = linkedUser.userId || linkedUser.id;
+        
+        await send(
+          drawHeader('Account Connected') +
+          `🎉 <b>TELEGRAM ACCOUNT LINKED SUCCESSFULLY!</b>\n\n` +
+          `Welcome, <b>${linkedUser.firstName} ${linkedUser.lastName}</b> (${linkedUser.jobTitle || linkedUser.role})\n` +
+          `🆔 Staff ID: <code>${linkedUser.userId || linkedUser.id}</code>\n` +
+          `🏢 Assigned Branch: <b>${linkedUser.branchName || 'Bunna Bank S.C.'}</b>\n\n` +
+          `Your Telegram profile is now fully synchronized with Bunna Bank EPMS! You will receive real-time KPI target notifications, memo announcements, and can submit daily performance reports directly from Telegram.`,
+          getRoleKeyboard(linkedUser)
+        );
+        const homeView = getHomeView(linkedUser);
+        await send(homeView.text, homeView.reply_markup);
+        return;
+      } else {
+        await send(
+          drawHeader('Linking Code Issue') +
+          `⚠️ <b>Linking Error:</b> ${linkResult.message}\n\n` +
+          `👉 Please click <b>Connect Telegram</b> on the Bunna Bank EPMS Web Portal to generate a fresh 6-digit code or send <code>/link &lt;Staff_ID&gt; &lt;Password&gt;</code> here.`,
+          getPublicKeyboard()
+        );
+        const homeView = getHomeView(user);
+        await send(homeView.text, homeView.reply_markup);
+        return;
+      }
+    }
+
+    // Standard /start without deep-link parameter
+    if (user) {
+      await send(
+        drawHeader('Bunna Bank EPMS') +
+        `👋 Welcome back, <b>${user.firstName} ${user.lastName}</b>!\n` +
+        `💼 Position: <b>${user.jobTitle || user.role}</b> | 🏢 ${user.branchName || 'HQ'}\n\n` +
+        `Your Telegram account is active and connected to Bunna Bank EPMS. Use the menu keyboard below to navigate your workspace.`,
+        getRoleKeyboard(user)
+      );
+    } else {
+      await send(
+        drawHeader('Bunna Bank EPMS') +
+        `🏦 <b>Bunna Bank S.C. EPMS Companion Bot Active</b> 🚀\n\n` +
+        `Welcome to the official performance companion for Bunna Bank staff.\n\n` +
+        `🔐 <b>Authentication Options:</b>\n` +
+        `• <b>1-Click Connection:</b> Click <b>Connect Telegram</b> on EPMS Web Portal.\n` +
+        `• <b>Credential Link:</b> Send <code>/link &lt;Staff_ID&gt; &lt;Password&gt;</code>\n` +
+        `• <b>Registration:</b> Press 🚀 Get Started below.`,
+        getPublicKeyboard()
+      );
+    }
     const view = getHomeView(user);
     await send(view.text, view.reply_markup);
     return;
@@ -3498,23 +6126,69 @@ async function processTelegramMessage(token: string, message: any, session: Tele
 
   // 3. User is authorized, check keyboard text interactions (routing to views)
   if (user) {
-    if (text === '📊 Dashboard' || text === '📊 System Overview') {
-      const view = getDashboardView(user);
+    if (text === '📅 Today' || text === 'Today' || text === '/today') {
+      const view = getPeriodPerformanceView(user, 'today');
       await send(view.text, view.reply_markup);
       return;
     }
-    if (text === '👥 Team Members' || text === '👥 Staff Directory') {
+    if (text === '📈 Weekly' || text === 'Weekly' || text === '/weekly') {
+      const view = getPeriodPerformanceView(user, 'weekly');
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '📊 Monthly' || text === 'Monthly' || text === '/monthly') {
+      const view = getPeriodPerformanceView(user, 'monthly');
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '📆 Quarterly' || text === 'Quarterly' || text === '/quarterly') {
+      const view = getPeriodPerformanceView(user, 'quarterly');
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '📋 Semi-Annual' || text === 'Semi-Annual' || text === '/semiannual' || text === '/semi_annual') {
+      const view = getPeriodPerformanceView(user, 'semiAnnual');
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '🏆 Annual' || text === 'Annual' || text === '/annual') {
+      const view = getPeriodPerformanceView(user, 'annual');
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '👤 Employees' || text === 'Employees' || text === '👥 Staff Directory' || text === '👥 Team Members' || text === '/employees') {
       const view = getTeamRosterView(user);
       await send(view.text, view.reply_markup);
       return;
     }
-    if (text === '📈 Branch Targets' || text === '📈 Goals & KPIs') {
+    if (text === '🎯 Targets' || text === 'Targets' || text === '📈 Branch Targets' || text === '📈 Goals & KPIs' || text === '/targets') {
       const view = getTargetsView(user);
       await send(view.text, view.reply_markup);
       return;
     }
-    if (text === '📋 Submission Audit' || text === '📋 Global Reports') {
+    if (text === '📈 Performance' || text === 'Performance' || text === '📊 Dashboard' || text === '📊 System Overview' || text === '/performance') {
+      const view = getDashboardView(user);
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '📑 Historical Reports' || text === 'Historical Reports' || text === '📋 Submission Audit' || text === '📋 Global Reports' || text === '/reports') {
       const view = getSubmissionAuditView(user);
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '📝 Submit Report' || text === '📋 Submit Daily Report' || text === '/submit') {
+      session.state = 'rep_dep';
+      session.repData = {};
+      await send(drawHeader('Daily Performance') + '📝 <b>Daily Performance Log</b>\n\nStep 1/5: Enter Deposit volume mobilized (ETB currency value):');
+      return;
+    }
+    if (text === '🧠 AI Coach' || text === '🧠 AI Performance Coach') {
+      const view = getAiCoachView(user);
+      await send(view.text, view.reply_markup);
+      return;
+    }
+    if (text === '👤 Profile' || text === '👤 My Profile') {
+      const view = getProfileView(user);
       await send(view.text, view.reply_markup);
       return;
     }

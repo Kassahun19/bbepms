@@ -1,6 +1,8 @@
 import React from 'react';
-import { X, Bell, CheckCircle2, AlertTriangle, MessageSquare, Info } from 'lucide-react';
+import { Bell, CheckCircle2, AlertTriangle, MessageSquare, Info } from 'lucide-react';
 import { Notification } from '../../types';
+import { ModalCloseButton } from './ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -15,11 +17,22 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   notifications,
   onMarkRead
 }) => {
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-end">
-      <div className="w-full max-w-md bg-[#6B3F1D] border-l border-[#C89A2B]/30 text-white h-full shadow-2xl flex flex-col">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-end"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-md bg-[#6B3F1D] border-l border-[#C89A2B]/30 text-white h-full shadow-2xl flex flex-col"
+      >
         
         {/* Header */}
         <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#4A2C17]">
@@ -27,12 +40,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             <Bell className="w-5 h-5 text-[#C89A2B]" />
             <h3 className="font-bold text-lg">System Notifications</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <ModalCloseButton onClose={onClose} ariaLabel="Close notification drawer" />
         </div>
 
         {/* List */}

@@ -27,7 +27,7 @@ interface PeriodicPerformanceProps {
   title?: string;
 }
 
-type PeriodType = 'daily' | 'monthly' | 'quarterly' | 'semiannually' | 'annually';
+type PeriodType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semiannually' | 'annually';
 
 export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = ({
   reports,
@@ -51,7 +51,8 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
   // Helper for Period Multiplier & Days
   const getPeriodMultiplier = (p: PeriodType) => {
     switch (p) {
-      case 'daily': return 1 / 365;
+      case 'daily': return 1 / 300;
+      case 'weekly': return 1 / 52;
       case 'monthly': return 1 / 12;
       case 'quarterly': return 1 / 4;
       case 'semiannually': return 1 / 2;
@@ -62,6 +63,7 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
   const getPeriodDays = (p: PeriodType) => {
     switch (p) {
       case 'daily': return 1;
+      case 'weekly': return 7;
       case 'monthly': return 30;
       case 'quarterly': return 90;
       case 'semiannually': return 180;
@@ -220,6 +222,14 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
             }`}
           >
             Daily
+          </button>
+          <button
+            onClick={() => setSelectedPeriod('weekly')}
+            className={`px-3.5 py-2 rounded-xl transition-all ${
+              selectedPeriod === 'weekly' ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md scale-105' : 'text-gray-300 hover:text-white'
+            }`}
+          >
+            Weekly
           </button>
           <button
             onClick={() => setSelectedPeriod('monthly')}

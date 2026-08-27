@@ -44,6 +44,8 @@ import { api } from '../../services/api';
 import { BranchEmployeeTargetManager } from '../dashboard/BranchEmployeeTargetManager';
 import { SubmitReportSection } from '../reports/SubmitReportSection';
 import { translations } from '../../i18n/translations';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -212,18 +214,28 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const badgeInfo = getRoleBadge(user.role);
   const RoleIcon = badgeInfo.icon;
 
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto pt-4 sm:pt-8 md:pt-10">
-      <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl shadow-2xl text-white overflow-hidden mb-8 transform transition-all">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto pt-4 sm:pt-8 md:pt-10"
+    >
+      <div
+        ref={contentRef}
+        className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl shadow-2xl text-white overflow-hidden mb-8 transform transition-all"
+      >
         
         {/* Banner & Header */}
         <div className="relative p-6 bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#6B3F1D] border-b border-white/10">
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-5 right-5 z-10">
+            <ModalCloseButton onClose={onClose} ariaLabel="Close user profile dialog" />
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C89A2B] to-[#6B3F1D] p-1 shadow-xl flex items-center justify-center">
@@ -416,12 +428,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="space-y-1">
                     {[
                       { id: 'manager_dashboard', label: 'Manager Dashboard', icon: LayoutDashboard },
-                      { id: 'employees', label: 'Employees', icon: Users },
-                      { id: 'performance', label: 'Performance', icon: TrendingUp },
-                      { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
-                      { id: 'reports', label: 'Reports', icon: FileText },
-                      { id: 'messages', label: 'Messages', icon: MessageSquare },
-                      { id: 'my_profile', label: 'My Profile', icon: UserCheck },
+                      { id: 'messages_notifications', label: 'Messages & Notifications', icon: MessageSquare },
+                      { id: 'employee_management', label: 'Employee Management', icon: Users },
+                      { id: 'kpi_management', label: 'KPI Management', icon: Target },
+                      { id: 'profiles', label: 'Profiles', icon: UserCheck },
                       { id: 'settings', label: 'Settings', icon: Settings },
                     ].map(item => {
                       const IconComp = item.icon;

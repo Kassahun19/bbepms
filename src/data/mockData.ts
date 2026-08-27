@@ -26,11 +26,11 @@ export const initialDepartments: Department[] = [
 ];
 
 export const initialKPIs: KPI[] = [
-  { id: 'KPI-DEP', code: 'KPI-DEP', name: 'Deposit Mobilization', category: 'Financial', unit: 'ETB', weight: 20, description: 'Deposit Mobilization target achievements (20% weight)' },
-  { id: 'KPI-FCY', code: 'KPI-FCY', name: 'Foreign Currency Generation (FCY)', category: 'Financial', unit: 'ETB', weight: 15, description: 'Foreign Currency trade and remittance inflow (15% weight)' },
-  { id: 'KPI-DFS', code: 'KPI-DFS', name: 'Digital Financing System (DFS)', category: 'Digital Banking', unit: 'ETB', weight: 20, description: 'Digital financing and credit portfolio mobilization (20% weight)' },
-  { id: 'KPI-CUST', code: 'KPI-CUST', name: 'Customer Base & Account Openings', category: 'Customer Acquisition', unit: 'Count', weight: 20, description: 'New customer onboarding and active account growth (20% weight)' },
-  { id: 'KPI-DIG', code: 'KPI-DIG', name: 'Digitals (Mobile, ATM, Merchant, Internet)', category: 'Digital Banking', unit: 'Count', weight: 25, description: 'Digital banking activations including Mobile Banking, ATMs, Merchant POS & Internet Banking (25% weight)' }
+  { id: 'KPI-DEP', code: 'KPI-DEP', name: 'Deposit Mobilization', category: 'Finance', unit: 'ETB', weight: 20, description: 'Deposit Mobilization target achievements (20% weight)' },
+  { id: 'KPI-FCY', code: 'KPI-FCY', name: 'Foreign Currency Generation (FCY)', category: 'Finance', unit: 'ETB', weight: 15, description: 'Foreign Currency trade and remittance inflow (15% weight)' },
+  { id: 'KPI-DFS', code: 'KPI-DFS', name: 'Digital Financing System (DFS)', category: 'Finance', unit: 'ETB', weight: 20, description: 'Digital financing and credit portfolio mobilization (20% weight)' },
+  { id: 'KPI-CUST', code: 'KPI-CUST', name: 'Customer Base & Account Openings', category: 'Stakeholder', unit: 'Count', weight: 20, description: 'New customer onboarding and active account growth (20% weight)' },
+  { id: 'KPI-DIG', code: 'KPI-DIG', name: 'Digitals (Mobile, ATM, Merchant, Internet)', category: 'Internal Business', unit: 'Count', weight: 25, description: 'Digital banking activations including Mobile Banking, ATMs, Merchant POS & Internet Banking (25% weight)' }
 ];
 
 export const defaultUsers: User[] = [

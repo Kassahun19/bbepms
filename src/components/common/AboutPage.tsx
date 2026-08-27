@@ -66,11 +66,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            Empowering Workforce Potential through Technology & Excellence
+            Daily KPI Management System
           </h1>
 
           <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
-            The Employee Performance Management System (EPMS) is Bunna Bank’s official enterprise framework designed to monitor, evaluate, and elevate performance across all 25+ Districts and 500+ Branches nationwide.
+            The Daily KPI Management System is Bunna Bank S.C.’s enterprise platform for monitoring, recording, tracking, and evaluating employees’ daily performance. It provides accurate and transparent visibility into daily targets, achievements, performance gaps, and progress, enabling employees and managers to make data-driven decisions and continuously improve performance.
           </p>
 
           <div className="pt-4 flex flex-wrap items-center gap-4">
@@ -98,68 +98,68 @@ export const AboutPage: React.FC<AboutPageProps> = ({
 
       {/* Core Institutional Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-3xl bg-[#6B3F1D]/40 border border-[#C89A2B]/30 shadow-xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B]/20 text-[#C89A2B] flex items-center justify-center font-bold">
+        <div className="p-6 rounded-3xl bg-[#3A1F0D] border-2 border-[#C89A2B]/50 hover:border-[#C89A2B] shadow-2xl space-y-3 transition-all">
+          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B] text-[#2E1B0E] flex items-center justify-center font-black shadow-md">
             <Target className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">Objective Performance Tracking</h3>
-          <p className="text-xs text-gray-300 leading-relaxed">
+          <h3 className="text-lg font-black text-white tracking-wide">Objective Performance Tracking</h3>
+          <p className="text-xs text-amber-100 font-medium leading-relaxed">
             Eliminating guesswork by capturing quantifiable daily figures across 8 vital banking products: Deposits, FCY Inflows, Digital Financial Services, Account Acquisition, and Digital Channels.
           </p>
         </div>
 
-        <div className="p-6 rounded-3xl bg-[#6B3F1D]/40 border border-[#C89A2B]/30 shadow-xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B]/20 text-[#C89A2B] flex items-center justify-center font-bold">
+        <div className="p-6 rounded-3xl bg-[#3A1F0D] border-2 border-[#C89A2B]/50 hover:border-[#C89A2B] shadow-2xl space-y-3 transition-all">
+          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B] text-[#2E1B0E] flex items-center justify-center font-black shadow-md">
             <ShieldCheck className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">Multi-Tier Approval Governance</h3>
-          <p className="text-xs text-gray-300 leading-relaxed">
+          <h3 className="text-lg font-black text-white tracking-wide">Multi-Tier Approval Governance</h3>
+          <p className="text-xs text-amber-100 font-medium leading-relaxed">
             Ensuring data integrity through systematic Branch Manager review, district oversight, and comprehensive audit trails for every single daily submission.
           </p>
         </div>
 
-        <div className="p-6 rounded-3xl bg-[#6B3F1D]/40 border border-[#C89A2B]/30 shadow-xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B]/20 text-[#C89A2B] flex items-center justify-center font-bold">
+        <div className="p-6 rounded-3xl bg-[#3A1F0D] border-2 border-[#C89A2B]/50 hover:border-[#C89A2B] shadow-2xl space-y-3 transition-all">
+          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B] text-[#2E1B0E] flex items-center justify-center font-black shadow-md">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">AI-Powered Performance Insights</h3>
-          <p className="text-xs text-gray-300 leading-relaxed">
+          <h3 className="text-lg font-black text-white tracking-wide">AI-Powered Performance Insights</h3>
+          <p className="text-xs text-amber-100 font-medium leading-relaxed">
             Equipped with Bunna AI Assistant to provide staff and branch managers with automated performance summaries, milestone projections, and policy compliance guidance.
           </p>
         </div>
       </div>
 
       {/* Institutional Statistics */}
-      <div className="p-8 rounded-3xl bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] border border-[#C89A2B]/30 shadow-xl">
-        <h3 className="text-xl font-bold text-[#C89A2B] text-center mb-8 uppercase tracking-wider">
+      <div className="p-8 rounded-3xl bg-[#3A1F0D] border-2 border-[#C89A2B]/60 shadow-2xl">
+        <h3 className="text-xl font-black text-[#E0B853] text-center mb-8 uppercase tracking-wider">
           Bunna Bank EPMS at a Glance
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="space-y-1">
+          <div className="space-y-1 p-3 rounded-2xl bg-black/20 border border-[#C89A2B]/20">
             <p className="text-3xl font-black text-white">{districtsCount > 0 ? `${districtsCount}` : 'Districts'}</p>
-            <p className="text-xs text-[#C89A2B] font-semibold">Districts & Area Offices</p>
+            <p className="text-xs text-[#E0B853] font-bold">Districts & Area Offices</p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 p-3 rounded-2xl bg-black/20 border border-[#C89A2B]/20">
             <p className="text-3xl font-black text-white">{branchesCount > 0 ? `${branchesCount}` : 'Branches'}</p>
-            <p className="text-xs text-[#C89A2B] font-semibold">Branches Nationwide</p>
+            <p className="text-xs text-[#E0B853] font-bold">Branches Nationwide</p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 p-3 rounded-2xl bg-black/20 border border-[#C89A2B]/20">
             <p className="text-3xl font-black text-white">{employeesCount > 0 ? `${employeesCount}` : 'Staff'}</p>
-            <p className="text-xs text-[#C89A2B] font-semibold">Active Employees</p>
+            <p className="text-xs text-[#E0B853] font-bold">Active Employees</p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 p-3 rounded-2xl bg-black/20 border border-[#C89A2B]/20">
             <p className="text-3xl font-black text-white">100%</p>
-            <p className="text-xs text-[#C89A2B] font-semibold">Audited Data Accuracy</p>
+            <p className="text-xs text-[#E0B853] font-bold">Audited Data Accuracy</p>
           </div>
         </div>
       </div>
 
       {/* Product Scope Overview Section */}
-      <div className="bg-[#6B3F1D]/40 border border-[#C89A2B]/30 rounded-3xl p-8 shadow-xl space-y-6">
+      <div className="bg-[#3A1F0D] border-2 border-[#C89A2B]/50 rounded-3xl p-8 shadow-2xl space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <h3 className="text-2xl font-bold text-white">Monitored Banking Products & KPIs</h3>
-          <p className="text-xs text-gray-300">
+          <h3 className="text-2xl font-black text-white">Monitored Banking Products & KPIs</h3>
+          <p className="text-xs text-amber-100 font-medium">
             Bunna Bank EPMS evaluates employee productivity across 8 standardized Key Performance Indicators (KPIs):
           </p>
         </div>
@@ -177,12 +177,12 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           ].map((item, idx) => {
             const Icon = item.icon;
             return (
-              <div key={idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                <div className="w-8 h-8 rounded-xl bg-[#C89A2B]/20 text-[#C89A2B] flex items-center justify-center font-bold">
+              <div key={idx} className="p-4 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/40 hover:border-[#C89A2B] space-y-2 shadow-md transition-all">
+                <div className="w-8 h-8 rounded-xl bg-[#C89A2B] text-[#2E1B0E] flex items-center justify-center font-bold shadow">
                   <Icon className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-sm text-white">{item.title}</h4>
-                <p className="text-[11px] text-gray-300 leading-relaxed">{item.desc}</p>
+                <h4 className="font-black text-sm text-white">{item.title}</h4>
+                <p className="text-xs text-amber-100/90 leading-relaxed font-normal">{item.desc}</p>
               </div>
             );
           })}

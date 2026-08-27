@@ -40,8 +40,9 @@ export const PersonalKpiProgressChart: React.FC<PersonalKpiProgressChartProps> =
       const month = d.getMonth() + 1; // 1 - 12
       const monthLabel = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 
-      // Filter reports for this specific month & year
+      // Filter approved reports for this specific month & year
       const monthReports = reports.filter(r => {
+        if (r.status !== 'Approved') return false;
         if (r.year && r.month) {
           return r.year === year && r.month === month;
         }

@@ -28,6 +28,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { User, getUserFullName } from '../../types';
 import { api } from '../../services/api';
 import { BunnaBankLogo } from '../common/BunnaBankLogo';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface AIAssistantDrawerProps {
   isOpen: boolean;
@@ -66,6 +68,11 @@ Ask me anything about:
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [lastSummarizedId, setLastSummarizedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
 
   const autoScroll = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -224,10 +231,14 @@ Ask me anything about:
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-md flex justify-end">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-md flex justify-end"
+    >
       
       {/* Hanging Glass Container */}
       <motion.div
+        ref={contentRef}
         initial={{ x: '100%', opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: '100%', opacity: 0 }}
@@ -283,12 +294,7 @@ Ask me anything about:
             </button>
 
             {/* Close Drawer */}
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <ModalCloseButton onClose={onClose} ariaLabel="Close AI Assistant drawer" />
           </div>
         </div>
 

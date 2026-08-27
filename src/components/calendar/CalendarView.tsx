@@ -1,6 +1,8 @@
 import React from 'react';
-import { Calendar as CalendarIcon, X, Info } from 'lucide-react';
+import { Calendar as CalendarIcon, Info } from 'lucide-react';
 import { BankHoliday } from '../../types';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface CalendarViewProps {
   isOpen: boolean;
@@ -13,6 +15,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   onClose,
   holidays
 }) => {
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   // July 2026 Calendar Grid Generation (31 days)
@@ -33,15 +40,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 relative">
-        
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-2xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 relative"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close calendar modal" />
+        </div>
 
         <div className="flex items-center space-x-3 mb-6">
           <CalendarIcon className="w-6 h-6 text-[#C89A2B]" />

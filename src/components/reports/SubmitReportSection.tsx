@@ -162,7 +162,7 @@ export const SubmitReportSection: React.FC<SubmitReportSectionProps> = ({
         type: 'success',
         text: isDraft
           ? (language === 'am' ? 'የዕለቱ ሪፖርት ረቂቅ በስኬት ተቀምጧል።' : 'Daily performance report draft saved permanently.')
-          : (language === 'am' ? 'የዕለቱ ሪፖርት ለቅርንጫፍ ሥራ አስኪያጅ በስኬት ተልኳል!' : `Daily KPI report for ${reportDate} saved permanently to EPMS database!`)
+          : (language === 'am' ? 'የዕለቱ ሪፖርት ለማጽደቅ በስኬት ተልኳል!' : `Daily KPI report for ${reportDate} submitted for approval!`)
       });
 
       if (onRefreshData) onRefreshData();
@@ -553,7 +553,7 @@ export const SubmitReportSection: React.FC<SubmitReportSectionProps> = ({
             className="px-9 py-3 rounded-2xl bg-gradient-to-r from-[#C89A2B] via-[#D8B45C] to-[#A37B1E] text-[#6B3F1D] font-black text-xs shadow-[0_10px_30px_rgba(200,154,43,0.4)] hover:brightness-110 flex items-center space-x-2 transition-all transform hover:-translate-y-0.5"
           >
             <Send className="w-4 h-4 text-[#6B3F1D]" />
-            <span>{submitting ? 'Submitting Report...' : (t.submitToManager || 'Submit To Branch Manager')}</span>
+            <span>{submitting ? 'Submitting Report...' : (t.submitForApproval || 'Submit for Approval')}</span>
           </button>
         </div>
 

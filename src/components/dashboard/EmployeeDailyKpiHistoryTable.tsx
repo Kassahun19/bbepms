@@ -27,6 +27,9 @@ import { api } from '../../services/api';
 import { DailyKpiEditModal } from './DailyKpiEditModal';
 import { downloadReportCSV, downloadReportExcel, downloadReportWord, printOrDownloadPDF } from '../../utils/exportUtils';
 import { translations } from '../../i18n/translations';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
+import { useDropdownDismiss } from '../../hooks/useDropdownDismiss';
 
 interface EmployeeDailyKpiHistoryTableProps {
   user?: User;
@@ -111,8 +114,9 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Pagination States
-  const [rowsPerPage, setRowsPerPage] = useState<number | 'all'>(5);
+  const [rowsPerPage, setRowsPerPage] = useState<number | 'all'>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showMilestones, setShowMilestones] = useState<boolean>(false);
 
   // Reset to page 1 on filter/limit change
   useEffect(() => {
@@ -123,6 +127,16 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
   const [editingReport, setEditingReport] = useState<DailyPerformanceReport | null>(null);
   const [viewingReport, setViewingReport] = useState<DailyPerformanceReport | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const { containerRef: exportMenuRef } = useDropdownDismiss({
+    isOpen: showExportMenu,
+    onClose: () => setShowExportMenu(false),
+  });
+
+  const { contentRef: viewingReportRef, handleBackdropClick: handleViewingReportBackdropClick } = useModalDismiss({
+    isOpen: !!viewingReport,
+    onClose: () => setViewingReport(null),
+  });
 
   // Filter strictly to current employee's records
   const myReports = useMemo(() => {
@@ -314,154 +328,7 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
   return (
     <div className="space-y-6">
       
-      {/* 1. ANIMATED SUMMARY CARDS SECTION */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-[#C89A2B]" />
-            <h3 className="text-base font-extrabold text-white">
-              Permanent Daily KPI Summary Milestones
-            </h3>
-          </div>
-          <span className="text-xs text-[#C89A2B] font-semibold bg-[#C89A2B]/10 px-3 py-1 rounded-full border border-[#C89A2B]/30">
-            {myReports.length} Historical Daily Records Stored
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-          
-          {/* Card 1: Today */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2 hover:border-[#C89A2B]/60 transition-all">
-            <div className="flex items-center justify-between text-[11px] text-gray-300 font-bold uppercase tracking-wider">
-              <span>Today's Total</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <div className="text-2xl font-black text-white">
-              <AnimatedCounter value={summaryMetrics.today.mobile + summaryMetrics.today.onboarding + summaryMetrics.today.internet + summaryMetrics.today.atm + summaryMetrics.today.merchant} suffix=" KPIs" />
-            </div>
-            <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
-              <div className="flex justify-between">
-                <span>Mobile Banking:</span>
-                <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.today.mobile} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Onboarding:</span>
-                <strong className="text-blue-300"><AnimatedCounter value={summaryMetrics.today.onboarding} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Merchant Solutions:</span>
-                <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.today.merchant} /></strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: This Week */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2 hover:border-[#C89A2B]/60 transition-all">
-            <div className="flex items-center justify-between text-[11px] text-[#C89A2B] font-bold uppercase tracking-wider">
-              <span>This Week</span>
-              <span className="text-[10px] bg-[#C89A2B]/20 px-2 py-0.5 rounded-full text-[#C89A2B]">{summaryMetrics.thisWeek.count} Days</span>
-            </div>
-            <div className="text-2xl font-black text-[#C89A2B]">
-              <AnimatedCounter value={summaryMetrics.thisWeek.mobile + summaryMetrics.thisWeek.onboarding + summaryMetrics.thisWeek.internet + summaryMetrics.thisWeek.atm + summaryMetrics.thisWeek.merchant} suffix=" KPIs" />
-            </div>
-            <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
-              <div className="flex justify-between">
-                <span>Mobile Banking:</span>
-                <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisWeek.mobile} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>ATM Cards:</span>
-                <strong className="text-violet-300"><AnimatedCounter value={summaryMetrics.thisWeek.atm} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Merchant:</span>
-                <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.thisWeek.merchant} /></strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: This Month */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2 hover:border-[#C89A2B]/60 transition-all">
-            <div className="flex items-center justify-between text-[11px] text-cyan-400 font-bold uppercase tracking-wider">
-              <span>This Month</span>
-              <span className="text-[10px] bg-cyan-500/20 px-2 py-0.5 rounded-full text-cyan-300">{summaryMetrics.thisMonth.count} Days</span>
-            </div>
-            <div className="text-2xl font-black text-cyan-300">
-              <AnimatedCounter value={summaryMetrics.thisMonth.mobile + summaryMetrics.thisMonth.onboarding + summaryMetrics.thisMonth.internet + summaryMetrics.thisMonth.atm + summaryMetrics.thisMonth.merchant} suffix=" KPIs" />
-            </div>
-            <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
-              <div className="flex justify-between">
-                <span>Mobile Banking:</span>
-                <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisMonth.mobile} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Internet Banking:</span>
-                <strong className="text-cyan-300"><AnimatedCounter value={summaryMetrics.thisMonth.internet} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Deposits:</span>
-                <strong className="text-emerald-400 font-mono">ETB <AnimatedCounter value={summaryMetrics.thisMonth.deposits} /></strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: This Year */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2 hover:border-[#C89A2B]/60 transition-all">
-            <div className="flex items-center justify-between text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
-              <span>This Year</span>
-              <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">{summaryMetrics.thisYear.count} Days</span>
-            </div>
-            <div className="text-2xl font-black text-emerald-300">
-              <AnimatedCounter value={summaryMetrics.thisYear.mobile + summaryMetrics.thisYear.onboarding + summaryMetrics.thisYear.internet + summaryMetrics.thisYear.atm + summaryMetrics.thisYear.merchant} suffix=" KPIs" />
-            </div>
-            <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
-              <div className="flex justify-between">
-                <span>Mobile Banking:</span>
-                <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisYear.mobile} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>ATM Cards:</span>
-                <strong className="text-violet-300"><AnimatedCounter value={summaryMetrics.thisYear.atm} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Merchant:</span>
-                <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.thisYear.merchant} /></strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 5: All Time */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#6B3F1D] via-[#4A2C17] to-[#362011] border-2 border-[#C89A2B]/60 text-white shadow-xl space-y-2 hover:brightness-110 transition-all">
-            <div className="flex items-center justify-between text-[11px] text-amber-300 font-bold uppercase tracking-wider">
-              <span className="flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-[#C89A2B]" />
-                All Time Record
-              </span>
-              <span className="text-[10px] bg-[#C89A2B] text-[#6B3F1D] font-extrabold px-2 py-0.5 rounded-full">Permanent</span>
-            </div>
-            <div className="text-2xl font-black text-[#D8B45C]">
-              <AnimatedCounter value={summaryMetrics.allTime.mobile + summaryMetrics.allTime.onboarding + summaryMetrics.allTime.internet + summaryMetrics.allTime.atm + summaryMetrics.allTime.merchant} suffix=" Total" />
-            </div>
-            <div className="text-[11px] text-gray-200 space-y-0.5 pt-1 border-t border-white/10">
-              <div className="flex justify-between">
-                <span>Total Mobile:</span>
-                <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.allTime.mobile} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Total Merchants:</span>
-                <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.allTime.merchant} /></strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Total Deposits:</span>
-                <strong className="text-[#C89A2B] font-mono">ETB <AnimatedCounter value={summaryMetrics.allTime.deposits} /></strong>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* 2. FILTER CONTROLS & DATE PRESETS */}
+      {/* 1. FILTER CONTROLS & DATE PRESETS */}
       <div className="p-5 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl text-white space-y-4">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           
@@ -473,7 +340,7 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
             </span>
 
             {[
-              { id: 'all', label: 'All Dates' },
+              { id: 'all', label: `All Dates (${myReports.length})` },
               { id: 'today', label: 'Today' },
               { id: 'this_week', label: 'This Week' },
               { id: 'this_month', label: 'This Month' },
@@ -485,7 +352,7 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
                 onClick={() => setDatePreset(preset.id as DatePreset)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   datePreset === preset.id
-                    ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md'
+                    ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md font-black'
                     : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
                 }`}
               >
@@ -495,50 +362,60 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
           </div>
 
           {/* Export & Actions Button */}
-          <div className="relative">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] border border-[#C89A2B]/50 text-white font-extrabold text-xs shadow-md hover:brightness-110 flex items-center space-x-2 transition-all"
+              onClick={() => setShowMilestones(!showMilestones)}
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs text-gray-300 hover:text-white font-bold flex items-center space-x-1.5 transition-all"
             >
-              <Download className="w-4 h-4 text-[#C89A2B]" />
-              <span>Export Filtered Table ({filteredReports.length})</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#C89A2B]" />
+              <TrendingUp className="w-3.5 h-3.5 text-[#C89A2B]" />
+              <span>{showMilestones ? 'Hide Summary Stats' : 'Show Summary Stats'}</span>
             </button>
 
-            {showExportMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-2xl z-30 p-2 space-y-1">
-                <button
-                  onClick={() => {
-                    downloadReportExcel(filteredReports, getUserFullName(user), user);
-                    setShowExportMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                  <span>Excel Spreadsheet (.xlsx)</span>
-                </button>
-                <button
-                  onClick={() => {
-                    downloadReportCSV(filteredReports, getUserFullName(user));
-                    setShowExportMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
-                  <span>CSV File (.csv)</span>
-                </button>
-                <button
-                  onClick={() => {
-                    printOrDownloadPDF(filteredReports, getUserFullName(user), user);
-                    setShowExportMenu(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
-                >
-                  <Download className="w-4 h-4 text-amber-400" />
-                  <span>PDF Document / Print</span>
-                </button>
-              </div>
-            )}
+            <div className="relative" ref={exportMenuRef}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] border border-[#C89A2B]/50 text-white font-extrabold text-xs shadow-md hover:brightness-110 flex items-center space-x-2 transition-all"
+              >
+                <Download className="w-4 h-4 text-[#C89A2B]" />
+                <span>Export ({filteredReports.length})</span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#C89A2B]" />
+              </button>
+
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-2xl z-30 p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      downloadReportExcel(filteredReports, getUserFullName(user), user);
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                    <span>Excel Spreadsheet (.xlsx)</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      downloadReportCSV(filteredReports, getUserFullName(user));
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
+                    <span>CSV File (.csv)</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      printOrDownloadPDF(filteredReports, getUserFullName(user), user);
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors"
+                  >
+                    <Download className="w-4 h-4 text-amber-400" />
+                    <span>PDF Document / Print</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
@@ -607,6 +484,155 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
         </div>
       </div>
 
+      {/* 2. OPTIONAL/COLLAPSIBLE SUMMARY MILESTONES */}
+      {showMilestones && (
+        <div className="p-5 rounded-3xl bg-[#4A2C17]/80 border border-[#C89A2B]/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-[#C89A2B]" />
+              <h3 className="text-sm font-extrabold text-white">
+                KPI Performance Summary Milestones
+              </h3>
+            </div>
+            <span className="text-xs text-[#C89A2B] font-semibold bg-[#C89A2B]/10 px-3 py-1 rounded-full border border-[#C89A2B]/30">
+              {myReports.length} Total Records
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+            
+            {/* Card 1: Today */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-gray-300 font-bold uppercase tracking-wider">
+                <span>Today's Total</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+              <div className="text-2xl font-black text-white">
+                <AnimatedCounter value={summaryMetrics.today.mobile + summaryMetrics.today.onboarding + summaryMetrics.today.internet + summaryMetrics.today.atm + summaryMetrics.today.merchant} suffix=" KPIs" />
+              </div>
+              <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
+                <div className="flex justify-between">
+                  <span>Mobile Banking:</span>
+                  <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.today.mobile} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Onboarding:</span>
+                  <strong className="text-blue-300"><AnimatedCounter value={summaryMetrics.today.onboarding} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Merchant:</span>
+                  <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.today.merchant} /></strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: This Week */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-[#C89A2B] font-bold uppercase tracking-wider">
+                <span>This Week</span>
+                <span className="text-[10px] bg-[#C89A2B]/20 px-2 py-0.5 rounded-full text-[#C89A2B]">{summaryMetrics.thisWeek.count} Days</span>
+              </div>
+              <div className="text-2xl font-black text-[#C89A2B]">
+                <AnimatedCounter value={summaryMetrics.thisWeek.mobile + summaryMetrics.thisWeek.onboarding + summaryMetrics.thisWeek.internet + summaryMetrics.thisWeek.atm + summaryMetrics.thisWeek.merchant} suffix=" KPIs" />
+              </div>
+              <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
+                <div className="flex justify-between">
+                  <span>Mobile Banking:</span>
+                  <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisWeek.mobile} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>ATM Cards:</span>
+                  <strong className="text-violet-300"><AnimatedCounter value={summaryMetrics.thisWeek.atm} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Merchant:</span>
+                  <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.thisWeek.merchant} /></strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: This Month */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-cyan-400 font-bold uppercase tracking-wider">
+                <span>This Month</span>
+                <span className="text-[10px] bg-cyan-500/20 px-2 py-0.5 rounded-full text-cyan-300">{summaryMetrics.thisMonth.count} Days</span>
+              </div>
+              <div className="text-2xl font-black text-cyan-300">
+                <AnimatedCounter value={summaryMetrics.thisMonth.mobile + summaryMetrics.thisMonth.onboarding + summaryMetrics.thisMonth.internet + summaryMetrics.thisMonth.atm + summaryMetrics.thisMonth.merchant} suffix=" KPIs" />
+              </div>
+              <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
+                <div className="flex justify-between">
+                  <span>Mobile Banking:</span>
+                  <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisMonth.mobile} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Internet Banking:</span>
+                  <strong className="text-cyan-300"><AnimatedCounter value={summaryMetrics.thisMonth.internet} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Deposits:</span>
+                  <strong className="text-emerald-400 font-mono">ETB <AnimatedCounter value={summaryMetrics.thisMonth.deposits} /></strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: This Year */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
+                <span>This Year</span>
+                <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">{summaryMetrics.thisYear.count} Days</span>
+              </div>
+              <div className="text-2xl font-black text-emerald-300">
+                <AnimatedCounter value={summaryMetrics.thisYear.mobile + summaryMetrics.thisYear.onboarding + summaryMetrics.thisYear.internet + summaryMetrics.thisYear.atm + summaryMetrics.thisYear.merchant} suffix=" KPIs" />
+              </div>
+              <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
+                <div className="flex justify-between">
+                  <span>Mobile Banking:</span>
+                  <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.thisYear.mobile} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>ATM Cards:</span>
+                  <strong className="text-violet-300"><AnimatedCounter value={summaryMetrics.thisYear.atm} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Merchant:</span>
+                  <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.thisYear.merchant} /></strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 5: All Time */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#6B3F1D] via-[#4A2C17] to-[#362011] border-2 border-[#C89A2B]/60 text-white shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-amber-300 font-bold uppercase tracking-wider">
+                <span className="flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5 text-[#C89A2B]" />
+                  All Time Record
+                </span>
+                <span className="text-[10px] bg-[#C89A2B] text-[#6B3F1D] font-extrabold px-2 py-0.5 rounded-full">Permanent</span>
+              </div>
+              <div className="text-2xl font-black text-[#D8B45C]">
+                <AnimatedCounter value={summaryMetrics.allTime.mobile + summaryMetrics.allTime.onboarding + summaryMetrics.allTime.internet + summaryMetrics.allTime.atm + summaryMetrics.allTime.merchant} suffix=" Total" />
+              </div>
+              <div className="text-[11px] text-gray-200 space-y-0.5 pt-1 border-t border-white/10">
+                <div className="flex justify-between">
+                  <span>Total Mobile:</span>
+                  <strong className="text-emerald-400"><AnimatedCounter value={summaryMetrics.allTime.mobile} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Merchants:</span>
+                  <strong className="text-amber-300"><AnimatedCounter value={summaryMetrics.allTime.merchant} /></strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Deposits:</span>
+                  <strong className="text-[#C89A2B] font-mono">ETB <AnimatedCounter value={summaryMetrics.allTime.deposits} /></strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* 3. HISTORICAL PERFORMANCE TABLE WITH FILTERED SUMS FOOTER */}
       <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl text-white space-y-4">
         
@@ -614,7 +640,7 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <Calendar className="w-5 h-5 text-[#C89A2B]" />
-              My Permanent Daily KPI Performance History
+              Daily KPI Performance
             </h3>
             <p className="text-xs text-gray-300">
               {paginationText} (sorted newest first). Every daily report remains permanently preserved.
@@ -793,23 +819,27 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
                             <Eye className="w-3.5 h-3.5" />
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => setEditingReport(report)}
-                            title="Edit KPI Values"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#C89A2B] transition-colors"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
+                          {report.status !== 'Approved' && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingReport(report)}
+                              title="Edit KPI Values"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#C89A2B] transition-colors"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(report.id, reportDateStr)}
-                            title="Delete Daily Record"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {report.status !== 'Approved' && (
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(report.id, reportDateStr)}
+                              title="Delete Daily Record"
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
 
@@ -929,8 +959,14 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
 
       {/* 6. VIEW DETAILS MODAL */}
       {viewingReport && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl">
+        <div
+          onClick={handleViewingReportBackdropClick}
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={viewingReportRef}
+            className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 text-[#C89A2B] uppercase">
@@ -940,12 +976,7 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
                   {viewingReport.reportDate} ({viewingReport.dayOfWeek})
                 </h3>
               </div>
-              <button
-                onClick={() => setViewingReport(null)}
-                className="text-gray-400 hover:text-white p-1 rounded-lg bg-white/10"
-              >
-                ✕
-              </button>
+              <ModalCloseButton onClose={() => setViewingReport(null)} ariaLabel="Close daily performance details" />
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1001,16 +1032,23 @@ export const EmployeeDailyKpiHistoryTable: React.FC<EmployeeDailyKpiHistoryTable
             )}
 
             <div className="flex items-center justify-between pt-2 border-t border-white/10">
-              <button
-                onClick={() => {
-                  setEditingReport(viewingReport);
-                  setViewingReport(null);
-                }}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#C89A2B] font-bold text-xs flex items-center gap-1.5"
-              >
-                <Edit className="w-3.5 h-3.5" />
-                <span>Edit This Report</span>
-              </button>
+              {viewingReport.status !== 'Approved' ? (
+                <button
+                  onClick={() => {
+                    setEditingReport(viewingReport);
+                    setViewingReport(null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#C89A2B] font-bold text-xs flex items-center gap-1.5"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit This Report</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Approved & Verified</span>
+                </div>
+              )}
 
               <button
                 onClick={() => setViewingReport(null)}

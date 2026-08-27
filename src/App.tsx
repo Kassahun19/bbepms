@@ -8,10 +8,11 @@ import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { LandingPage } from './components/landing/LandingPage';
 import { AboutPage } from './components/common/AboutPage';
+import { HowItWorksPage } from './components/common/HowItWorksPage';
 import { ContactPage } from './components/common/ContactPage';
 import { UserProfileModal } from './components/profile/UserProfileModal';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
-import { ManagerDashboard } from './components/dashboard/ManagerDashboard';
+import { ManagerDashboard, ManagerTab } from './components/dashboard/ManagerDashboard';
 import { EmployeeDashboard } from './components/dashboard/EmployeeDashboard';
 
 // Modals & Drawers
@@ -38,7 +39,7 @@ export const App: React.FC = () => {
     }
     return null;
   });
-  const [currentNavView, setCurrentNavView] = useState<'home' | 'about' | 'contact'>('home');
+  const [currentNavView, setCurrentNavView] = useState<'home' | 'about' | 'howItWorks' | 'contact'>('home');
 
   // App Data
   const [districts, setDistricts] = useState<District[]>([]);
@@ -70,6 +71,7 @@ export const App: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isTelegramBotOpen, setIsTelegramBotOpen] = useState(false);
   const [adminActiveTab, setAdminActiveTab] = useState<'overview' | 'products' | 'districts' | 'branches' | 'employees' | 'kpis' | 'reports' | 'audit' | 'holidays' | 'competitor'>('overview');
+  const [managerActiveTab, setManagerActiveTab] = useState<ManagerTab>('dashboard');
 
   const [roleHint, setRoleHint] = useState<UserRole | null>(null);
 
@@ -146,6 +148,15 @@ export const App: React.FC = () => {
       else if (itemId === 'roles_permissions') setAdminActiveTab('audit');
     }
 
+    if (roleGroup === 'MANAGER' || (!roleGroup && currentUser?.role === 'MANAGER')) {
+      if (itemId === 'manager_dashboard' || itemId === 'dashboard') setManagerActiveTab('dashboard');
+      else if (itemId === 'messages_notifications' || itemId === 'messages' || itemId === 'notifications') setManagerActiveTab('messages');
+      else if (itemId === 'employee_management' || itemId === 'employees') setManagerActiveTab('employees');
+      else if (itemId === 'kpi_management' || itemId === 'kpis' || itemId === 'targets') setManagerActiveTab('kpis');
+      else if (itemId === 'profiles' || itemId === 'my_profile') setManagerActiveTab('profiles');
+      else if (itemId === 'settings') setManagerActiveTab('settings');
+    }
+
     setCurrentNavView('home');
   };
 
@@ -182,24 +193,30 @@ export const App: React.FC = () => {
       />
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`flex-1 w-full ${!currentUser && currentNavView === 'home' ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}`}>
         
         {currentNavView === 'about' ? (
           <AboutPage language={language} />
-        ) : currentNavView === 'contact' ? (
-          <ContactPage language={language} />
+        ) : currentNavView === 'howItWorks' || currentNavView === 'contact' ? (
+          <HowItWorksPage
+            language={language}
+            onNavigateHome={() => setCurrentNavView('home')}
+            onOpenLogin={() => setIsLoginOpen(true)}
+          />
         ) : !currentUser ? (
           /* GUEST / LANDING VIEW */
-          <LandingPage
-            language={language}
-            onGetStarted={() => setIsGetStartedOpen(true)}
-            onOpenLogin={() => setIsLoginOpen(true)}
-            districts={districts}
-            branches={branches}
-            employees={employees}
-            reports={reports}
-            targets={targets}
-          />
+          <div className="-mt-8">
+            <LandingPage
+              language={language}
+              onGetStarted={() => setIsGetStartedOpen(true)}
+              onOpenLogin={() => setIsLoginOpen(true)}
+              districts={districts}
+              branches={branches}
+              employees={employees}
+              reports={reports}
+              targets={targets}
+            />
+          </div>
         ) : (
           /* AUTHENTICATED DASHBOARD VIEWS */
           <div className="space-y-6">
@@ -231,11 +248,20 @@ export const App: React.FC = () => {
                 reports={reports}
                 employees={employees}
                 targets={targets}
+                notifications={notifications}
+                activeTab={managerActiveTab}
+                onTabChange={setManagerActiveTab}
                 onRefreshData={loadData}
                 onOpenAiAssistant={() => setIsAiDrawerOpen(true)}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
-                onOpenProfile={() => setIsProfileOpen(true)}
+                onOpenProfile={() => setManagerActiveTab('profiles')}
                 onOpenAiSummary={handleOpenAiForEmployee}
+                onUserUpdated={(updatedUser) => {
+                  setCurrentUser(updatedUser);
+                  localStorage.setItem('bunna_user', JSON.stringify(updatedUser));
+                }}
+                language={language}
+                onLanguageChange={setLanguage}
               />
             )}
 

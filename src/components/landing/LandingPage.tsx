@@ -100,7 +100,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [efficiencyCount, setEfficiencyCount] = useState(0);
 
   // Category Filter for Hanging Card Performance KPIs
-  const [kpiCategory, setKpiCategory] = useState<'ALL' | 'FINANCIAL' | 'DIGITAL'>('ALL');
+  const [kpiCategory, setKpiCategory] = useState<'ALL' | 'Finance' | 'Stakeholder' | 'Internal Business' | 'Learning & Growth'>('ALL');
 
   useEffect(() => {
     // For the home page counter:
@@ -166,7 +166,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-001',
       name: 'Deposits Mobilized',
       code: 'DEP_ETB',
-      category: 'FINANCIAL' as const,
+      category: 'Finance' as const,
       unit: 'ETB',
       key: 'depositsETB',
       isCurrency: true,
@@ -179,7 +179,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-002',
       name: 'Foreign Currency Inflow',
       code: 'FCY_ETB',
-      category: 'FINANCIAL' as const,
+      category: 'Finance' as const,
       unit: 'USD',
       key: 'foreignCurrencyETB',
       isCurrency: true,
@@ -192,7 +192,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-003',
       name: 'Digital Financial Services',
       code: 'DFS_ETB',
-      category: 'FINANCIAL' as const,
+      category: 'Finance' as const,
       unit: 'ETB',
       key: 'digitalFinancialServicesETB',
       isCurrency: true,
@@ -205,7 +205,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-004',
       name: 'Account Openings',
       code: 'ACC_OPEN',
-      category: 'DIGITAL' as const,
+      category: 'Stakeholder' as const,
       unit: 'Accounts',
       key: 'accountOpenings',
       isCurrency: false,
@@ -218,7 +218,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-005',
       name: 'Bunna Mobile Activations',
       code: 'MB_ACT',
-      category: 'DIGITAL' as const,
+      category: 'Internal Business' as const,
       unit: 'Users',
       key: 'mobileBankingActivations',
       isCurrency: false,
@@ -231,7 +231,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-006',
       name: 'Internet Banking',
       code: 'IB_ACT',
-      category: 'DIGITAL' as const,
+      category: 'Internal Business' as const,
       unit: 'Users',
       key: 'internetBankingActivations',
       isCurrency: false,
@@ -244,7 +244,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-007',
       name: 'Merchant QR Solutions',
       code: 'MERCH_SOL',
-      category: 'DIGITAL' as const,
+      category: 'Internal Business' as const,
       unit: 'Merchants',
       key: 'merchantSolutions',
       isCurrency: false,
@@ -257,7 +257,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       id: 'KPI-008',
       name: 'ATM Card Activations',
       code: 'ATM_CARD',
-      category: 'DIGITAL' as const,
+      category: 'Internal Business' as const,
       unit: 'Cards',
       key: 'atmCardActivations',
       isCurrency: false,
@@ -340,10 +340,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#222222]">
+    <div className="bg-[#3A2212] text-white">
       
       {/* HERO SECTION */}
-      <section className="relative pt-12 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[#6B3F1D] via-[#4A2C17] to-[#3A2212] text-white">
+      <section className="relative pt-12 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[#6B3F1D] via-[#4A2C17] to-[#3A2212] text-white">
         {/* Glow & Grid Accents */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C89A2B]/10 rounded-full blur-[140px] pointer-events-none" />
         
@@ -461,36 +461,56 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
 
                     {/* KPI Category Navigation Tabs */}
-                    <div className="pt-1 flex items-center justify-between gap-1 bg-black/30 p-1 rounded-xl border border-white/10">
+                    <div className="pt-1 grid grid-cols-5 gap-1 bg-black/30 p-1 rounded-xl border border-white/10 text-[10px]">
                       <button
                         onClick={() => setKpiCategory('ALL')}
-                        className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all ${
+                        className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
                           kpiCategory === 'ALL'
                             ? 'bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-md'
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        All KPIs (8)
+                        All
                       </button>
                       <button
-                        onClick={() => setKpiCategory('FINANCIAL')}
-                        className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all ${
-                          kpiCategory === 'FINANCIAL'
+                        onClick={() => setKpiCategory('Finance')}
+                        className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
+                          kpiCategory === 'Finance'
                             ? 'bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-md'
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Financial
+                        Finance
                       </button>
                       <button
-                        onClick={() => setKpiCategory('DIGITAL')}
-                        className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all ${
-                          kpiCategory === 'DIGITAL'
+                        onClick={() => setKpiCategory('Stakeholder')}
+                        className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
+                          kpiCategory === 'Stakeholder'
                             ? 'bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-md'
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Digital Banking
+                        Stakeholder
+                      </button>
+                      <button
+                        onClick={() => setKpiCategory('Internal Business')}
+                        className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
+                          kpiCategory === 'Internal Business'
+                            ? 'bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-md'
+                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        Internal Business
+                      </button>
+                      <button
+                        onClick={() => setKpiCategory('Learning & Growth')}
+                        className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
+                          kpiCategory === 'Learning & Growth'
+                            ? 'bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-md'
+                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        Learning & Growth
                       </button>
                     </div>
                   </div>
@@ -570,8 +590,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </motion.div>
 
-                {/* Decorative floating badge */}
-                <div className="absolute -bottom-6 -left-6 p-3.5 rounded-2xl bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-2xl z-20 flex items-center space-x-3 hidden sm:flex border border-white/30">
+                {/* Decorative badge */}
+                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-2xl flex items-center space-x-3 border border-white/30">
                   <Award className="w-7 h-7" />
                   <div>
                     <p className="font-black text-xs tracking-tight">Bunna Bank Live Attainment</p>
@@ -586,148 +606,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* ABOUT EPMS SECTION */}
-      <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-[#E5E5E5]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-[#6B3F1D] font-bold text-xs uppercase tracking-widest">About EPMS</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#222222] mt-2">
-              Transforming Human Capital Across Bunna Bank S.C.
-            </h2>
-            <p className="text-[#666666] text-sm mt-3 leading-relaxed">
-              EPMS bridges everyday branch operations with executive strategic goals. By digitizing deposit tracking, FCY inflow, and digital banking activations, Bunna Bank empowers every employee to excel.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-[#F5F5F5] border border-[#E5E5E5] hover:border-[#6B3F1D] transition-all">
-              <div className="w-12 h-12 rounded-xl bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-[#6B3F1D]" />
-              </div>
-              <h3 className="font-bold text-lg text-[#222222] mb-2">Real-Time Performance Tracking</h3>
-              <p className="text-xs text-[#666666] leading-relaxed">
-                Employees record financial metrics and digital banking activations daily, feeding live dashboards for managers and district directors.
-              </p>
-            </div>
 
-            <div className="p-6 rounded-2xl bg-[#F5F5F5] border border-[#E5E5E5] hover:border-[#6B3F1D] transition-all">
-              <div className="w-12 h-12 rounded-xl bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center mb-4">
-                <Sparkles className="w-6 h-6 text-[#6B3F1D]" />
-              </div>
-              <h3 className="font-bold text-lg text-[#222222] mb-2">AI-Powered Performance Insights</h3>
-              <p className="text-xs text-[#666666] leading-relaxed">
-                Gemini LLM assistant provides personalized target gap analysis, manager comment drafting, and predictive trend forecasts.
-              </p>
-            </div>
 
-            <div className="p-6 rounded-2xl bg-[#F5F5F5] border border-[#E5E5E5] hover:border-[#6B3F1D] transition-all">
-              <div className="w-12 h-12 rounded-xl bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center mb-4">
-                <ShieldCheck className="w-6 h-6 text-[#6B3F1D]" />
-              </div>
-              <h3 className="font-bold text-lg text-[#222222] mb-2">Multi-Tier Approval Governance</h3>
-              <p className="text-xs text-[#666666] leading-relaxed">
-                Full governance cycle with draft, submission, manager approval, rejection, and correction workflows backed by audit logs.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CORE FEATURES SECTION */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F5F5]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-[#6B3F1D] font-bold text-xs uppercase tracking-widest">System Capabilities</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#222222] mt-2">
-              Designed for Enterprise Banking Excellence
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: "Financial Mobilization", desc: "Track ETB savings deposits, Foreign Currency (FCY) remittance, and Digital Financial Services." },
-              { title: "Digital Banking Activations", desc: "Monitor account openings, Bunna Mobile, Internet Banking, Merchant POS, and ATM cards." },
-              { title: "District & Branch Leaderboards", desc: "Compare district rankings, top branch benchmarks, and monthly employee champions." },
-              { title: "Multi-Format Exporting", desc: "Generate formatted performance reports in Excel, PDF, Word, CSV, and printable views." }
-            ].map((f, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-white border border-[#E5E5E5] hover:border-[#C89A2B] transition-all shadow-sm">
-                <CheckCircle2 className="w-6 h-6 text-[#2E7D32] mb-3" />
-                <h4 className="font-bold text-base text-[#222222] mb-1.5">{f.title}</h4>
-                <p className="text-xs text-[#666666] leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ SECTION */}
-      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-[#E5E5E5]">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="text-[#6B3F1D] font-bold text-xs uppercase tracking-widest">Questions & Answers</span>
-            <h2 className="text-3xl font-extrabold text-[#222222] mt-1">Frequently Asked Questions</h2>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((f, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl bg-[#F5F5F5] border border-[#E5E5E5] overflow-hidden transition-all"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full p-5 text-left font-bold text-sm text-[#222222] flex justify-between items-center hover:bg-black/5"
-                >
-                  <span>{f.q}</span>
-                  <ChevronRight className={`w-5 h-5 text-[#6B3F1D] transition-transform ${openFaq === idx ? 'rotate-90' : ''}`} />
-                </button>
-                {openFaq === idx && (
-                  <div className="px-5 pb-5 text-xs text-[#666666] leading-relaxed border-t border-[#E5E5E5] pt-3 bg-white">
-                    {f.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTACT SECTION */}
-      <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#F5F5F5]">
-        <div className="max-w-4xl mx-auto bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-8 sm:p-12 shadow-2xl text-center text-white">
-          <div className="w-12 h-12 rounded-2xl bg-[#C89A2B] text-[#6B3F1D] font-bold flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Contact Bunna Bank EPMS Desk</h2>
-          <p className="text-xs text-gray-200 mt-2 max-w-xl mx-auto">
-            Have questions regarding EPMS account provisioning, branch district mapping, or system capabilities? Get in touch with our team.
-          </p>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-xl mx-auto">
-            <input
-              type="text"
-              placeholder="Your Full Name"
-              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-gray-300 focus:outline-none focus:border-[#C89A2B]"
-            />
-            <input
-              type="email"
-              placeholder="Your Bunna Bank Email"
-              className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-gray-300 focus:outline-none focus:border-[#C89A2B]"
-            />
-          </div>
-          <textarea
-            rows={3}
-            placeholder="How can we assist your branch or district?"
-            className="w-full mt-4 max-w-xl px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-gray-300 focus:outline-none focus:border-[#C89A2B]"
-          />
-          <button
-            onClick={() => alert("Thank you! Your inquiry has been sent to Bunna Bank EPMS Support Desk.")}
-            className="mt-4 px-8 py-3 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs hover:bg-[#D8B45C] transition-all shadow-md"
-          >
-            Send Inquiry
-          </button>
-        </div>
-      </section>
 
     </div>
   );

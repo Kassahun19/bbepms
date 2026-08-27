@@ -3,6 +3,8 @@ import { X, Check, AlertCircle, Shield, Building, MapPin, User as UserIcon, Lock
 import { District, Branch, User } from '../../types';
 import { api } from '../../services/api';
 import { initialDistricts, initialBranches } from '../../data/mockData';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -18,8 +20,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
   onOpenLogin
 }) => {
   const [step, setStep] = useState(1);
-  const [districts, setDistricts] = useState<District[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const [districts, setDistricts] = useState<District[]>(initialDistricts);
+  const [branches, setBranches] = useState<Branch[]>(initialBranches);
 
   // Form State
   const [selectedDistrictId, setSelectedDistrictId] = useState('');
@@ -45,24 +47,63 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     return matchesQuery && matchesRegion;
   });
 
+  const selectedDistrict = districts.find(d => d.id === selectedDistrictId) || initialDistricts.find(d => d.id === selectedDistrictId);
+
   // Derived search engine filter computations for Step 2 (Branches)
-  const districtBranches = selectedDistrictId
-    ? branches.filter(b => b.districtId === selectedDistrictId)
-    : branches;
+  const districtBranches = React.useMemo(() => {
+    if (!selectedDistrictId) return branches;
+
+    // Filter from loaded branches
+    let matched = branches.filter(b => {
+      if (!b) return false;
+      if (b.districtId === selectedDistrictId) return true;
+      if (selectedDistrict) {
+        if (b.districtId === selectedDistrict.id || b.districtId === selectedDistrict.code) return true;
+        if (b.districtName && selectedDistrict.name && b.districtName.toLowerCase().trim() === selectedDistrict.name.toLowerCase().trim()) return true;
+        if (selectedDistrict.code && b.districtId && b.districtId.includes(selectedDistrict.code)) return true;
+      }
+      return false;
+    });
+
+    // If branches state already holds filtered branches for this district
+    if (matched.length === 0 && branches.length > 0 && branches.length <= 100) {
+      matched = branches;
+    }
+
+    // Fallback to initialBranches directory if needed
+    if (matched.length === 0) {
+      matched = initialBranches.filter(b => {
+        if (b.districtId === selectedDistrictId) return true;
+        if (selectedDistrict) {
+          if (b.districtId === selectedDistrict.id || b.districtId === selectedDistrict.code) return true;
+          if (b.districtName && selectedDistrict.name && b.districtName.toLowerCase().trim() === selectedDistrict.name.toLowerCase().trim()) return true;
+          if (selectedDistrict.code && b.districtId && b.districtId.includes(selectedDistrict.code)) return true;
+        }
+        return false;
+      });
+    }
+
+    return matched;
+  }, [branches, selectedDistrictId, selectedDistrict]);
+
   const availableBranchTypes = Array.from(new Set(districtBranches.map(b => b.type).filter(Boolean))) as string[];
-  const filteredBranches = districtBranches.filter(b => {
-    const query = (branchSearchQuery || '').toLowerCase().trim();
-    const matchesQuery = !query || (
-      (b.name && b.name.toLowerCase().includes(query)) ||
-      (b.code && b.code.toLowerCase().includes(query)) ||
-      (b.solId && b.solId.toLowerCase().includes(query)) ||
-      (b.type && b.type.toLowerCase().includes(query)) ||
-      (b.location && b.location.toLowerCase().includes(query)) ||
-      (b.managerName && b.managerName.toLowerCase().includes(query))
-    );
-    const matchesType = selectedBranchTypeFilter === 'ALL' || b.type === selectedBranchTypeFilter;
-    return matchesQuery && matchesType;
-  });
+
+  const filteredBranches = React.useMemo(() => {
+    return districtBranches.filter(b => {
+      const query = (branchSearchQuery || '').toLowerCase().trim();
+      const matchesQuery = !query || (
+        (b.name && b.name.toLowerCase().includes(query)) ||
+        (b.code && b.code.toLowerCase().includes(query)) ||
+        (b.solId && b.solId.toLowerCase().includes(query)) ||
+        (b.type && b.type.toLowerCase().includes(query)) ||
+        (b.location && b.location.toLowerCase().includes(query)) ||
+        (b.managerName && b.managerName.toLowerCase().includes(query))
+      );
+      const matchesType = selectedBranchTypeFilter === 'ALL' || b.type === selectedBranchTypeFilter;
+      return matchesQuery && matchesType;
+    });
+  }, [districtBranches, branchSearchQuery, selectedBranchTypeFilter]);
+
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -110,17 +151,21 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
           if (Array.isArray(data) && data.length > 0) {
             setBranches(data);
           } else {
-            setBranches(initialBranches.filter(b => b.districtId === selectedDistrictId));
+            setBranches(initialBranches.filter(b => 
+              b.districtId === selectedDistrictId || 
+              (selectedDistrict && (b.districtId === selectedDistrict.id || b.districtId === selectedDistrict.code || b.districtName === selectedDistrict.name))
+            ));
           }
         })
         .catch(err => {
           console.error('Failed to load branches:', err);
-          setBranches(initialBranches.filter(b => b.districtId === selectedDistrictId));
+          setBranches(initialBranches.filter(b => 
+            b.districtId === selectedDistrictId || 
+            (selectedDistrict && (b.districtId === selectedDistrict.id || b.districtId === selectedDistrict.code || b.districtName === selectedDistrict.name))
+          ));
         });
-    } else {
-      setBranches([]);
     }
-  }, [selectedDistrictId]);
+  }, [selectedDistrictId, selectedDistrict]);
 
   // Live User ID Validation check debounce
   useEffect(() => {
@@ -241,16 +286,38 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
     }
   };
 
+  const hasUnsavedChanges = Boolean(
+    selectedDistrictId ||
+    selectedBranchId ||
+    firstName ||
+    lastName ||
+    phone ||
+    email ||
+    userId ||
+    step > 1
+  );
+
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+    hasUnsavedChanges,
+    unsavedMessage: 'You have entered registration data. Are you sure you want to close without completing registration?'
+  });
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4">
-      <div className="w-full max-w-xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative">
-        
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close registration dialog" />
+        </div>
 
         {/* Wizard Progress Indicator */}
         <div className="mb-6">
@@ -570,7 +637,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
               </div>
 
               {/* Branch Search Results List */}
-              <div className="max-h-52 overflow-y-auto pr-1 space-y-2 rounded-2xl p-1.5 bg-black/30 border border-white/10">
+              <div className="max-h-56 overflow-y-auto pr-1 space-y-2 rounded-2xl p-1.5 bg-black/30 border border-white/10">
                 {filteredBranches.length === 0 ? (
                   <div className="p-6 text-center text-xs text-gray-300 space-y-2">
                     <Building className="w-8 h-8 mx-auto opacity-40 text-[#C89A2B]" />
@@ -589,6 +656,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                 ) : (
                   filteredBranches.map(b => {
                     const isSelected = selectedBranchId === b.id;
+                    const cleanName = b.name.replace(/Branch/gi, '').trim();
                     return (
                       <div
                         key={b.id}
@@ -599,10 +667,24 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                             : 'bg-white/5 border-white/10 hover:border-[#C89A2B]/50 hover:bg-white/10'
                         }`}
                       >
-                        <div className="space-y-0.5 min-w-0">
-                          <span className="font-bold text-xs text-white truncate block">
-                            {b.name.replace(/Branch/gi, '').trim()} Branch — SOL ID: {b.solId || b.code}
-                          </span>
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-xs text-white truncate">{cleanName} Branch</span>
+                            {b.solId && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/30">
+                                SOL {b.solId}
+                              </span>
+                            )}
+                            {b.type && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] bg-white/10 text-gray-200">
+                                {b.type}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-gray-300 flex flex-wrap gap-x-3 gap-y-0.5">
+                            {b.location && <span>Location: <strong className="text-gray-200">{b.location}</strong></span>}
+                            {b.managerName && <span>Manager: <strong className="text-gray-200">{b.managerName}</strong></span>}
+                          </div>
                         </div>
                         <div className="shrink-0 flex items-center space-x-2">
                           {isSelected ? (
@@ -629,25 +711,31 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   onChange={(e) => setSelectedBranchId(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 focus:border-[#C89A2B] text-xs text-white focus:outline-none"
                 >
-                  <option value="">-- Choose Branch --</option>
-                  {districtBranches.map(b => (
-                    <option key={b.id} value={b.id}>
-                      {b.name.replace(/Branch/gi, '').trim()} Branch — SOL ID: {b.solId || b.code}
-                    </option>
-                  ))}
+                  <option value="">-- Choose Branch ({districtBranches.length} Available) --</option>
+                  {districtBranches.map(b => {
+                    const cleanName = b.name.replace(/Branch/gi, '').trim();
+                    return (
+                      <option key={b.id} value={b.id}>
+                        {cleanName} Branch — {b.solId ? `SOL ID: ${b.solId}` : `Code: ${b.code}`} ({b.type || 'Standard'})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
               {selectedBranchId && (
                 <div className="p-3.5 rounded-2xl bg-white/10 border border-[#C89A2B]/30 text-xs text-gray-200">
                   {(() => {
-                    const b = branches.find(br => br.id === selectedBranchId);
+                    const b = districtBranches.find(br => br.id === selectedBranchId) || 
+                              branches.find(br => br.id === selectedBranchId) || 
+                              initialBranches.find(br => br.id === selectedBranchId);
                     if (!b) return null;
                     return (
                       <div className="space-y-1">
                         <div className="font-bold text-[#C89A2B] flex items-center space-x-2">
                           <Building className="w-4 h-4" />
-                          <span>{b.name}</span>
+                          <span>{b.name.replace(/Branch/gi, '').trim()} Branch</span>
+                          {b.solId && <span className="font-mono text-xs text-gray-200">(SOL {b.solId})</span>}
                         </div>
                         <div className="text-gray-200">
                           Branch Code: <span className="font-mono text-white">{b.code}</span> • Type: <span className="text-white">{b.type}</span>
@@ -773,8 +861,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
               <div className="p-3.5 rounded-2xl bg-white/10 border border-[#C89A2B]/30 text-xs text-gray-200 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="text-gray-300">Assigned Location:</span>{" "}
-                  <strong className="text-white">{districts.find(d => d.id === selectedDistrictId)?.name || 'District'}</strong>{" "}
-                  • <strong className="text-[#C89A2B]">{branches.find(b => b.id === selectedBranchId)?.name || 'Branch'}</strong>
+                  <strong className="text-white">{selectedDistrict?.name || 'District'}</strong>{" "}
+                  • <strong className="text-[#C89A2B]">{(districtBranches.find(b => b.id === selectedBranchId) || branches.find(b => b.id === selectedBranchId) || initialBranches.find(b => b.id === selectedBranchId))?.name || 'Branch'}</strong>
                 </div>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C89A2B]/20 border border-[#C89A2B]/40 text-[#C89A2B]">
                   Automatic Role Routing
@@ -801,7 +889,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   </div>
                   <p className="text-xs font-semibold opacity-90">Role Access: MANAGER</p>
                   <p className="text-[11px] opacity-80 mt-2 leading-relaxed">
-                    Designed for Branch Operations Managers & Supervisors. Automatically assigns you as the official Manager of <strong>{branches.find(b => b.id === selectedBranchId)?.name || 'this Branch'}</strong> with full authority over branch staff.
+                    Designed for Branch Operations Managers & Supervisors. Automatically assigns you as the official Manager of <strong>{(districtBranches.find(b => b.id === selectedBranchId) || branches.find(b => b.id === selectedBranchId) || initialBranches.find(b => b.id === selectedBranchId))?.name || 'this Branch'}</strong> with full authority over branch staff.
                   </p>
                   {roleType === 'Managerial' && (
                     <div className="mt-3 flex items-center space-x-1.5 text-xs font-extrabold text-[#6B3F1D]">
@@ -830,7 +918,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   </div>
                   <p className="text-xs font-semibold opacity-90">Role Access: EMPLOYEE</p>
                   <p className="text-[11px] opacity-80 mt-2 leading-relaxed">
-                    Designed for Customer Service Officers & Tellers. Automatically assigns you as an employee under <strong>{branches.find(b => b.id === selectedBranchId)?.name || 'this Branch'}</strong>'s designated manager.
+                    Designed for Customer Service Officers & Tellers. Automatically assigns you as an employee under <strong>{(districtBranches.find(b => b.id === selectedBranchId) || branches.find(b => b.id === selectedBranchId) || initialBranches.find(b => b.id === selectedBranchId))?.name || 'this Branch'}</strong>'s designated manager.
                   </p>
                   {roleType === 'Non-Managerial' && (
                     <div className="mt-3 flex items-center space-x-1.5 text-xs font-extrabold text-[#6B3F1D]">

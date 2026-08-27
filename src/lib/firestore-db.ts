@@ -33,10 +33,68 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app, firestoreDatabaseId || '(default)');
 
+// Persistent quota tracking across browser sessions
+const QUOTA_STORAGE_KEY = 'epms_firestore_quota_exhausted_until';
+
+function getInitialQuotaExhaustedTime(): number {
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const stored = window.sessionStorage.getItem(QUOTA_STORAGE_KEY);
+      if (stored) {
+        const val = parseInt(stored, 10);
+        if (!isNaN(val) && val > Date.now()) return val;
+      }
+    }
+  } catch {}
+  return 0;
+}
+
+let quotaExhaustedUntil = getInitialQuotaExhaustedTime();
+let quotaExceededLogged = false;
+
+export function isFirestoreQuotaExhausted(): boolean {
+  if (quotaExhaustedUntil > Date.now()) return true;
+  return false;
+}
+
+export function setFirestoreQuotaExhausted(durationMs: number = 60 * 60 * 1000): void {
+  quotaExhaustedUntil = Date.now() + durationMs;
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      window.sessionStorage.setItem(QUOTA_STORAGE_KEY, String(quotaExhaustedUntil));
+    }
+  } catch {}
+}
+
+function handleFirestoreError(err: any, context: string) {
+  const isQuota = 
+    err?.code === 'resource-exhausted' || 
+    err?.code === 8 ||
+    err?.message?.includes('RESOURCE_EXHAUSTED') ||
+    err?.message?.includes('Quota exceeded') ||
+    err?.message?.includes('quota');
+
+  if (isQuota) {
+    setFirestoreQuotaExhausted(60 * 60 * 1000); // 1-hour backoff
+    if (!quotaExceededLogged) {
+      console.info(`[EPMS Persistence] Firestore daily quota reached. Seamlessly routing all data through local server persistence.`);
+      quotaExceededLogged = true;
+    }
+  } else {
+    // Suppress verbose gRPC errors when quota or connection is unavailable
+    if (err?.code !== 'unavailable' && err?.code !== 'cancelled') {
+      console.warn(`[Firestore Notice] Note during ${context}:`, err?.message || err);
+    }
+  }
+}
+
 /**
  * Generic Firestore collection fetcher
  */
 export async function getCollectionItems<T>(collectionName: string): Promise<T[]> {
+  if (isFirestoreQuotaExhausted()) {
+    return [];
+  }
   try {
     const colRef = collection(db, collectionName);
     const snapshot = await getDocs(colRef);
@@ -45,8 +103,8 @@ export async function getCollectionItems<T>(collectionName: string): Promise<T[]
       id: docSnap.id,
       ...docSnap.data()
     })) as T[];
-  } catch (err) {
-    console.error(`Error fetching Firestore collection ${collectionName}:`, err);
+  } catch (err: any) {
+    handleFirestoreError(err, `fetching Firestore collection ${collectionName}`);
     return [];
   }
 }
@@ -55,13 +113,16 @@ export async function getCollectionItems<T>(collectionName: string): Promise<T[]
  * Generic Firestore single document saver
  */
 export async function saveDocument(collectionName: string, id: string, data: any): Promise<void> {
+  if (isFirestoreQuotaExhausted()) {
+    return;
+  }
   try {
     const docRef = doc(db, collectionName, id);
     // Sanitize undefined fields to null or delete them
     const cleanData = JSON.parse(JSON.stringify(data));
     await setDoc(docRef, cleanData, { merge: true });
-  } catch (err) {
-    console.error(`Error saving document ${id} to ${collectionName}:`, err);
+  } catch (err: any) {
+    handleFirestoreError(err, `saving document ${id} to ${collectionName}`);
   }
 }
 
@@ -69,6 +130,9 @@ export async function saveDocument(collectionName: string, id: string, data: any
  * Generic Firestore batch collection writer with automatic 400-item chunking
  */
 export async function saveCollectionBatch(collectionName: string, items: any[]): Promise<void> {
+  if (isFirestoreQuotaExhausted()) {
+    return;
+  }
   try {
     if (!items || items.length === 0) return;
     const chunkSize = 400;
@@ -83,8 +147,8 @@ export async function saveCollectionBatch(collectionName: string, items: any[]):
       });
       await batch.commit();
     }
-  } catch (err) {
-    console.error(`Error saving batch to ${collectionName}:`, err);
+  } catch (err: any) {
+    handleFirestoreError(err, `saving batch to ${collectionName}`);
   }
 }
 
@@ -92,10 +156,13 @@ export async function saveCollectionBatch(collectionName: string, items: any[]):
  * Generic Firestore document deleter
  */
 export async function deleteDocument(collectionName: string, id: string): Promise<void> {
+  if (isFirestoreQuotaExhausted()) {
+    return;
+  }
   try {
     const docRef = doc(db, collectionName, id);
     await deleteDoc(docRef);
-  } catch (err) {
-    console.error(`Error deleting document ${id} from ${collectionName}:`, err);
+  } catch (err: any) {
+    handleFirestoreError(err, `deleting document ${id} from ${collectionName}`);
   }
 }

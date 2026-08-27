@@ -1,7 +1,9 @@
 import React from 'react';
-import { X, Shield, Briefcase, UserCheck } from 'lucide-react';
+import { Shield, Briefcase, UserCheck } from 'lucide-react';
 import { UserRole } from '../../types';
 import { BunnaBankLogo } from './BunnaBankLogo';
+import { ModalCloseButton } from './ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface GetStartedModalProps {
   isOpen: boolean;
@@ -16,18 +18,25 @@ export const GetStartedModal: React.FC<GetStartedModalProps> = ({
   onSelectRole,
   onOpenRegister
 }) => {
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4">
-      <div className="w-full max-w-lg bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative">
-        
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-lg bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close role selection modal" />
+        </div>
 
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C89A2B] via-[#D8B45C] to-[#4A2C17] p-0.5 shadow-xl flex items-center justify-center mx-auto mb-3">

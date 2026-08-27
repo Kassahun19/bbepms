@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Search, X, User, Building, MapPin, Target, FileText } from 'lucide-react';
+import { Search, User, Building, MapPin, Target, FileText } from 'lucide-react';
 import { getUserFullName } from '../../types';
+import { ModalCloseButton } from './ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -23,6 +25,11 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 }) => {
   const [query, setQuery] = useState('');
 
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   const q = query.trim().toLowerCase();
@@ -40,9 +47,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     (b.solId || '').toLowerCase().includes(q)
   ) : [];
   const matchedDistricts = q ? districts.filter(d => 
-    (d.name || '').toLowerCase().includes(q) || 
-    (d.region || '').toLowerCase().includes(q) ||
-    (d.code || '').toLowerCase().includes(q)
+    (d.name || '').toLowerCase().includes(d.name ? q : '') || 
+    (d.region || '').toLowerCase().includes(d.region ? q : '') ||
+    (d.code || '').toLowerCase().includes(d.code ? q : '')
   ) : [];
   const matchedReports = q ? reports.filter(r => 
     (r.employeeName || '').toLowerCase().includes(q) || 
@@ -56,12 +63,18 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   ) : [];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center pt-20 px-4">
-      <div className="w-full max-w-2xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-2xl shadow-2xl text-white overflow-hidden">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center pt-20 px-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-2xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-2xl shadow-2xl text-white overflow-hidden"
+      >
         
         {/* Search Bar Input */}
         <div className="p-4 border-b border-white/10 flex items-center space-x-3 bg-[#4A2C17]">
-          <Search className="w-5 h-5 text-[#C89A2B]" />
+          <Search className="w-5 h-5 text-[#C89A2B] shrink-0" />
           <input
             type="text"
             value={query}
@@ -70,12 +83,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none text-sm font-medium"
             autoFocus
           />
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <ModalCloseButton
+            onClose={onClose}
+            ariaLabel="Close search modal"
+            size="sm"
+            variant="ghost"
+          />
         </div>
 
         {/* Results Container */}

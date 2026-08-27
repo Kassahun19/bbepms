@@ -22,24 +22,40 @@ interface BranchCampaignWidgetProps {
   onReportSubmitted?: () => void;
 }
 
+type CampaignPeriod = 'today' | 'weekly' | 'monthly' | 'quarterly' | 'semiannually' | 'yearly';
+
 export const BranchCampaignWidget: React.FC<BranchCampaignWidgetProps> = ({
   branchName = 'Hamusit Branch (SOL 360)',
   userRole = 'EMPLOYEE',
   reports = [],
   onReportSubmitted
 }) => {
-  const [period, setPeriod] = useState<'today' | 'weekly' | 'monthly' | 'yearly'>('today');
+  const [period, setPeriod] = useState<CampaignPeriod>('today');
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing'>('synced');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const periods: { id: CampaignPeriod; label: string }[] = [
+    { id: 'today', label: 'Today' },
+    { id: 'weekly', label: 'Weekly' },
+    { id: 'monthly', label: 'Monthly' },
+    { id: 'quarterly', label: 'Quarterly' },
+    { id: 'semiannually', label: 'Semi-Annually' },
+    { id: 'yearly', label: 'Yearly' },
+  ];
 
   // Filter reports by period
   const getFilteredReports = () => {
     const now = new Date();
     const utcDateStr = now.toISOString().split('T')[0];
     const localDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const currentQuarter = Math.floor((currentMonth - 1) / 3) + 1;
+    const currentHalf = currentMonth <= 6 ? 1 : 2;
 
     const periodFiltered = reports.filter(r => {
       if (!r.reportDate) return false;
+      if (r.status !== 'Approved') return false;
       if (period === 'today') {
         return r.reportDate === utcDateStr || r.reportDate === localDateStr;
       }
@@ -49,10 +65,25 @@ export const BranchCampaignWidget: React.FC<BranchCampaignWidgetProps> = ({
         return diffDays >= 0 && diffDays <= 7;
       }
       if (period === 'monthly') {
-        return r.year === now.getFullYear() && r.month === now.getMonth() + 1;
+        const repYear = r.year || new Date(r.reportDate).getFullYear();
+        const repMonth = r.month || (new Date(r.reportDate).getMonth() + 1);
+        return repYear === currentYear && repMonth === currentMonth;
+      }
+      if (period === 'quarterly') {
+        const repYear = r.year || new Date(r.reportDate).getFullYear();
+        const repMonth = r.month || (new Date(r.reportDate).getMonth() + 1);
+        const repQuarter = Math.floor((repMonth - 1) / 3) + 1;
+        return repYear === currentYear && repQuarter === currentQuarter;
+      }
+      if (period === 'semiannually') {
+        const repYear = r.year || new Date(r.reportDate).getFullYear();
+        const repMonth = r.month || (new Date(r.reportDate).getMonth() + 1);
+        const repHalf = repMonth <= 6 ? 1 : 2;
+        return repYear === currentYear && repHalf === currentHalf;
       }
       if (period === 'yearly') {
-        return r.year === now.getFullYear();
+        const repYear = r.year || new Date(r.reportDate).getFullYear();
+        return repYear === currentYear;
       }
       return true;
     });
@@ -129,18 +160,18 @@ export const BranchCampaignWidget: React.FC<BranchCampaignWidgetProps> = ({
           </button>
 
           {/* Period Selector Tabs */}
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-bold">
-            {(['today', 'weekly', 'monthly', 'yearly'] as const).map(p => (
+          <div className="flex flex-wrap items-center bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1">
+            {periods.map(p => (
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1 rounded-lg capitalize transition-all ${
-                  period === p
-                    ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md'
+                key={p.id}
+                onClick={() => setPeriod(p.id)}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all text-xs ${
+                  period === p.id
+                    ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md font-extrabold'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                {p}
+                {p.label}
               </button>
             ))}
           </div>
@@ -218,7 +249,7 @@ export const BranchCampaignWidget: React.FC<BranchCampaignWidgetProps> = ({
           </div>
           <div>
             <h4 className="text-sm font-bold text-white">
-              Total Digital Banking Activations ({period.toUpperCase()})
+              Total Digital Banking Activations ({periods.find(p => p.id === period)?.label.toUpperCase()})
             </h4>
             <p className="text-xs text-gray-300">
               Combined Mobile, Web, ATM Cards, and Merchant POS deployed across the campaign

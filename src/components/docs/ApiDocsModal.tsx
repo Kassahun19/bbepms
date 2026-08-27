@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Code, Database, X, Copy, Check } from 'lucide-react';
+import { Code, Database, Copy, Check } from 'lucide-react';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface ApiDocsModalProps {
   isOpen: boolean;
@@ -9,6 +11,11 @@ interface ApiDocsModalProps {
 export const ApiDocsModal: React.FC<ApiDocsModalProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'api' | 'sql'>('api');
   const [copied, setCopied] = useState(false);
+
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -93,15 +100,17 @@ CREATE TABLE daily_performance_reports (
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 relative">
-        
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-3xl bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 relative"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close API documentation modal" />
+        </div>
 
         <div className="flex items-center space-x-3 mb-6">
           <Code className="w-6 h-6 text-[#C89A2B]" />

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  X,
   UserCheck,
   TrendingUp,
   Coins,
@@ -25,6 +24,8 @@ import {
 } from 'lucide-react';
 import { User, DailyPerformanceReport, PerformanceTarget, getUserFullName } from '../../types';
 import { PeriodPerformanceDashboard } from './PeriodPerformanceDashboard';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface EmployeePerformanceModalProps {
   isOpen: boolean;
@@ -157,6 +158,11 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
   const [selectedEmpId, setSelectedEmpId] = useState<string>(
     initialEmployeeId || employees[0]?.id || ''
   );
+
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
   const [timePeriod, setTimePeriod] = useState<'AllTime' | 'ThisMonth' | 'ThisQuarter'>('AllTime');
   const [activeViewTab, setActiveViewTab] = useState<'calendar' | 'products' | 'submissions'>('calendar');
 
@@ -248,8 +254,14 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-      <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-6xl text-white shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+    >
+      <div
+        ref={contentRef}
+        className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-6xl text-white shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+      >
         
         {/* Modal Header */}
         <div className="p-6 bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#362011] border-b border-[#C89A2B]/30 flex items-center justify-between gap-4">
@@ -281,12 +293,7 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
               <Printer className="w-4 h-4 text-[#C89A2B]" />
               <span className="hidden sm:inline">Print</span>
             </button>
-            <button
-              onClick={onClose}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-rose-600/80 text-gray-300 hover:text-white transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <ModalCloseButton onClose={onClose} ariaLabel="Close employee performance dashboard" />
           </div>
         </div>
 

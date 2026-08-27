@@ -9,7 +9,6 @@ import {
   CheckCircle2, 
   Ban, 
   Eye, 
-  X, 
   ShieldCheck, 
   Mail, 
   Phone, 
@@ -20,6 +19,8 @@ import {
 } from 'lucide-react';
 import { User, getUserFullName } from '../../types';
 import { api } from '../../services/api';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface BranchEmployeeManagementPanelProps {
   currentUser: User;
@@ -70,6 +71,35 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Dismiss Hooks
+  const isAddDirty = formFirstName.length > 0 || formLastName.length > 0 || formUserId.length > 0;
+  const { contentRef: addModalRef, handleBackdropClick: handleAddBackdropClick, handleDismissRequest: requestAddClose } = useModalDismiss({
+    isOpen: isAddModalOpen,
+    onClose: () => setIsAddModalOpen(false),
+    hasUnsavedChanges: isAddDirty,
+    unsavedMessage: 'You have unsaved employee registration details. Are you sure you want to discard and close?'
+  });
+
+  const { contentRef: editModalRef, handleBackdropClick: handleEditBackdropClick } = useModalDismiss({
+    isOpen: !!editingEmployee,
+    onClose: () => setEditingEmployee(null),
+  });
+
+  const { contentRef: viewModalRef, handleBackdropClick: handleViewBackdropClick } = useModalDismiss({
+    isOpen: !!viewingEmployee,
+    onClose: () => setViewingEmployee(null),
+  });
+
+  const { contentRef: resetPwdModalRef, handleBackdropClick: handleResetPwdBackdropClick } = useModalDismiss({
+    isOpen: !!resetPwdEmployee,
+    onClose: () => setResetPwdEmployee(null),
+  });
+
+  const { contentRef: deleteModalRef, handleBackdropClick: handleDeleteBackdropClick } = useModalDismiss({
+    isOpen: !!deleteConfirmEmployee,
+    onClose: () => setDeleteConfirmEmployee(null),
+  });
 
   const filteredEmployees = branchEmployees.filter(e => {
     const term = (searchTerm || '').toLowerCase();
@@ -387,16 +417,20 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
 
       {/* ADD EMPLOYEE MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6">
+        <div
+          onClick={handleAddBackdropClick}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={addModalRef}
+            className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-extrabold text-lg text-[#D4AF37] flex items-center space-x-2">
                 <UserPlus className="w-5 h-5" />
                 <span>Register New Branch Employee</span>
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
+              <ModalCloseButton onClose={requestAddClose} ariaLabel="Close register employee modal" />
             </div>
 
             <form onSubmit={handleSaveAddEmployee} className="space-y-4">
@@ -512,16 +546,20 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
 
       {/* EDIT EMPLOYEE MODAL */}
       {editingEmployee && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-blue-500/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6">
+        <div
+          onClick={handleEditBackdropClick}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={editModalRef}
+            className="bg-[#08321E] border border-blue-500/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-extrabold text-lg text-blue-300 flex items-center space-x-2">
                 <Edit3 className="w-5 h-5" />
                 <span>Update Employee: {getUserFullName(editingEmployee)}</span>
               </h3>
-              <button onClick={() => setEditingEmployee(null)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
+              <ModalCloseButton onClose={() => setEditingEmployee(null)} ariaLabel="Close edit employee modal" />
             </div>
 
             <form onSubmit={handleSaveEditEmployee} className="space-y-4">
@@ -609,16 +647,20 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
 
       {/* VIEW DETAILS MODAL */}
       {viewingEmployee && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-lg rounded-3xl p-6 text-white shadow-2xl space-y-6">
+        <div
+          onClick={handleViewBackdropClick}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={viewModalRef}
+            className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-lg rounded-3xl p-6 text-white shadow-2xl space-y-6"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-extrabold text-lg text-[#D4AF37] flex items-center space-x-2">
                 <ShieldCheck className="w-5 h-5" />
                 <span>Employee Profile Details</span>
               </h3>
-              <button onClick={() => setViewingEmployee(null)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
+              <ModalCloseButton onClose={() => setViewingEmployee(null)} ariaLabel="Close employee details modal" />
             </div>
 
             <div className="space-y-4 text-xs">
@@ -678,16 +720,20 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
 
       {/* RESET PASSWORD MODAL */}
       {resetPwdEmployee && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-amber-500/40 w-full max-w-md rounded-3xl p-6 text-white shadow-2xl space-y-6">
+        <div
+          onClick={handleResetPwdBackdropClick}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={resetPwdModalRef}
+            className="bg-[#08321E] border border-amber-500/40 w-full max-w-md rounded-3xl p-6 text-white shadow-2xl space-y-6"
+          >
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-extrabold text-lg text-amber-300 flex items-center space-x-2">
                 <KeyRound className="w-5 h-5" />
                 <span>Reset Employee Password</span>
               </h3>
-              <button onClick={() => setResetPwdEmployee(null)} className="text-gray-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
+              <ModalCloseButton onClose={() => setResetPwdEmployee(null)} ariaLabel="Close reset password modal" />
             </div>
 
             <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
@@ -729,11 +775,20 @@ export const BranchEmployeeManagementPanel: React.FC<BranchEmployeeManagementPan
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmEmployee && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#08321E] border border-rose-500/40 w-full max-w-md rounded-3xl p-6 text-white shadow-2xl space-y-6">
-            <div className="flex items-center space-x-3 text-rose-400">
-              <AlertTriangle className="w-6 h-6 shrink-0" />
-              <h3 className="font-extrabold text-lg">Confirm Employee Removal</h3>
+        <div
+          onClick={handleDeleteBackdropClick}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={deleteModalRef}
+            className="bg-[#08321E] border border-rose-500/40 w-full max-w-md rounded-3xl p-6 text-white shadow-2xl space-y-6"
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex items-center space-x-3 text-rose-400">
+                <AlertTriangle className="w-6 h-6 shrink-0" />
+                <h3 className="font-extrabold text-lg">Confirm Employee Removal</h3>
+              </div>
+              <ModalCloseButton onClose={() => setDeleteConfirmEmployee(null)} ariaLabel="Close delete confirmation" />
             </div>
             <p className="text-xs text-gray-300 leading-relaxed">
               Are you sure you want to remove <strong className="text-white">{getUserFullName(deleteConfirmEmployee)}</strong> from your branch? This action cannot be undone.

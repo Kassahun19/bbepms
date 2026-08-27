@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, Lock, User as UserIcon, CheckCircle, Mail, AlertCircle, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Eye, EyeOff, Lock, User as UserIcon, CheckCircle, Mail, AlertCircle, ShieldAlert } from 'lucide-react';
 import { UserRole, User } from '../../types';
 import { api } from '../../services/api';
 import { BunnaBankLogo } from '../common/BunnaBankLogo';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -69,8 +71,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     return () => clearInterval(timer);
   }, [lockoutTimer]);
 
-  if (!isOpen) return null;
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.getModifierState) {
       setCapsLockOn(e.getModifierState('CapsLock'));
@@ -126,16 +126,28 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
+  // Modal dismiss handler
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen: isOpen && !forgotModalOpen,
+    onClose,
+  });
+
+  const forgotContentRef = useRef<HTMLDivElement | null>(null);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4">
-      <div className="w-full max-w-md bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative">
-        
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4"
+    >
+      <div
+        ref={contentRef}
+        className="w-full max-w-md bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative"
+      >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close login dialog" />
+        </div>
 
         {/* Brand Header */}
         <div className="text-center mb-6">
@@ -268,14 +280,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
       {/* Forgot Password Reset Modal */}
       {forgotModalOpen && (
-        <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-[#6B3F1D] border border-[#C89A2B]/50 rounded-2xl p-6 relative text-white">
-            <button
-              onClick={() => { setForgotModalOpen(false); setForgotSuccessMsg(''); }}
-              className="absolute top-4 right-4 p-1 rounded-lg bg-white/10 text-gray-200"
-            >
-              <X className="w-4 h-4" />
-            </button>
+        <div
+          onClick={(e) => {
+            if (forgotContentRef.current && !forgotContentRef.current.contains(e.target as Node)) {
+              setForgotModalOpen(false);
+              setForgotSuccessMsg('');
+            }
+          }}
+          className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4"
+        >
+          <div
+            ref={forgotContentRef}
+            className="w-full max-w-sm bg-[#6B3F1D] border border-[#C89A2B]/50 rounded-2xl p-6 relative text-white"
+          >
+            <div className="absolute top-4 right-4">
+              <ModalCloseButton
+                onClose={() => { setForgotModalOpen(false); setForgotSuccessMsg(''); }}
+                ariaLabel="Close forgot password dialog"
+                size="sm"
+              />
+            </div>
 
             <h4 className="font-bold text-lg text-white mb-2">Reset Password</h4>
             <p className="text-xs text-gray-200 mb-4">

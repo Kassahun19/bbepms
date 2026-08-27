@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
-import { Building, X, Users, Target, Activity, CheckCircle2, TrendingUp, BarChart3, ChevronRight } from 'lucide-react';
+import { Building, Users, Target, Activity, CheckCircle2, TrendingUp, BarChart3, ChevronRight } from 'lucide-react';
 import { Branch, User, DailyPerformanceReport, KPI, PerformanceTarget } from '../../types';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface Props {
   branch: Branch;
@@ -19,6 +21,11 @@ export const BranchPerformanceDetailsModal: React.FC<Props> = ({
   kpis,
   targets
 }) => {
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen: true,
+    onClose,
+  });
+
   const branchUsers = useMemo(() => users.filter(u => u.branchId === branch.id), [users, branch.id]);
   const activeEmployees = useMemo(() => branchUsers.filter(u => u.status === 'Active' && u.role === 'EMPLOYEE'), [branchUsers]);
   const manager = branchUsers.find(u => u.role === 'MANAGER');
@@ -83,13 +90,19 @@ export const BranchPerformanceDetailsModal: React.FC<Props> = ({
   }, [branchReports, branchTargets, kpis]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto pt-10">
-      <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl text-white shadow-2xl mb-10 overflow-hidden">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto pt-10"
+    >
+      <div
+        ref={contentRef}
+        className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl text-white shadow-2xl mb-10 overflow-hidden"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] p-6 border-b border-white/10 relative">
-          <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="absolute top-6 right-6">
+            <ModalCloseButton onClose={onClose} ariaLabel="Close branch details modal" />
+          </div>
           
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C89A2B] to-[#6B3F1D] p-1 shadow-lg">

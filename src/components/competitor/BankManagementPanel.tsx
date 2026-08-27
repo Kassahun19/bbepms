@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Building2, Plus, Edit, Trash2, Upload, Search, CheckCircle, AlertCircle, FileSpreadsheet, Sparkles } from 'lucide-react';
 import { CommercialBank } from '../../types/competitor';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface BankManagementPanelProps {
   banks: CommercialBank[];
@@ -36,6 +38,22 @@ export const BankManagementPanel: React.FC<BankManagementPanelProps> = ({
     status: 'Active' as 'Active' | 'Inactive',
     totalBranchesNationwide: 100,
     color: '#003399'
+  });
+
+  const isFormDirty = formState.code.length > 0 || formState.name.length > 0;
+  const { contentRef: bankModalRef, handleBackdropClick: handleBankBackdropClick, handleDismissRequest: requestBankClose } = useModalDismiss({
+    isOpen: isModalOpen,
+    onClose: () => setIsModalOpen(false),
+    hasUnsavedChanges: isFormDirty,
+    unsavedMessage: 'You have unsaved bank details. Are you sure you want to discard and close?',
+  });
+
+  const isImportDirty = importText.trim().length > 0;
+  const { contentRef: importModalRef, handleBackdropClick: handleImportBackdropClick, handleDismissRequest: requestImportClose } = useModalDismiss({
+    isOpen: importModalOpen,
+    onClose: () => setImportModalOpen(false),
+    hasUnsavedChanges: isImportDirty,
+    unsavedMessage: 'You have unsaved import data. Are you sure you want to close?',
   });
 
   const openCreateModal = () => {
@@ -289,11 +307,20 @@ export const BankManagementPanel: React.FC<BankManagementPanelProps> = ({
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h4 className="text-xl font-bold text-white border-b border-white/10 pb-3">
-              {editingBank ? `Edit Bank: ${editingBank.name}` : 'Register New Commercial Bank'}
-            </h4>
+        <div
+          onClick={handleBankBackdropClick}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div
+            ref={bankModalRef}
+            className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h4 className="text-xl font-bold text-white">
+                {editingBank ? `Edit Bank: ${editingBank.name}` : 'Register New Commercial Bank'}
+              </h4>
+              <ModalCloseButton onClose={requestBankClose} ariaLabel="Close bank modal" />
+            </div>
 
             <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
@@ -378,7 +405,7 @@ export const BankManagementPanel: React.FC<BankManagementPanelProps> = ({
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={requestBankClose}
                   className="px-4 py-2 rounded-xl text-gray-300 hover:text-white bg-white/5 hover:bg-white/10"
                 >
                   Cancel
@@ -398,13 +425,20 @@ export const BankManagementPanel: React.FC<BankManagementPanelProps> = ({
 
       {/* Import Modal */}
       {importModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+        <div
+          onClick={handleImportBackdropClick}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div
+            ref={importModalRef}
+            className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center space-x-2 text-[#C89A2B]">
                 <FileSpreadsheet className="w-5 h-5" />
                 <h4 className="text-xl font-bold text-white">Import Commercial Banks (CSV/Excel)</h4>
               </div>
+              <ModalCloseButton onClose={requestImportClose} ariaLabel="Close import modal" />
             </div>
 
             <p className="text-xs text-gray-300">
@@ -423,7 +457,7 @@ export const BankManagementPanel: React.FC<BankManagementPanelProps> = ({
             <div className="flex items-center justify-end space-x-3 pt-3 border-t border-white/10">
               <button
                 type="button"
-                onClick={() => setImportModalOpen(false)}
+                onClick={requestImportClose}
                 className="px-4 py-2 rounded-xl text-gray-300 hover:text-white bg-white/5"
               >
                 Cancel

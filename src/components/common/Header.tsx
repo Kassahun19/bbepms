@@ -34,6 +34,8 @@ import {
 import { User, Language, UserRole, getUserFullName } from '../../types';
 import { BunnaBankLogo } from './BunnaBankLogo';
 import { translations } from '../../i18n/translations';
+import { useDropdownDismiss } from '../../hooks/useDropdownDismiss';
+import { ModalCloseButton } from './ModalCloseButton';
 
 interface HeaderProps {
   user?: User | null;
@@ -54,8 +56,8 @@ interface HeaderProps {
   onRoleSwitch?: (role: UserRole) => void;
   unreadCount?: number;
   unreadNotifications?: number;
-  currentNavView?: 'home' | 'about' | 'contact';
-  onNavigate?: (view: 'home' | 'about' | 'contact') => void;
+  currentNavView?: 'home' | 'about' | 'howItWorks' | 'contact';
+  onNavigate?: (view: 'home' | 'about' | 'howItWorks') => void;
   onOpenProfile?: () => void;
   onSelectTab?: (tab: string, role?: UserRole) => void;
 }
@@ -92,6 +94,18 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [selectedNavRole, setSelectedNavRole] = useState<UserRole>(activeUser?.role || 'EMPLOYEE');
 
+  // Dismiss hooks for user role menu dropdown
+  const { containerRef: roleDropdownRef } = useDropdownDismiss({
+    isOpen: roleMenuOpen,
+    onClose: () => setRoleMenuOpen(false),
+  });
+
+  // Dismiss hooks for mobile navigation menu
+  const { containerRef: mobileMenuRef } = useDropdownDismiss({
+    isOpen: mobileMenuOpen,
+    onClose: () => setMobileMenuOpen(false),
+  });
+
   const handleMenuItemClick = (itemId: string, roleGroup: UserRole) => {
     setRoleMenuOpen(false);
 
@@ -99,6 +113,16 @@ export const Header: React.FC<HeaderProps> = (props) => {
       onRoleSwitch(roleGroup);
     } else if (onSelectRoleView) {
       onSelectRoleView(roleGroup);
+    }
+
+    if (roleGroup === 'MANAGER') {
+      if (props.onSelectTab) {
+        props.onSelectTab(itemId, roleGroup);
+      }
+      if (onNavigate) {
+        onNavigate('home');
+      }
+      return;
     }
 
     if (itemId === 'my_profile' || itemId === 'my_profile_badges') {
@@ -179,14 +203,14 @@ export const Header: React.FC<HeaderProps> = (props) => {
               </button>
 
               <button
-                onClick={() => onNavigate && onNavigate('contact')}
+                onClick={() => onNavigate && onNavigate('howItWorks')}
                 className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  currentNavView === 'contact'
+                  currentNavView === 'howItWorks' || currentNavView === 'contact'
                     ? 'bg-[#C89A2B] text-[#6B3F1D] shadow-md'
                     : 'text-gray-200 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {t.contact || 'Contact'}
+                {t.howItWorks || 'How It Works'}
               </button>
             </nav>
           </div>
@@ -302,18 +326,30 @@ export const Header: React.FC<HeaderProps> = (props) => {
                 </button>
 
                 {roleMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-[#4A2C17] border border-[#C89A2B]/40 rounded-2xl shadow-2xl z-50 text-xs overflow-hidden max-h-[82vh] flex flex-col">
+                  <div
+                    ref={roleDropdownRef}
+                    className="absolute right-0 mt-2 w-72 bg-[#4A2C17] border border-[#C89A2B]/40 rounded-2xl shadow-2xl z-50 text-xs overflow-hidden max-h-[82vh] flex flex-col"
+                  >
                     {/* Header / User Profile summary */}
-                    <div className="px-4 py-3 bg-[#6B3F1D] border-b border-white/10 shrink-0">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-9 h-9 rounded-full bg-[#C89A2B] text-[#6B3F1D] font-black flex items-center justify-center text-sm shadow">
-                          {activeUser.firstName[0]}
+                    <div className="px-4 py-3 bg-[#6B3F1D] border-b border-white/10 shrink-0 relative">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 truncate">
+                          <div className="w-9 h-9 rounded-full bg-[#C89A2B] text-[#6B3F1D] font-black flex items-center justify-center text-sm shadow shrink-0">
+                            {activeUser.firstName[0]}
+                          </div>
+                          <div className="truncate">
+                            <p className="font-bold text-white text-sm truncate">{getUserFullName(activeUser)}</p>
+                            <p className="text-[#C89A2B] text-xs font-medium truncate">{activeUser.email}</p>
+                            <p className="text-gray-400 text-[10px] truncate">{activeUser.branchName || 'Bunna Bank S.C.'}</p>
+                          </div>
                         </div>
-                        <div className="truncate">
-                          <p className="font-bold text-white text-sm truncate">{getUserFullName(activeUser)}</p>
-                          <p className="text-[#C89A2B] text-xs font-medium truncate">{activeUser.email}</p>
-                          <p className="text-gray-400 text-[10px] truncate">{activeUser.branchName || 'Bunna Bank S.C.'}</p>
-                        </div>
+                        <ModalCloseButton
+                          onClose={() => setRoleMenuOpen(false)}
+                          ariaLabel="Close menu"
+                          size="sm"
+                          variant="ghost"
+                          className="ml-1"
+                        />
                       </div>
 
                       {/* Role Navigation Selector Tabs */}
@@ -394,12 +430,10 @@ export const Header: React.FC<HeaderProps> = (props) => {
                           </div>
                           {[
                             { id: 'manager_dashboard', label: 'Manager Dashboard', icon: LayoutDashboard },
-                            { id: 'employees', label: 'Employees', icon: Users },
-                            { id: 'performance', label: 'Performance', icon: TrendingUp },
-                            { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
-                            { id: 'reports', label: 'Reports', icon: FileText },
-                            { id: 'messages', label: 'Messages', icon: MessageSquare },
-                            { id: 'my_profile', label: 'My Profile', icon: UserCheck },
+                            { id: 'messages_notifications', label: 'Messages & Notifications', icon: MessageSquare },
+                            { id: 'employee_management', label: 'Employee Management', icon: Users },
+                            { id: 'kpi_management', label: 'KPI Management', icon: Target },
+                            { id: 'profiles', label: 'Profiles', icon: UserCheck },
                             { id: 'settings', label: 'Settings', icon: Settings },
                           ].map(item => {
                             const IconComp = item.icon;
@@ -499,7 +533,10 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#4A2C17] border-b border-[#C89A2B]/30 px-4 py-4 space-y-3">
+        <div
+          ref={mobileMenuRef}
+          className="md:hidden bg-[#4A2C17] border-b border-[#C89A2B]/30 px-4 py-4 space-y-3"
+        >
           
           {/* Main Navigation Links */}
           <div className="grid grid-cols-3 gap-2 pb-2 border-b border-white/10">
@@ -516,10 +553,10 @@ export const Header: React.FC<HeaderProps> = (props) => {
               {t.about || 'About'}
             </button>
             <button
-              onClick={() => { onNavigate && onNavigate('contact'); setMobileMenuOpen(false); }}
-              className={`py-2 rounded-lg text-xs font-bold text-center ${currentNavView === 'contact' ? 'bg-[#C89A2B] text-[#6B3F1D]' : 'bg-white/5 text-gray-200'}`}
+              onClick={() => { onNavigate && onNavigate('howItWorks'); setMobileMenuOpen(false); }}
+              className={`py-2 rounded-lg text-xs font-bold text-center ${currentNavView === 'howItWorks' || currentNavView === 'contact' ? 'bg-[#C89A2B] text-[#6B3F1D]' : 'bg-white/5 text-gray-200'}`}
             >
-              {t.contact || 'Contact'}
+              {t.howItWorks || 'How It Works'}
             </button>
           </div>
 

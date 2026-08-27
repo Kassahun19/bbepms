@@ -25,9 +25,9 @@
   },
   "include": [
     "src/**/*",
-    "server/**/*",
+    "Backend/**/*",
+    "Frontend/**/*",
     "server.ts",
-    "api/**/*",
     "vite.config.ts"
   ],
   "exclude": [

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { GitBranch, Plus, Edit, Trash2, Upload, Search, CheckCircle, AlertCircle, MapPin, FileSpreadsheet } from 'lucide-react';
 import { CompetitorBranch, CommercialBank } from '../../types/competitor';
+import { ModalCloseButton } from '../common/ModalCloseButton';
+import { useModalDismiss } from '../../hooks/useModalDismiss';
 
 interface BranchManagementPanelProps {
   branches: CompetitorBranch[];
@@ -40,6 +42,22 @@ export const BranchManagementPanel: React.FC<BranchManagementPanelProps> = ({
     districtName: 'East A.A District',
     latitude: 9.0100,
     longitude: 38.7600
+  });
+
+  const isFormDirty = formState.branchName.trim().length > 0;
+  const { contentRef: branchModalRef, handleBackdropClick: handleBranchBackdropClick, handleDismissRequest: requestBranchClose } = useModalDismiss({
+    isOpen: isModalOpen,
+    onClose: () => setIsModalOpen(false),
+    hasUnsavedChanges: isFormDirty,
+    unsavedMessage: 'You have unsaved branch details. Are you sure you want to discard and close?',
+  });
+
+  const isImportDirty = importText.trim().length > 0;
+  const { contentRef: importModalRef, handleBackdropClick: handleImportBackdropClick, handleDismissRequest: requestImportClose } = useModalDismiss({
+    isOpen: importModalOpen,
+    onClose: () => setImportModalOpen(false),
+    hasUnsavedChanges: isImportDirty,
+    unsavedMessage: 'You have unsaved import data. Are you sure you want to close?',
   });
 
   const citiesList = Array.from(new Set(branches.map(b => b.city))).sort();
@@ -322,11 +340,20 @@ export const BranchManagementPanel: React.FC<BranchManagementPanelProps> = ({
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h4 className="text-xl font-bold text-white border-b border-white/10 pb-3">
-              {editingBranch ? `Edit Branch: ${editingBranch.branchName}` : 'Register Competitor Branch'}
-            </h4>
+        <div
+          onClick={handleBranchBackdropClick}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div
+            ref={branchModalRef}
+            className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h4 className="text-xl font-bold text-white">
+                {editingBranch ? `Edit Branch: ${editingBranch.branchName}` : 'Register Competitor Branch'}
+              </h4>
+              <ModalCloseButton onClose={requestBranchClose} ariaLabel="Close branch modal" />
+            </div>
 
             <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div>
@@ -417,7 +444,7 @@ export const BranchManagementPanel: React.FC<BranchManagementPanelProps> = ({
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={requestBranchClose}
                   className="px-4 py-2 rounded-xl text-gray-300 hover:text-white bg-white/5"
                 >
                   Cancel
@@ -437,11 +464,20 @@ export const BranchManagementPanel: React.FC<BranchManagementPanelProps> = ({
 
       {/* Import Modal */}
       {importModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center space-x-2 text-[#C89A2B] border-b border-white/10 pb-3">
-              <FileSpreadsheet className="w-5 h-5" />
-              <h4 className="text-xl font-bold text-white">Import Competitor Branches Batch</h4>
+        <div
+          onClick={handleImportBackdropClick}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div
+            ref={importModalRef}
+            className="bg-[#6B3F1D] border border-white/15 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center space-x-2 text-[#C89A2B]">
+                <FileSpreadsheet className="w-5 h-5" />
+                <h4 className="text-xl font-bold text-white">Import Competitor Branches Batch</h4>
+              </div>
+              <ModalCloseButton onClose={requestImportClose} ariaLabel="Close import modal" />
             </div>
 
             <p className="text-xs text-gray-300">
@@ -462,7 +498,7 @@ export const BranchManagementPanel: React.FC<BranchManagementPanelProps> = ({
             <div className="flex items-center justify-end space-x-3 pt-3 border-t border-white/10">
               <button
                 type="button"
-                onClick={() => setImportModalOpen(false)}
+                onClick={requestImportClose}
                 className="px-4 py-2 rounded-xl text-gray-300 hover:text-white bg-white/5"
               >
                 Cancel

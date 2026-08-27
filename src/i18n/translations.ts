@@ -3,16 +3,17 @@ import { Language } from '../types';
 const translationData: Record<string, Record<string, string>> = {
   en: {
     // Brand & Header
-    bankName: "Bunna Bank S.C.",
-    appTitle: "Employee Performance Management System",
+    bankName: "Daily KPI Performance",
+    appTitle: "Daily KPI Performance Management System",
     tagline: "Empowering Performance. Driving Excellence.",
     login: "Log In",
     getStarted: "Get Started",
     logout: "Log Out",
     home: "Home",
     about: "About",
+    howItWorks: "How It Works",
     features: "Features",
-    contact: "Contact",
+    contact: "How It Works",
     language: "Language",
     
     // Roles
@@ -22,7 +23,7 @@ const translationData: Record<string, Record<string, string>> = {
     
     // Common Actions
     save: "Save",
-    submit: "Submit to Manager",
+    submit: "Submit for Approval",
     update: "Update",
     delete: "Delete",
     cancel: "Cancel",
@@ -77,7 +78,7 @@ const translationData: Record<string, Record<string, string>> = {
     mySubmittedReports: "My Submitted Reports Log",
     workingDaysOnly: "Working Days Only",
     saveDraft: "Save Draft",
-    submitToManager: "Submit To Branch Manager",
+    submitToManager: "Submit for Approval",
 
     // Profile & Navigation
     personalProfile: "Personal Profile",
@@ -90,18 +91,18 @@ const translationData: Record<string, Record<string, string>> = {
     askAiCoach: "Ask AI Performance Coach",
     
     // AI Assistant
-    aiAssistantTitle: "Bunna Bank AI Performance Assistant",
+    aiAssistantTitle: "Daily KPI AI Performance Assistant",
     aiPromptPlaceholder: "Ask about KPIs, policies, target projections, or summaries...",
-    askAi: "Ask Bunna AI",
+    askAi: "Ask AI Coach",
     
     // Landing & Footer
-    heroTitle: "Next-Generation Employee Performance Platform",
-    heroSubtitle: "Real-time performance tracking, AI-driven insights, and seamless multi-level approvals for Bunna Bank S.C.",
+    heroTitle: "Daily KPI Performance Management System",
+    heroSubtitle: "Real-time performance tracking, multi-level approvals, and automated analytics for operational excellence.",
     statsDistricts: "Districts",
     statsBranches: "Branches",
     statsEmployees: "Employees",
     statsEfficiency: "Approval Efficiency",
-    copyright: "© 2026 Bunna Bank S.C. All Rights Reserved. Built by Kassahun Mulatu",
+    copyright: "© 2026 Daily KPI Performance Management System. All rights reserved.",
     
     // Progress & Targets
     expectedTarget: "Expected Target",
@@ -112,16 +113,17 @@ const translationData: Record<string, Record<string, string>> = {
   },
   am: {
     // Brand & Header
-    bankName: "ቡና ባንክ አ.ማ.",
-    appTitle: "የሰራተኞች የስራ አፈፃፀም ማኔጅመንት ስርዓት (EPMS)",
+    bankName: "ዕለታዊ የ KPI አፈፃፀም",
+    appTitle: "ዕለታዊ የ KPI አፈፃፀም ማኔጅመንት ስርዓት (EPMS)",
     tagline: "አፈፃፀምን ማጎልበት። ብቃትን መምራት።",
     login: "ግቡ",
     getStarted: "ይምረጡ / ይጀምሩ",
     logout: "ውጣ",
     home: "ዋና ገፅ",
     about: "ስለ እኛ",
+    howItWorks: "እንዴት እንደሚሰራ",
     features: "አገልግሎቶች",
-    contact: "ግንኙነት",
+    contact: "እንዴት እንደሚሰራ",
     language: "ቋንቋ",
     
     // Roles
@@ -131,7 +133,7 @@ const translationData: Record<string, Record<string, string>> = {
     
     // Common Actions
     save: "አስቀምጥ",
-    submit: "ለስራ አስኪያጅ ያስገቡ",
+    submit: "ለማጽደቅ ያስገቡ",
     update: "ያሻሽሉ",
     delete: "ሰርዝ",
     cancel: "ሰርዝ/ተመለስ",
@@ -186,7 +188,7 @@ const translationData: Record<string, Record<string, string>> = {
     mySubmittedReports: "የቀረቡ ሪፖርቶች መዝገብ",
     workingDaysOnly: "በስራ ቀናት ብቻ",
     saveDraft: "ረቂቅ አስቀምጥ",
-    submitToManager: "ለቅርንጫፍ ሥራ አስኪያጅ ያስገቡ",
+    submitToManager: "ለማጽደቅ ያስገቡ",
 
     // Profile & Navigation
     personalProfile: "ግላዊ መገለጫ",
@@ -199,18 +201,18 @@ const translationData: Record<string, Record<string, string>> = {
     askAiCoach: "የ AI አፈፃፀም አሰልጣኝን ጠይቁ",
     
     // AI Assistant
-    aiAssistantTitle: "የቡና ባንክ AI አፈፃፀም ረዳት",
+    aiAssistantTitle: "ዕለታዊ የ KPI AI አፈፃፀም ረዳት",
     aiPromptPlaceholder: "ስለ KPI፣ ደንቦች፣ ትንበያ ወይም አጠቃላይ ማጠቃለያ ይጠይቁ...",
     askAi: "የ AI ረዳቱን ይጠይቁ",
     
     // Landing & Footer
-    heroTitle: "ዘመናዊ የሰራተኞች የስራ አፈፃፀም መከታተያ ስርዓት",
-    heroSubtitle: "የእውነተኛ ጊዜ አፈፃፀም ክትትል፣ የ AI ትንተና እና ፈጣን ማጽደቂያ ስርዓት ለቡና ባንክ አ.ማ.",
+    heroTitle: "ዕለታዊ የ KPI አፈፃፀም ማኔጅመንት ስርዓት",
+    heroSubtitle: "የእውነተኛ ጊዜ አፈፃፀም ክትትል፣ ባለብዙ ደረጃ ማጽደቂያ እና አጠቃላይ የአፈፃፀም ትንተና።",
     statsDistricts: "ዲስትሪክቶች",
     statsBranches: "ቅርንጫፎች",
     statsEmployees: "ሰራተኞች",
     statsEfficiency: "የማጽደቅ ቀልጣፋነት",
-    copyright: "© 2026 ቡና ባንክ አ.ማ. መብቱ በህግ የተጠበቀ ነው። በ ካሳሁን ሙላቱ የተሰራ።",
+    copyright: "© 2026 ዕለታዊ የ KPI አፈፃፀም ማኔጅመንት ስርዓት። መብቱ በህግ የተጠበቀ ነው።",
     
     // Progress & Targets
     expectedTarget: "የሚጠበቅ ግብ",

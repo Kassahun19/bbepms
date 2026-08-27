@@ -39,12 +39,27 @@ import {
   initialAiInsights,
   initialCompetitorAlerts
 } from '../data/competitorMockData';
-import { getCollectionItems, saveDocument, deleteDocument } from '../lib/firestore-db';
+import { getCollectionItems, saveDocument, deleteDocument, isFirestoreQuotaExhausted } from '../lib/firestore-db';
 
 // Helper to safely parse JSON response or throw formatted error or return null for non-JSON
 async function fetchJsonOrFallback<T>(url: string, options?: RequestInit): Promise<{ data?: T; error?: string; isHtmlOrOffline?: boolean }> {
   try {
-    const res = await fetch(url, options);
+    const headers = new Headers(options?.headers || {});
+    const token = localStorage.getItem('bunna_token');
+    const storedUser = localStorage.getItem('bunna_user');
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        if (u.role && !headers.has('x-user-role')) {
+          headers.set('x-user-role', u.role);
+        }
+      } catch (e) {}
+    }
+
+    const res = await fetch(url, { cache: 'no-store', ...options, headers });
     const contentType = res.headers.get('content-type') || '';
     const text = await res.text();
 
@@ -424,7 +439,11 @@ export const api = {
     const dList = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data : initialDistricts;
     
     return dList.map(d => {
-      const assignedBranches = initialBranches.filter(b => b.districtId === d.id || b.districtName === d.name);
+      const assignedBranches = initialBranches.filter(b => 
+        b.districtId === d.id || 
+        b.districtId === d.code || 
+        (d.name && b.districtName && b.districtName.toLowerCase().trim() === d.name.toLowerCase().trim())
+      );
       const bCount = assignedBranches.length;
       const eCount = assignedBranches.reduce((sum, b) => sum + (b.employeeCount || 0), 0);
       return {
@@ -486,11 +505,26 @@ export const api = {
   },
 
   getBranches: async (districtId?: string): Promise<Branch[]> => {
-    const url = districtId ? `/api/branches?districtId=${districtId}` : '/api/branches';
+    const url = districtId ? `/api/branches?districtId=${encodeURIComponent(districtId)}` : '/api/branches';
     const res = await fetchJsonOrFallback<Branch[]>(url);
     if (res.data && Array.isArray(res.data) && res.data.length > 0) return res.data;
     if (districtId) {
-      return initialBranches.filter(b => b.districtId === districtId);
+      const parentDist = initialDistricts.find(d => 
+        d.id === districtId || 
+        d.code === districtId || 
+        (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+      );
+      const filtered = initialBranches.filter(b => {
+        if (!b) return false;
+        if (b.districtId === districtId) return true;
+        if (parentDist) {
+          if (b.districtId === parentDist.id || b.districtId === parentDist.code) return true;
+          if (b.districtName && parentDist.name && b.districtName.toLowerCase().trim() === parentDist.name.toLowerCase().trim()) return true;
+          if (parentDist.code && b.districtId && b.districtId.includes(parentDist.code)) return true;
+        }
+        return false;
+      });
+      return filtered.length > 0 ? filtered : initialBranches;
     }
     return initialBranches;
   },
@@ -611,7 +645,7 @@ export const api = {
       id: `KPI-${Date.now().toString().slice(-4)}`,
       code: kpiData.code || 'KPI-X',
       name: kpiData.name || 'New KPI',
-      category: kpiData.category || 'Financial',
+      category: kpiData.category || 'Finance',
       unit: kpiData.unit || 'ETB',
       description: kpiData.description || 'Description',
       weight: kpiData.weight || 10
@@ -641,13 +675,14 @@ export const api = {
     return true;
   },
 
-  getTargets: async (filters?: { employeeId?: string; branchId?: string }): Promise<PerformanceTarget[]> => {
+  getTargets: async (filters?: { employeeId?: string; branchId?: string; status?: string; year?: number }): Promise<PerformanceTarget[]> => {
     const params = new URLSearchParams(filters as any).toString();
     const res = await fetchJsonOrFallback<PerformanceTarget[]>(`/api/targets?${params}`);
     if (res.data && Array.isArray(res.data)) return res.data;
     let list = initialTargets;
     if (filters?.employeeId) list = list.filter(t => t.employeeId === filters.employeeId);
     if (filters?.branchId) list = list.filter(t => t.branchId === filters.branchId);
+    if (filters?.status) list = list.filter(t => (t.status || 'ACCEPTED') === filters.status);
     return list;
   },
 
@@ -659,6 +694,58 @@ export const api = {
     });
     if (res.data) return res.data;
     return Array.isArray(targetsList) ? targetsList : [targetsList];
+  },
+
+  sendTargets: async (payload: {
+    targets?: PerformanceTarget[];
+    employeeId?: string;
+    branchId?: string;
+    sentBy?: string;
+    sentByName?: string;
+    notes?: string;
+  }): Promise<{ success: boolean; message: string; targets: PerformanceTarget[] }> => {
+    const res = await fetchJsonOrFallback<{ success: boolean; message: string; targets: PerformanceTarget[] }>('/api/targets/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.data) return res.data;
+    return {
+      success: true,
+      message: 'Targets submitted to employee for acceptance.',
+      targets: payload.targets || []
+    };
+  },
+
+  respondToTarget: async (id: string, payload: {
+    action: 'ACCEPT' | 'REJECT';
+    rejectionReason?: string;
+    employeeId?: string;
+    employeeName?: string;
+  }): Promise<{ success: boolean; message: string; target: PerformanceTarget }> => {
+    const res = await fetchJsonOrFallback<{ success: boolean; message: string; target: PerformanceTarget }>(`/api/targets/${id}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.data) return res.data;
+    throw new Error(res.error || 'Failed to respond to target');
+  },
+
+  batchRespondToTargets: async (payload: {
+    targetIds?: string[];
+    employeeId: string;
+    employeeName?: string;
+    action: 'ACCEPT' | 'REJECT';
+    rejectionReason?: string;
+  }): Promise<{ success: boolean; message: string; targets: PerformanceTarget[] }> => {
+    const res = await fetchJsonOrFallback<{ success: boolean; message: string; targets: PerformanceTarget[] }>('/api/targets/batch-respond', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.data) return res.data;
+    throw new Error(res.error || 'Failed to process batch response');
   },
 
   // Daily Reports & KPI Reporting System
@@ -747,7 +834,7 @@ export const api = {
   },
 
   submitReport: async (payload: any) => {
-    // 1. Send to server API first to enforce duplicate check and server-side validation
+    // 1. Send to server API first to enforce duplicate check, server-side validation, and durable storage
     try {
       const res = await fetchJsonOrFallback<DailyPerformanceReport>('/api/kpi-reports', {
         method: 'POST',
@@ -758,11 +845,6 @@ export const api = {
         throw new Error(res.error);
       }
       if (res.data) {
-        // Also ensure direct Cloud Firestore sync
-        try {
-          await saveDocument('reports', res.data.id, res.data);
-          await saveDocument('employee_daily_kpi_reports', res.data.id, res.data);
-        } catch (e) {}
         return res.data;
       }
     } catch (e: any) {
@@ -824,10 +906,11 @@ export const api = {
       updated_at: new Date().toISOString()
     };
 
-    try {
-      await saveDocument('reports', newReport.id, newReport);
-      await saveDocument('employee_daily_kpi_reports', newReport.id, newReport);
-    } catch (e) {}
+    if (!isFirestoreQuotaExhausted()) {
+      try {
+        await saveDocument('reports', newReport.id, newReport);
+      } catch (e) {}
+    }
 
     return newReport;
   },
@@ -841,23 +924,22 @@ export const api = {
   },
 
   updateReport: async (id: string, reportData: Partial<DailyPerformanceReport>): Promise<DailyPerformanceReport> => {
-    // 1. Direct Cloud Firestore update
+    // 1. Server API update
     try {
-      await saveDocument('reports', id, { ...reportData, updatedAt: new Date().toISOString() });
-      await saveDocument('employee_daily_kpi_reports', id, { ...reportData, updatedAt: new Date().toISOString() });
-      console.log('[Firestore] Report updated in Cloud Firestore:', id);
-    } catch (e) {
-      console.warn('[Firestore] Direct update warning:', e);
-    }
-
-    // 2. Server API update
-    try {
-      await fetchJsonOrFallback(`/api/reports/${id}`, {
+      const res = await fetchJsonOrFallback<DailyPerformanceReport>(`/api/reports/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportData)
       });
+      if (res.data) return res.data;
     } catch (e) {}
+
+    // 2. Direct Cloud Firestore update if offline and quota available
+    if (!isFirestoreQuotaExhausted()) {
+      try {
+        await saveDocument('reports', id, { ...reportData, updatedAt: new Date().toISOString() });
+      } catch (e) {}
+    }
 
     const idx = initialDailyReports.findIndex(r => r.id === id);
     if (idx !== -1) {
@@ -868,19 +950,17 @@ export const api = {
   },
 
   deleteReport: async (id: string): Promise<boolean> => {
-    // 1. Direct Cloud Firestore delete
-    try {
-      await deleteDocument('reports', id);
-      await deleteDocument('employee_daily_kpi_reports', id);
-      console.log('[Firestore] Report deleted from Cloud Firestore:', id);
-    } catch (e) {
-      console.warn('[Firestore] Direct delete warning:', e);
-    }
-
-    // 2. Server API delete
+    // 1. Server API delete
     try {
       await fetchJsonOrFallback(`/api/reports/${id}`, { method: 'DELETE' });
     } catch (e) {}
+
+    // 2. Direct Cloud Firestore delete if quota available
+    if (!isFirestoreQuotaExhausted()) {
+      try {
+        await deleteDocument('reports', id);
+      } catch (e) {}
+    }
 
     const idx = initialDailyReports.findIndex(r => r.id === id);
     if (idx !== -1) {
@@ -913,31 +993,7 @@ export const api = {
     else if (action === 'return') newStatus = 'Returned';
     else if (action === 'suspend') newStatus = 'Suspended';
 
-    // 1. Direct Cloud Firestore batch update for all reports
-    for (const reportId of reportIds) {
-      if (action === 'delete') {
-        try {
-          await deleteDocument('reports', reportId);
-          await deleteDocument('employee_daily_kpi_reports', reportId);
-        } catch (e) {}
-      } else {
-        const updatePayload: any = {
-          status: newStatus,
-          reviewedBy: managerId,
-          reviewedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        if (commentText) {
-          updatePayload.managerComment = commentText;
-        }
-        try {
-          await saveDocument('reports', reportId, updatePayload);
-          await saveDocument('employee_daily_kpi_reports', reportId, updatePayload);
-        } catch (e) {}
-      }
-    }
-
-    // 2. Server API sync
+    // 1. Server API handles batch update atomically and persists to storage
     try {
       const res = await fetchJsonOrFallback<{ message: string }>('/api/approvals/action', {
         method: 'POST',
@@ -946,6 +1002,30 @@ export const api = {
       });
       if (res.data) return res.data;
     } catch (e) {}
+
+    // Fallback if server is unavailable and quota not exhausted
+    if (!isFirestoreQuotaExhausted()) {
+      for (const reportId of reportIds) {
+        if (action === 'delete') {
+          try {
+            await deleteDocument('reports', reportId);
+          } catch (e) {}
+        } else {
+          const updatePayload: any = {
+            status: newStatus,
+            reviewedBy: managerId,
+            reviewedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          if (commentText) {
+            updatePayload.managerComment = commentText;
+          }
+          try {
+            await saveDocument('reports', reportId, updatePayload);
+          } catch (e) {}
+        }
+      }
+    }
 
     return { message: `Reports successfully ${action.toLowerCase()}d` };
   },
@@ -964,6 +1044,70 @@ export const api = {
         rate: Math.floor(85 + Math.random() * 14)
       }))
     };
+  },
+
+  getAdminDashboardMetrics: async (params?: { startDate?: string; endDate?: string; period?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    const url = `/api/admin/dashboard${query ? `?${query}` : ''}`;
+    const res = await fetchJsonOrFallback<any>(url);
+    if (res.data) return res.data;
+    return null;
+  },
+
+  getAdminPerformanceDistricts: async (params?: { startDate?: string; endDate?: string; period?: string; type?: 'top' | 'bottom' | 'all'; limit?: number | string }) => {
+    const cleanParams: any = {};
+    if (params) {
+      Object.keys(params).forEach(k => {
+        if ((params as any)[k] !== undefined && (params as any)[k] !== null) {
+          cleanParams[k] = (params as any)[k];
+        }
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
+    const url = `/api/admin/performance/districts${query ? `?${query}` : ''}`;
+    const res = await fetchJsonOrFallback<{ success: boolean; rankings: any[]; totalDistricts: number }>(url);
+    if (res.data && Array.isArray(res.data.rankings)) return res.data.rankings;
+    return [];
+  },
+
+  getAdminPerformanceBranches: async (params?: { districtId?: string; startDate?: string; endDate?: string; period?: string; type?: 'top' | 'bottom' | 'all'; limit?: number | string }) => {
+    const cleanParams: any = {};
+    if (params) {
+      Object.keys(params).forEach(k => {
+        if ((params as any)[k] !== undefined && (params as any)[k] !== null) {
+          cleanParams[k] = (params as any)[k];
+        }
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
+    const url = `/api/admin/performance/branches${query ? `?${query}` : ''}`;
+    const res = await fetchJsonOrFallback<{ success: boolean; rankings: any[]; totalBranches: number }>(url);
+    if (res.data && Array.isArray(res.data.rankings)) return res.data.rankings;
+    return [];
+  },
+
+  getAdminPerformanceEmployees: async (params?: { districtId?: string; branchId?: string; startDate?: string; endDate?: string; period?: string; type?: 'top' | 'bottom' | 'all'; limit?: number | string }) => {
+    const cleanParams: any = {};
+    if (params) {
+      Object.keys(params).forEach(k => {
+        if ((params as any)[k] !== undefined && (params as any)[k] !== null) {
+          cleanParams[k] = (params as any)[k];
+        }
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
+    const url = `/api/admin/performance/employees${query ? `?${query}` : ''}`;
+    const res = await fetchJsonOrFallback<{ success: boolean; rankings: any[]; totalEmployees: number }>(url);
+    if (res.data && Array.isArray(res.data.rankings)) return res.data.rankings;
+    return [];
+  },
+
+  getPerformanceRankingsDistricts: async (params?: { startDate?: string; endDate?: string; period?: string; type?: 'top' | 'bottom' | 'all'; limit?: number | string }) => {
+    return api.getAdminPerformanceDistricts(params);
+  },
+
+  getPerformanceRankingsBranches: async (params?: { districtId?: string; startDate?: string; endDate?: string; period?: string; type?: 'top' | 'bottom' | 'all'; limit?: number | string }) => {
+    return api.getAdminPerformanceBranches(params);
   },
 
   getLeaderboards: async () => {
@@ -1363,6 +1507,327 @@ export const api = {
     if (res.data?.employee) return res.data.employee;
     if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
     throw new Error('Failed to update employee status');
+  },
+
+  getFiscalYears: async (): Promise<any[]> => {
+    const res = await fetchJsonOrFallback<any[]>('/api/fiscal-years');
+    return res.data || [
+      { id: 'FY-2025-26', name: 'FY 2025/26', startDate: '2025-07-01', endDate: '2026-06-30', status: 'CLOSED', isActive: false, is_active: 0 },
+      { id: 'FY-2026-27', name: 'FY 2026/27', startDate: '2026-07-01', endDate: '2027-06-30', status: 'ACTIVE', isActive: true, is_active: 1 }
+    ];
+  },
+
+  getCurrentFiscalYear: async (): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/fiscal-years/current');
+    return res.data || { id: 'FY-2026-27', name: 'FY 2026/27', startDate: '2026-07-01', endDate: '2027-06-30', status: 'ACTIVE', isActive: true, is_active: 1 };
+  },
+
+  createFiscalYear: async (data: any): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/fiscal-years', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.data) return res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to create fiscal year');
+  },
+
+  activateFiscalYear: async (id: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/fiscal-years/${id}/activate`, {
+      method: 'PATCH'
+    });
+    if (res.data) return res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to activate fiscal year');
+  },
+
+  closeFiscalYear: async (id: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/fiscal-years/${id}/close`, {
+      method: 'PATCH'
+    });
+    if (res.data) return res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to close fiscal year');
+  },
+
+  getPerformanceComparison: async (fiscalYearId?: string): Promise<any> => {
+    const url = fiscalYearId ? `/api/performance/comparison/${fiscalYearId}` : '/api/performance/comparison';
+    const res = await fetchJsonOrFallback<any>(url);
+    return res.data || {
+      currentFyName: 'FY 2026/27',
+      previousFyName: 'FY 2025/26',
+      depositsCurrent: 0,
+      depositsPrevious: 0,
+      depositsGrowthPct: 0,
+      achievementCurrent: 0,
+      achievementPrevious: 0,
+      achievementDiff: 0,
+      reportsCurrent: 0,
+      reportsPrevious: 0
+    };
+  },
+
+  getBranchManagerEmployees: async (branchId?: string, managerId?: string): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (branchId) params.append('branchId', branchId);
+    if (managerId) params.append('managerId', managerId);
+    const res = await fetchJsonOrFallback<any>(`/api/branch-manager/employees?${params.toString()}`);
+    return res.data?.employees || (Array.isArray(res.data) ? res.data : []);
+  },
+
+  sendMessage: async (data: { senderId: string; senderName: string; receiverId: string; subject: string; message: string }): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/messages/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.data?.success || res.data?.message) return res.data?.message || res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to send message');
+  },
+
+  broadcastMessage: async (data: { senderId: string; senderName: string; branchId: string; subject: string; message: string }): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/messages/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.data?.success) return res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to broadcast message');
+  },
+
+  getInboxMessages: async (userId: string): Promise<any[]> => {
+    const res = await fetchJsonOrFallback<any>(`/api/messages/inbox/${userId}`);
+    return res.data?.messages || (Array.isArray(res.data) ? res.data : []);
+  },
+
+  markMessageAsRead: async (messageId: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/messages/${messageId}/read`, {
+      method: 'PATCH'
+    });
+    return res.data?.message || res.data || {};
+  },
+
+  getBankMemos: async (): Promise<any[]> => {
+    const res = await fetchJsonOrFallback<any>('/api/bank-memos');
+    return res.data?.memos || (Array.isArray(res.data) ? res.data : []);
+  },
+
+  createBankMemo: async (data: any): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/bank-memos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.data?.success || res.data?.memo) return res.data?.memo || res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to create bank memo');
+  },
+
+  updateBankMemo: async (id: string, data: any): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/bank-memos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.data?.success || res.data?.memo) return res.data?.memo || res.data;
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    throw new Error('Failed to update bank memo');
+  },
+
+  deleteBankMemo: async (id: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/bank-memos/${id}`, {
+      method: 'DELETE'
+    });
+    return res.data?.success || true;
+  },
+
+  // Comprehensive Bank Documents Management API methods with robust fallback
+  getDocuments: async (params?: { search?: string; type?: string; status?: string; userRole?: string; userDepartment?: string; userId?: string }): Promise<any[]> => {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.type && params.type !== 'ALL') query.append('type', params.type);
+    if (params?.status) query.append('status', params.status);
+    if (params?.userRole) query.append('userRole', params.userRole);
+    if (params?.userDepartment) query.append('userDepartment', params.userDepartment);
+    if (params?.userId) query.append('userId', params.userId);
+    const url = `/api/documents${query.toString() ? '?' + query.toString() : ''}`;
+    const res = await fetchJsonOrFallback<any>(url);
+    if (!res.isHtmlOrOffline && !res.error && res.data) {
+      const backendDocs = res.data.documents || (Array.isArray(res.data) ? res.data : []);
+      try { localStorage.setItem('bunna_bank_documents_v1', JSON.stringify(backendDocs)); } catch (e) {}
+      return backendDocs;
+    }
+    // Fallback to localStorage
+    try {
+      const raw = localStorage.getItem('bunna_bank_documents_v1');
+      let docs = raw ? JSON.parse(raw) : [
+        {
+          id: 'DOC-001',
+          memoNumber: 'BN/MEMO/042/2026',
+          referenceNumber: 'REF-2026-001',
+          documentType: 'Memo',
+          category: 'Memo',
+          title: 'FY 2026 Annual Deposit & Resource Mobilization Directives',
+          subject: 'Strict guidelines for district and branch deposit mobilization targets.',
+          content: 'All branch managers and customer relationship officers are required to achieve at least 95% of assigned quarterly deposit targets.',
+          effectiveDate: '2026-01-10',
+          issueDate: '2026-01-08',
+          issuingDepartment: 'Executive Directorate',
+          authorizedIssuer: 'Chief Executive Officer',
+          targetAudience: 'ALL',
+          priority: 'Urgent',
+          status: 'PUBLISHED',
+          version: '1.0',
+          createdAt: '2026-01-08T08:00:00Z',
+          publishedAt: '2026-01-08T09:00:00Z',
+          publishedBy: 'System Admin',
+          auditTrail: [{ action: 'CREATED', by: 'Admin', timestamp: '2026-01-08T08:00:00Z' }, { action: 'PUBLISHED', by: 'Admin', timestamp: '2026-01-08T09:00:00Z' }]
+        },
+        {
+          id: 'DOC-002',
+          memoNumber: 'BN/CIRC/019/2026',
+          referenceNumber: 'REF-2026-002',
+          documentType: 'Circular',
+          category: 'Circular',
+          title: 'New Digital Banking & QR Merchant Activation Incentives',
+          subject: 'Staff commission structure for mobile banking and merchant QR adoption.',
+          content: 'To drive digital transformation, staff members who exceed 150 active mobile banking users per month will receive quarterly performance bonuses.',
+          effectiveDate: '2026-02-01',
+          issueDate: '2026-01-25',
+          issuingDepartment: 'Digital Banking Division',
+          authorizedIssuer: 'Chief Digital Officer',
+          targetAudience: 'Branch Managers',
+          priority: 'Normal',
+          status: 'DRAFT',
+          version: '1.0',
+          createdAt: '2026-01-25T10:00:00Z',
+          auditTrail: [{ action: 'CREATED', by: 'Admin', timestamp: '2026-01-25T10:00:00Z' }]
+        }
+      ];
+      if (params?.search) {
+        const q = params.search.toLowerCase();
+        docs = docs.filter((d: any) => (d.title && d.title.toLowerCase().includes(q)) || (d.memoNumber && d.memoNumber.toLowerCase().includes(q)) || (d.content && d.content.toLowerCase().includes(q)));
+      }
+      if (params?.type && params.type !== 'ALL') {
+        docs = docs.filter((d: any) => d.category === params.type || d.documentType === params.type);
+      }
+      if (params?.status && params.status !== 'ALL') {
+        docs = docs.filter((d: any) => d.status === params.status);
+      }
+      return docs;
+    } catch (e) {
+      return [];
+    }
+  },
+
+  getDocumentById: async (id: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}`);
+    if (!res.isHtmlOrOffline && !res.error && (res.data?.document || res.data)) {
+      return res.data?.document || res.data;
+    }
+    const docs = await api.getDocuments();
+    return docs.find((d: any) => d.id === id) || null;
+  },
+
+  createDocument: async (data: any): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>('/api/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success && !res.data?.document) throw new Error('Failed to create document');
+    return res.data?.document || res.data;
+  },
+
+  updateDocument: async (id: string, data: any): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success && !res.data?.document) throw new Error('Failed to update document');
+    return res.data?.document || res.data;
+  },
+
+  deleteDocument: async (id: string, userRole?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}${userRole ? `?userRole=${userRole}` : ''}`, {
+      method: 'DELETE'
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success) throw new Error('Failed to delete document');
+    return true;
+  },
+
+  publishDocument: async (id: string, publisherName?: string, targetAudience?: string, userRole?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publisherName, targetAudience, userRole })
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success && !res.data?.document) throw new Error('Failed to publish document');
+    return res.data?.document || res.data;
+  },
+
+  withdrawDocument: async (id: string, userRole?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/withdraw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userRole })
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success && !res.data?.document) throw new Error('Failed to withdraw document');
+    return res.data?.document || res.data;
+  },
+
+  archiveDocument: async (id: string, userRole?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/archive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userRole })
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    if (!res.data?.success && !res.data?.document) throw new Error('Failed to archive document');
+    return res.data?.document || res.data;
+  },
+
+  markDocumentRead: async (id: string, userId: string, userName?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, userName })
+    });
+    return res.data?.success || true;
+  },
+
+  saveStaffDocument: async (id: string, userId: string, userName?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/save-for-later`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, userName })
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    return res.data;
+  },
+
+  removeStaffDocument: async (id: string, userId: string, userName?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/hide`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, userName })
+    });
+    if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+    return res.data;
+  },
+
+  getDocumentVersions: async (id: string): Promise<any[]> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}/versions`);
+    return res.data?.versions || (Array.isArray(res.data) ? res.data : []);
   },
 
   // Vercel / Express vercel.json helper
