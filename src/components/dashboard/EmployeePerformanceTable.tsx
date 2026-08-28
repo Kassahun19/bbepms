@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { DailyPerformanceReport, PerformanceTarget } from '../../types';
+import { PerformanceStatusBadge } from '../common/PerformanceStatusBadge';
+import { capPerformancePercentage, formatPerformancePercentage } from '../../utils/performanceClassification';
 
 interface Props {
   reports: DailyPerformanceReport[];
@@ -43,13 +45,13 @@ export const EmployeePerformanceTable: React.FC<Props> = ({ reports, targets, em
         if ((r.date || r.reportDate) >= annualAgo) annual += val;
       });
 
-      // Target mapping: Since targets may be created generally by Branch Manager, we sum targets that match the KPI label.
+      // Target mapping
       const assignedTarget = myTargets
         .filter(t => t.kpiName && kpi.label && t.kpiName.toLowerCase().includes(kpi.label.split(' ')[0].toLowerCase()))
         .reduce((sum, t) => sum + t.targetValue, 0);
 
       const diff = totalActual - assignedTarget;
-      const completionPct = assignedTarget > 0 ? (totalActual / assignedTarget) * 100 : 0;
+      const completionPct = assignedTarget > 0 ? capPerformancePercentage((totalActual / assignedTarget) * 100) : 0;
       const remaining = Math.max(0, assignedTarget - totalActual);
 
       return {
@@ -77,7 +79,8 @@ export const EmployeePerformanceTable: React.FC<Props> = ({ reports, targets, em
               <th className="p-3 font-bold text-right">Actual</th>
               <th className="p-3 font-bold text-right">Diff</th>
               <th className="p-3 font-bold text-right">Remaining</th>
-              <th className="p-3 rounded-tr-xl font-bold text-right">Completion %</th>
+              <th className="p-3 font-bold text-right">Completion %</th>
+              <th className="p-3 rounded-tr-xl font-bold text-center">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10 text-xs">
@@ -109,10 +112,18 @@ export const EmployeePerformanceTable: React.FC<Props> = ({ reports, targets, em
                     </span>
                   </td>
                   <td className="p-3 text-right text-gray-400">{formatCell(row.remaining)}</td>
-                  <td className="p-3 text-right font-black">
-                    <span className={row.completionPct >= 100 ? "text-emerald-400" : row.completionPct > 50 ? "text-[#C89A2B]" : "text-rose-400"}>
-                      {row.completionPct.toFixed(1)}%
+                  <td className="p-3 text-right font-black font-mono">
+                    <span className={
+                      row.completionPct >= 100 ? "text-emerald-400" :
+                      row.completionPct >= 75 ? "text-green-400" :
+                      row.completionPct >= 50 ? "text-amber-400" :
+                      row.completionPct >= 0 ? "text-pink-400" : "text-red-400"
+                    }>
+                      {formatPerformancePercentage(row.completionPct, 1)}
                     </span>
+                  </td>
+                  <td className="p-3 text-center">
+                    <PerformanceStatusBadge percentage={row.completionPct} size="xs" showPercentage={false} />
                   </td>
                 </tr>
               );

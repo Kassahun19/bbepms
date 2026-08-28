@@ -22,6 +22,7 @@ import {
 import { User, BankHoliday, DailyPerformanceReport, getUserFullName, Language } from '../../types';
 import { api } from '../../services/api';
 import { translations } from '../../i18n/translations';
+import { capPerformancePercentage } from '../../utils/performanceClassification';
 
 interface SubmitReportSectionProps {
   user: User;
@@ -87,7 +88,7 @@ export const SubmitReportSection: React.FC<SubmitReportSectionProps> = ({
   const totalValMobilized = Number(depositsETB || 0) + Number(foreignCurrencyETB || 0) + Number(digitalFinancialServicesETB || 0);
   const totalKpiCount = Number(customerOnboarding || 0) + Number(mobileBanking || 0) + Number(internetBanking || 0) + Number(atmDebitCards || 0) + Number(merchantSolutions || 0);
   const dailyTargetKpi = 10;
-  const liveProgressPct = Math.min(Math.round(((totalKpiCount + (totalValMobilized > 0 ? 5 : 0)) / dailyTargetKpi) * 100), 100);
+  const liveProgressPct = capPerformancePercentage(Math.round(((totalKpiCount + (totalValMobilized > 0 ? 5 : 0)) / dailyTargetKpi) * 100));
 
   const handleSubmitReport = async (isDraft: boolean) => {
     if (isBlockedDate) {

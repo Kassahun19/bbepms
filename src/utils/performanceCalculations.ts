@@ -1,4 +1,12 @@
 import { DailyPerformanceReport, PerformanceTarget, PeriodTargetAllocations } from '../types';
+import {
+  capPerformancePercentage,
+  getPerformanceClassification,
+  PerformanceClassificationTier,
+  formatPerformancePercentage
+} from './performanceClassification';
+
+export * from './performanceClassification';
 
 // =============================================================================
 // BUNNA BANK S.C. - EPMS KPI & TARGET CALCULATION ENGINE
@@ -160,20 +168,19 @@ export function allocatePeriodTargets(annualTarget: number): PeriodTargetAllocat
 /**
  * 2. Automatic Performance Percentage Calculation
  * Formula: Performance (%) = (Actual Achievement ÷ Applicable Target) × 100
- * Allows exceeding 100% when actual achievement is higher than target.
+ * Strictly capped at 100% while preserving legitimate negative values.
  */
 export function calculatePerformancePercentage(actual: number, target: number): number {
   const safeActual = Number(actual) || 0;
   const safeTarget = Number(target) || 0;
 
   if (safeTarget <= 0) {
-    // If target is 0 and employee has achieved > 0, 100% performance; if 0 achieved, 100% achieved target
-    return safeActual > 0 ? 100 : 100;
+    // If target is 0 and employee has achieved > 0, 100% performance; if 0 achieved, 0%
+    return safeActual > 0 ? 100 : 0;
   }
 
   const rawPercent = (safeActual / safeTarget) * 100;
-  // Uncapped percentage rounded to 1 decimal place
-  return Number(rawPercent.toFixed(1));
+  return capPerformancePercentage(rawPercent);
 }
 
 /**
@@ -303,6 +310,8 @@ export interface PeriodPerformanceResult {
     digitalBanking: number;
   };
   overallPerformancePercentage: number;
+  rawPerformancePercentage: number;
+  classification: PerformanceClassificationTier;
   grade: {
     letter: 'A+' | 'A' | 'B' | 'C' | 'D';
     label: string;
@@ -423,20 +432,22 @@ export function calculatePeriodPerformance(
   const digitalAvg = (mbItem.performancePercentage + ibItem.performancePercentage + merchItem.performancePercentage + atmItem.performancePercentage) / 4;
   const digitalBankingScore = Number((digitalAvg * 0.25).toFixed(2));
 
-  const overallPerformancePercentage = Number((financialScore + customerAcqScore + digitalBankingScore).toFixed(1));
+  const rawScore = Number((financialScore + customerAcqScore + digitalBankingScore).toFixed(1));
+  const overallPerformancePercentage = capPerformancePercentage(rawScore);
+  const classification = getPerformanceClassification(rawScore);
 
-  let grade: PeriodPerformanceResult['grade'];
-  if (overallPerformancePercentage >= 100) {
-    grade = { letter: 'A+', label: 'Outstanding (Exceeds Targets)', badgeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' };
-  } else if (overallPerformancePercentage >= 85) {
-    grade = { letter: 'A', label: 'Excellent Performance', badgeClass: 'bg-green-500/20 text-green-400 border-green-500/40' };
-  } else if (overallPerformancePercentage >= 70) {
-    grade = { letter: 'B', label: 'Meets Standards (Good)', badgeClass: 'bg-amber-500/20 text-amber-400 border-amber-500/40' };
-  } else if (overallPerformancePercentage >= 50) {
-    grade = { letter: 'C', label: 'Satisfactory / Needs Attention', badgeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/40' };
-  } else {
-    grade = { letter: 'D', label: 'Unsatisfactory (Underperforming)', badgeClass: 'bg-rose-500/20 text-rose-400 border-rose-500/40' };
-  }
+  let gradeLetter: 'A+' | 'A' | 'B' | 'C' | 'D' = 'D';
+  if (classification.key === 'OUTSTANDING') gradeLetter = 'A+';
+  else if (classification.key === 'EXCELLENT') gradeLetter = 'A';
+  else if (classification.key === 'SATISFACTORY') gradeLetter = 'B';
+  else if (classification.key === 'UNSATISFACTORY') gradeLetter = 'C';
+  else gradeLetter = 'D';
+
+  const grade: PeriodPerformanceResult['grade'] = {
+    letter: gradeLetter,
+    label: `${classification.badgeEmoji} ${classification.label}`,
+    badgeClass: classification.badgeClass
+  };
 
   return {
     period: periodType,
@@ -454,6 +465,8 @@ export function calculatePeriodPerformance(
       digitalBanking: digitalBankingScore
     },
     overallPerformancePercentage,
+    rawPerformancePercentage: rawScore,
+    classification,
     grade
   };
 }
@@ -526,7 +539,7 @@ export function calculateKpiGroupPerformances(kpis: any[], targets: any[], repor
   for (const grp of groups) {
     const d = results[grp];
     if (d.target > 0) {
-      d.percentage = Number(((d.achieved / d.target) * 100).toFixed(1));
+      d.percentage = capPerformancePercentage((d.achieved / d.target) * 100);
     } else {
       d.percentage = d.achieved > 0 ? 100 : 0;
     }

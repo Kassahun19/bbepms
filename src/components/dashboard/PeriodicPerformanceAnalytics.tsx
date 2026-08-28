@@ -19,6 +19,7 @@ import {
   PieChart
 } from 'lucide-react';
 import { DailyPerformanceReport, PerformanceTarget } from '../../types';
+import { capPerformancePercentage, formatPerformancePercentage, getPerformanceClassification } from '../../utils/performanceClassification';
 
 interface PeriodicPerformanceProps {
   reports: DailyPerformanceReport[];
@@ -130,9 +131,9 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
       ? Number(exactTarget.toFixed(2)) 
       : Math.round(exactTarget);
 
-    // Percentage calculation strictly based on Target vs. Achievement (UNCAPPED!)
+    // Percentage calculation strictly capped at 100% while preserving legitimate negative values
     const rawPercentage = exactTarget > 0 ? (achieved / exactTarget) * 100 : 0;
-    const scoreOutOf100 = rawPercentage;
+    const scoreOutOf100 = capPerformancePercentage(rawPercentage);
 
     // Variance with sign rule:
     // If achieved > periodTarget -> '+'
@@ -158,25 +159,17 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
     };
   });
 
-  // Calculate Overall Composite Performance Score (uncapped average of percentages!)
-  const overallCompositeScore = Math.round(
+  // Calculate Overall Composite Performance Score (capped at 100%)
+  const overallCompositeScore = capPerformancePercentage(
     productEvaluations.reduce((sum, p) => sum + p.scoreOutOf100, 0) / productsConfig.length
   );
 
-  const getGradeBadge = (score: number) => {
-    if (score >= 95) {
-      return { grade: 'A+', label: 'Outstanding (95%+)', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' };
-    } else if (score >= 85) {
-      return { grade: 'A', label: 'Excellent (85-94%)', color: 'bg-green-500/20 text-green-400 border-green-500/40' };
-    } else if (score >= 75) {
-      return { grade: 'B', label: 'Good (75-84%)', color: 'bg-amber-500/20 text-amber-400 border-amber-500/40' };
-    } else if (score >= 60) {
-      return { grade: 'C', label: 'Satisfactory (60-74%)', color: 'bg-blue-500/20 text-blue-400 border-blue-500/40' };
-    }
-    return { grade: 'D', label: 'Needs Support (<60%)', color: 'bg-rose-500/20 text-rose-400 border-rose-500/40' };
+  const classification = getPerformanceClassification(overallCompositeScore);
+  const badgeInfo = {
+    grade: classification.key === 'OUTSTANDING' ? 'A+' : classification.key === 'EXCELLENT' ? 'A' : classification.key === 'SATISFACTORY' ? 'B' : classification.key === 'UNSATISFACTORY' ? 'C' : 'D',
+    label: `${classification.badgeEmoji} ${classification.label}`,
+    color: classification.badgeClass
   };
-
-  const badgeInfo = getGradeBadge(overallCompositeScore);
 
   const formatValue = (val: number, isCurrency: boolean, key?: string) => {
     if (isCurrency) {
@@ -368,8 +361,8 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
                   <div className={`p-2 rounded-xl bg-white/5 ${prod.textColor}`}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  <div className="px-2.5 py-1 rounded-full bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/40 text-xs font-black">
-                    {prod.scoreOutOf100}%
+                  <div className="px-2.5 py-1 rounded-full bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/40 text-xs font-black font-mono">
+                    {formatPerformancePercentage(prod.scoreOutOf100, 1)}
                   </div>
                 </div>
 
@@ -411,7 +404,7 @@ export const PeriodicPerformanceAnalytics: React.FC<PeriodicPerformanceProps> = 
                 <div className="mt-2 relative">
                   <div className="overflow-hidden h-2 text-xs flex rounded-full bg-black/40 border border-white/10">
                     <div
-                      style={{ width: `${Math.min(100, prod.scoreOutOf100)}%` }}
+                      style={{ width: `${Math.max(0, Math.min(100, prod.scoreOutOf100))}%` }}
                       className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-700 ${
                         prod.scoreOutOf100 >= 100 ? 'bg-emerald-500' : prod.scoreOutOf100 >= 75 ? 'bg-[#C89A2B]' : 'bg-rose-500'
                       }`}

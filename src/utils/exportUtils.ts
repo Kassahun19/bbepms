@@ -226,9 +226,18 @@ export function downloadReportWord(reports: DailyPerformanceReport[], employeeNa
   URL.revokeObjectURL(url);
 }
 
-export function printOrDownloadPDF(reports: DailyPerformanceReport[], employeeName: string, user?: User) {
+export function printOrDownloadPDF(reportsOrTitle: DailyPerformanceReport[] | string, employeeName?: string, user?: User) {
+  if (typeof reportsOrTitle === 'string') {
+    window.print();
+    return;
+  }
+  const reports = reportsOrTitle;
+  const empName = employeeName || 'Employee';
   const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
+  if (!printWindow) {
+    window.print();
+    return;
+  }
 
   const totalDeposits = reports.reduce((s, r) => s + (r.depositsETB || 0), 0);
   const totalMobile = reports.reduce((s, r) => s + (r.mobileBankingActivations || 0), 0);
@@ -237,7 +246,7 @@ export function printOrDownloadPDF(reports: DailyPerformanceReport[], employeeNa
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Bunna Bank EPMS Performance Report - ${employeeName}</title>
+      <title>Bunna Bank EPMS Performance Report - ${empName}</title>
       <style>
         body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #111; }
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #6B3F1D; padding-bottom: 15px; margin-bottom: 20px; }

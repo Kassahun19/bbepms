@@ -3,6 +3,7 @@ import { Building, Users, Target, Activity, CheckCircle2, TrendingUp, BarChart3,
 import { Branch, User, DailyPerformanceReport, KPI, PerformanceTarget } from '../../types';
 import { ModalCloseButton } from '../common/ModalCloseButton';
 import { useModalDismiss } from '../../hooks/useModalDismiss';
+import { capPerformancePercentage, formatPerformancePercentage } from '../../utils/performanceClassification';
 
 interface Props {
   branch: Branch;
@@ -58,7 +59,7 @@ export const BranchPerformanceDetailsModal: React.FC<Props> = ({
       }
     });
 
-    const completionPercent = totalTarget > 0 ? (totalAchieved / totalTarget) * 100 : 0;
+    const completionPercent = totalTarget > 0 ? capPerformancePercentage((totalAchieved / totalTarget) * 100) : 0;
     
     // Time-based aggregation
     const now = new Date();
@@ -192,7 +193,7 @@ export const BranchPerformanceDetailsModal: React.FC<Props> = ({
             ) : (
               <div className="grid gap-4">
                 {stats.kpiStats.map((kpi, i) => {
-                  const percent = kpi.target > 0 ? (kpi.achieved / kpi.target) * 100 : 0;
+                  const percent = kpi.target > 0 ? capPerformancePercentage((kpi.achieved / kpi.target) * 100) : 0;
                   return (
                     <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4">
                       <div className="flex justify-between items-end mb-2">
@@ -203,14 +204,14 @@ export const BranchPerformanceDetailsModal: React.FC<Props> = ({
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-black text-[#C89A2B]">{percent.toFixed(1)}%</span>
+                          <span className="text-lg font-black text-[#C89A2B] font-mono">{formatPerformancePercentage(percent, 1)}</span>
                         </div>
                       </div>
                       {/* Progress Bar */}
                       <div className="w-full bg-black/40 h-2.5 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-[#C89A2B] to-emerald-400 rounded-full transition-all duration-1000"
-                          style={{ width: `${Math.min(100, percent)}%` }}
+                          style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
                         />
                       </div>
                     </div>

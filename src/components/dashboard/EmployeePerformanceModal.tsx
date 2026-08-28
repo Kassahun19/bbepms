@@ -26,6 +26,7 @@ import { User, DailyPerformanceReport, PerformanceTarget, getUserFullName } from
 import { PeriodPerformanceDashboard } from './PeriodPerformanceDashboard';
 import { ModalCloseButton } from '../common/ModalCloseButton';
 import { useModalDismiss } from '../../hooks/useModalDismiss';
+import { capPerformancePercentage, formatPerformancePercentage, getPerformanceClassification } from '../../utils/performanceClassification';
 
 interface EmployeePerformanceModalProps {
   isOpen: boolean;
@@ -208,46 +209,34 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
     );
 
     const targetVal = matchedTargetObj ? matchedTargetObj.targetValue : 0;
-    const achievementPercent = targetVal > 0 ? (actual / targetVal) * 100 : (actual > 0 ? 100 : 0);
+    const achievementPercent = targetVal > 0 ? capPerformancePercentage((actual / targetVal) * 100) : (actual > 0 ? 100 : 0);
     const gap = targetVal > actual ? targetVal - actual : 0;
 
     return {
       ...prod,
       actual,
       target: targetVal,
-      achievementPercent: Math.round(achievementPercent * 10) / 10,
+      achievementPercent,
       gap
     };
   });
 
-  // Compute Overall Weighted Achievement
+  // Compute Overall Weighted Achievement (capped at 100%)
   const validProductsWithTargets = productPerformance.filter(p => p.target > 0);
   const overallAchievementPercent = validProductsWithTargets.length > 0
-    ? Math.round(
-        (validProductsWithTargets.reduce((acc, p) => acc + Math.min(p.achievementPercent, 200), 0) /
-          validProductsWithTargets.length) * 10
-      ) / 10
-    : Math.round(
-        (productPerformance.reduce((acc, p) => acc + (p.actual > 0 ? 100 : 0), 0) /
-          productPerformance.length) * 10
-      ) / 10;
+    ? capPerformancePercentage(
+        validProductsWithTargets.reduce((acc, p) => acc + p.achievementPercent, 0) /
+          validProductsWithTargets.length
+      )
+    : capPerformancePercentage(
+        productPerformance.reduce((acc, p) => acc + (p.actual > 0 ? 100 : 0), 0) /
+          productPerformance.length
+      );
 
-  // Performance Rating Badge
-  let ratingLabel = 'On Track';
-  let ratingBadgeStyle = 'bg-blue-500/20 text-blue-300 border-blue-500/40';
-  if (overallAchievementPercent >= 100) {
-    ratingLabel = 'Exceeds Target (Excellent)';
-    ratingBadgeStyle = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
-  } else if (overallAchievementPercent >= 75) {
-    ratingLabel = 'On Track (Good)';
-    ratingBadgeStyle = 'bg-teal-500/20 text-teal-300 border-teal-500/40';
-  } else if (overallAchievementPercent >= 50) {
-    ratingLabel = 'Moderate Progress';
-    ratingBadgeStyle = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
-  } else {
-    ratingLabel = 'Needs Manager Intervention';
-    ratingBadgeStyle = 'bg-rose-500/20 text-rose-300 border-rose-500/40';
-  }
+  // Performance Rating Badge via Centralized Classification
+  const classification = getPerformanceClassification(overallAchievementPercent);
+  const ratingLabel = `${classification.badgeEmoji} ${classification.label}`;
+  const ratingBadgeStyle = classification.badgeClass;
 
   const handlePrint = () => {
     window.print();
@@ -377,8 +366,8 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
                     Overall Performance to Date
                   </span>
                   <div className="flex items-center justify-center sm:justify-end gap-2">
-                    <span className="text-3xl font-black text-[#C89A2B]">
-                      {overallAchievementPercent}%
+                    <span className="text-3xl font-black text-[#C89A2B] font-mono">
+                      {formatPerformancePercentage(overallAchievementPercent, 1)}
                     </span>
                     <Award className="w-7 h-7 text-[#C89A2B]" />
                   </div>
@@ -537,8 +526,8 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
                       <div className="space-y-1.5 pt-2 border-t border-white/10">
                         <div className="flex items-center justify-between text-xs font-bold">
                           <span className="text-gray-300 text-[11px]">Achievement Rate:</span>
-                          <span className={prod.achievementPercent >= 100 ? 'text-emerald-400' : 'text-amber-400'}>
-                            {prod.achievementPercent}%
+                          <span className={`${prod.achievementPercent >= 100 ? 'text-emerald-400' : 'text-amber-400'} font-mono`}>
+                            {formatPerformancePercentage(prod.achievementPercent, 1)}
                           </span>
                         </div>
                         <div className="w-full h-2.5 rounded-full bg-black/40 overflow-hidden border border-white/10">
@@ -547,7 +536,7 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
                               prod.achievementPercent >= 100 ? 'bg-emerald-500' :
                               prod.achievementPercent >= 70 ? 'bg-amber-500' : 'bg-rose-500'
                             }`}
-                            style={{ width: `${Math.min(prod.achievementPercent, 100)}%` }}
+                            style={{ width: `${Math.max(0, Math.min(prod.achievementPercent, 100))}%` }}
                           />
                         </div>
                         <div className="text-[10px] text-gray-400 flex justify-between">
@@ -614,9 +603,9 @@ export const EmployeePerformanceModal: React.FC<EmployeePerformanceModalProps> =
                                 <span className="text-emerald-400">Met (+{(prod.actual - prod.target).toLocaleString()})</span>
                               )}
                             </td>
-                            <td className="p-3 text-center font-bold">
+                            <td className="p-3 text-center font-bold font-mono">
                               <span className={isSuccess ? 'text-emerald-400' : isWarning ? 'text-amber-400' : 'text-rose-400'}>
-                                {prod.achievementPercent}%
+                                {formatPerformancePercentage(prod.achievementPercent, 1)}
                               </span>
                             </td>
                             <td className="p-3 text-center">

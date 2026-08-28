@@ -150,6 +150,8 @@ export const App: React.FC = () => {
 
     if (roleGroup === 'MANAGER' || (!roleGroup && currentUser?.role === 'MANAGER')) {
       if (itemId === 'manager_dashboard' || itemId === 'dashboard') setManagerActiveTab('dashboard');
+      else if (itemId === 'employee_performance' || itemId === 'staff_performance' || itemId === 'employees_perf') setManagerActiveTab('employee_performance');
+      else if (itemId === 'branch_performance' || itemId === 'branch_perf') setManagerActiveTab('branch_performance');
       else if (itemId === 'messages_notifications' || itemId === 'messages' || itemId === 'notifications') setManagerActiveTab('messages');
       else if (itemId === 'employee_management' || itemId === 'employees') setManagerActiveTab('employees');
       else if (itemId === 'kpi_management' || itemId === 'kpis' || itemId === 'targets') setManagerActiveTab('kpis');

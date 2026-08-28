@@ -292,6 +292,7 @@ export const BankDocumentsManagementPanel: React.FC<BankDocumentsManagementPanel
     try {
       await api.deleteDocument(id, currentUser?.role || 'ADMIN');
       setStatusMessage({ type: 'success', text: 'Document deleted successfully.' });
+      setDocuments(prev => prev.filter(d => String(d.id) !== String(id)));
       fetchDocs();
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message || 'Failed to delete the document.' });

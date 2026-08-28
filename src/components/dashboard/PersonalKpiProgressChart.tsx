@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Award, Calendar, Layers, Target, CheckCircle2 } from 'lucide-react';
 import { DailyPerformanceReport, PerformanceTarget } from '../../types';
+import { capPerformancePercentage, formatPerformancePercentage } from '../../utils/performanceClassification';
 
 interface PersonalKpiProgressChartProps {
   reports: DailyPerformanceReport[];
@@ -75,12 +76,12 @@ export const PersonalKpiProgressChart: React.FC<PersonalKpiProgressChartProps> =
       const accountsTarget = accountsTargetObj?.targetValue || 0;
 
       // Calculate score percentages
-      const depositPct = depositsTarget > 0 ? Math.min(100, Math.round((depositsActual / depositsTarget) * 100)) : 0;
-      const digitalPct = digitalTarget > 0 ? Math.min(100, Math.round((digitalTotalActual / digitalTarget) * 100)) : 0;
-      const accountsPct = accountsTarget > 0 ? Math.min(100, Math.round((accountsActual / accountsTarget) * 100)) : 0;
+      const depositPct = depositsTarget > 0 ? capPerformancePercentage((depositsActual / depositsTarget) * 100) : 0;
+      const digitalPct = digitalTarget > 0 ? capPerformancePercentage((digitalTotalActual / digitalTarget) * 100) : 0;
+      const accountsPct = accountsTarget > 0 ? capPerformancePercentage((accountsActual / accountsTarget) * 100) : 0;
 
       // Composite overall performance score out of 100
-      const overallScore = Math.round((depositPct * 0.5) + (digitalPct * 0.3) + (accountsPct * 0.2));
+      const overallScore = capPerformancePercentage(Math.round((depositPct * 0.5) + (digitalPct * 0.3) + (accountsPct * 0.2)));
 
       data.push({
         monthLabel,
@@ -134,7 +135,7 @@ export const PersonalKpiProgressChart: React.FC<PersonalKpiProgressChartProps> =
                 {entry.name.includes('ETB') || entry.name.includes('Deposit')
                   ? `ETB ${Number(entry.value).toLocaleString()}`
                   : entry.name.includes('Score')
-                  ? `${entry.value}%`
+                  ? formatPerformancePercentage(Number(entry.value))
                   : Number(entry.value).toLocaleString()}
               </span>
             </div>
@@ -217,7 +218,7 @@ export const PersonalKpiProgressChart: React.FC<PersonalKpiProgressChartProps> =
         <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4">
           <span className="text-xs text-gray-400 font-medium block">6-Month Avg KPI Score</span>
           <div className="flex items-baseline space-x-1.5 mt-1">
-            <span className="text-2xl font-black text-[#C89A2B]">{avg6MonthScore}%</span>
+            <span className="text-2xl font-black text-[#C89A2B] font-mono">{formatPerformancePercentage(avg6MonthScore)}</span>
             <span className="text-[10px] text-emerald-400 font-semibold">/ 100% Target</span>
           </div>
         </div>

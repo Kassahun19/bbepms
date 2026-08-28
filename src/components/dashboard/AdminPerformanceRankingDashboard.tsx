@@ -26,6 +26,7 @@ import { api } from '../../services/api';
 import { District, Branch, User, PerformanceTarget, DailyPerformanceReport } from '../../types';
 import { ModalCloseButton } from '../common/ModalCloseButton';
 import { useModalDismiss } from '../../hooks/useModalDismiss';
+import { capPerformancePercentage, formatPerformancePercentage } from '../../utils/performanceClassification';
 
 interface RankingLimitDropdownProps {
   id: string;
@@ -243,10 +244,33 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
         api.getAdminDashboardMetrics(params)
       ]);
 
-      if (dRank && dRank.length > 0) setDistrictRankings(dRank);
-      if (bRank && bRank.length > 0) setBranchRankings(bRank);
-      if (eRank && eRank.length > 0) setEmployeeRankings(eRank);
-      if (metrics) setDashboardMetrics(metrics);
+      if (dRank && dRank.length > 0) {
+        setDistrictRankings(dRank.map(d => ({
+          ...d,
+          performanceScore: capPerformancePercentage(d.performanceScore),
+          achievementPercentage: capPerformancePercentage(d.achievementPercentage)
+        })));
+      }
+      if (bRank && bRank.length > 0) {
+        setBranchRankings(bRank.map(b => ({
+          ...b,
+          performanceScore: capPerformancePercentage(b.performanceScore),
+          achievementPercentage: capPerformancePercentage(b.achievementPercentage)
+        })));
+      }
+      if (eRank && eRank.length > 0) {
+        setEmployeeRankings(eRank.map(e => ({
+          ...e,
+          performanceScore: capPerformancePercentage(e.performanceScore),
+          achievementPercentage: capPerformancePercentage(e.achievementPercentage)
+        })));
+      }
+      if (metrics) {
+        setDashboardMetrics({
+          ...metrics,
+          overallPerformanceScore: capPerformancePercentage(metrics.overallPerformanceScore)
+        });
+      }
     } catch (err) {
       console.warn('Backend rankings fetch warning:', err);
     } finally {
@@ -583,7 +607,7 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
           <div className="p-3.5 rounded-2xl bg-[#3A1F0D]/80 border border-[#C89A2B]/30">
             <p className="text-[11px] text-amber-200/70 font-medium">Enterprise Average Achievement</p>
             <h4 className="text-lg font-black text-[#C89A2B] mt-0.5">
-              {dashboardMetrics.overallPerformanceScore || 94.2}%
+              {formatPerformancePercentage(dashboardMetrics.overallPerformanceScore || 94.2)}
             </h4>
           </div>
         </div>
@@ -630,7 +654,7 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-black text-emerald-400">
-                      {b.performanceScore || b.achievementPercentage || 0}%
+                      {formatPerformancePercentage(b.performanceScore ?? b.achievementPercentage ?? 0)}
                     </span>
                     <p className="text-[9px] text-gray-400 font-medium">{formatETB(b.achievement || b.actuals?.deposits)}</p>
                   </div>
@@ -682,7 +706,7 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-black text-rose-300">
-                      {b.performanceScore || b.achievementPercentage || 0}%
+                      {formatPerformancePercentage(b.performanceScore ?? b.achievementPercentage ?? 0)}
                     </span>
                     <p className="text-[9px] text-gray-400 font-medium">{formatETB(b.achievement || b.actuals?.deposits)}</p>
                   </div>
@@ -734,7 +758,7 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-black text-emerald-400">
-                      {d.performanceScore || d.achievementPercentage || 0}%
+                      {formatPerformancePercentage(d.performanceScore ?? d.achievementPercentage ?? 0)}
                     </span>
                     <p className="text-[9px] text-gray-400 font-medium">{formatETB(d.totalActual || d.achievement)}</p>
                   </div>
@@ -786,7 +810,7 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-black text-rose-300">
-                      {d.performanceScore || d.achievementPercentage || 0}%
+                      {formatPerformancePercentage(d.performanceScore ?? d.achievementPercentage ?? 0)}
                     </span>
                     <p className="text-[9px] text-gray-400 font-medium">{formatETB(d.totalActual || d.achievement)}</p>
                   </div>
@@ -835,11 +859,11 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div>
                 <p className="text-xs text-gray-300">Overall Weighted Score</p>
                 <h4 className="text-2xl font-black text-[#C89A2B] mt-0.5">
-                  {selectedEntity.performanceScore}%
+                  {formatPerformancePercentage(selectedEntity.performanceScore)}
                 </h4>
               </div>
               <div className="text-right text-xs text-gray-300">
-                <p>Deposit Achievement: <span className="font-bold text-emerald-400">{selectedEntity.achievementPercentage}%</span></p>
+                <p>Deposit Achievement: <span className="font-bold text-emerald-400">{formatPerformancePercentage(selectedEntity.achievementPercentage)}</span></p>
                 <p>Approved Reports: <span className="font-bold text-white">{selectedEntity.approvedReportCount || 0}</span></p>
               </div>
             </div>
@@ -851,12 +875,12 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">1. Deposits (20%)</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {selectedEntity.weightedScores?.deposit || 0}%</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.deposit || 0)}</span>
                 </div>
                 <div className="mt-2 space-y-1 text-[11px] text-gray-300">
                   <div>Target: {formatETB(selectedEntity.targets?.deposit)}</div>
                   <div>Actual: <span className="font-bold text-emerald-400">{formatETB(selectedEntity.actuals?.deposits)}</span></div>
-                  <div>Achievement: <span className="font-bold text-white">{selectedEntity.achievements?.deposit || 0}%</span></div>
+                  <div>Achievement: <span className="font-bold text-white">{formatPerformancePercentage(selectedEntity.achievements?.deposit || 0)}</span></div>
                 </div>
               </div>
 
@@ -864,12 +888,12 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">2. FCY Inflow (15%)</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {selectedEntity.weightedScores?.fcy || 0}%</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.fcy || 0)}</span>
                 </div>
                 <div className="mt-2 space-y-1 text-[11px] text-gray-300">
                   <div>Target: {formatETB(selectedEntity.targets?.fcy)}</div>
                   <div>Actual: <span className="font-bold text-emerald-400">{formatETB(selectedEntity.actuals?.fcy)}</span></div>
-                  <div>Achievement: <span className="font-bold text-white">{selectedEntity.achievements?.fcy || 0}%</span></div>
+                  <div>Achievement: <span className="font-bold text-white">{formatPerformancePercentage(selectedEntity.achievements?.fcy || 0)}</span></div>
                 </div>
               </div>
 
@@ -877,12 +901,12 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">3. DFS (20%)</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {selectedEntity.weightedScores?.dfs || 0}%</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.dfs || 0)}</span>
                 </div>
                 <div className="mt-2 space-y-1 text-[11px] text-gray-300">
                   <div>Target: {formatETB(selectedEntity.targets?.dfs)}</div>
                   <div>Actual: <span className="font-bold text-emerald-400">{formatETB(selectedEntity.actuals?.dfs)}</span></div>
-                  <div>Achievement: <span className="font-bold text-white">{selectedEntity.achievements?.dfs || 0}%</span></div>
+                  <div>Achievement: <span className="font-bold text-white">{formatPerformancePercentage(selectedEntity.achievements?.dfs || 0)}</span></div>
                 </div>
               </div>
 
@@ -890,12 +914,12 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">4. Customers (20%)</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {selectedEntity.weightedScores?.customerBase || 0}%</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.customerBase || 0)}</span>
                 </div>
                 <div className="mt-2 space-y-1 text-[11px] text-gray-300">
                   <div>Target: {selectedEntity.targets?.customerBase || 0} Accounts</div>
                   <div>Actual: <span className="font-bold text-emerald-400">{selectedEntity.actuals?.customerBase || 0} Accounts</span></div>
-                  <div>Achievement: <span className="font-bold text-white">{selectedEntity.achievements?.customerBase || 0}%</span></div>
+                  <div>Achievement: <span className="font-bold text-white">{formatPerformancePercentage(selectedEntity.achievements?.customerBase || 0)}</span></div>
                 </div>
               </div>
 
@@ -903,13 +927,13 @@ export const AdminPerformanceRankingDashboard: React.FC<AdminPerformanceRankingD
               <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10 sm:col-span-2">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">5. Digital Products & Activations (25%)</span>
-                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {selectedEntity.weightedScores?.digitals || 0}%</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.digitals || 0)}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 text-[10px] text-gray-300">
-                  <div>Mobile: <span className="font-bold text-white">{selectedEntity.actuals?.mobileBanking || 0}</span> ({selectedEntity.achievements?.mobileBanking || 0}%)</div>
-                  <div>ATM Cards: <span className="font-bold text-white">{selectedEntity.actuals?.atm || 0}</span> ({selectedEntity.achievements?.atm || 0}%)</div>
-                  <div>Merchants: <span className="font-bold text-white">{selectedEntity.actuals?.merchant || 0}</span> ({selectedEntity.achievements?.merchant || 0}%)</div>
-                  <div>Internet: <span className="font-bold text-white">{selectedEntity.actuals?.internetBanking || 0}</span> ({selectedEntity.achievements?.internetBanking || 0}%)</div>
+                  <div>Mobile: <span className="font-bold text-white">{selectedEntity.actuals?.mobileBanking || 0}</span> ({formatPerformancePercentage(selectedEntity.achievements?.mobileBanking || 0)})</div>
+                  <div>ATM Cards: <span className="font-bold text-white">{selectedEntity.actuals?.atm || 0}</span> ({formatPerformancePercentage(selectedEntity.achievements?.atm || 0)})</div>
+                  <div>Merchants: <span className="font-bold text-white">{selectedEntity.actuals?.merchant || 0}</span> ({formatPerformancePercentage(selectedEntity.achievements?.merchant || 0)})</div>
+                  <div>Internet: <span className="font-bold text-white">{selectedEntity.actuals?.internetBanking || 0}</span> ({formatPerformancePercentage(selectedEntity.achievements?.internetBanking || 0)})</div>
                 </div>
               </div>
 

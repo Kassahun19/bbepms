@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { DailyPerformanceReport, PerformanceTarget, KPI } from '../../types';
 import { PeriodicPerformanceAnalytics } from './PeriodicPerformanceAnalytics';
+import { capPerformancePercentage, formatPerformancePercentage } from '../../utils/performanceClassification';
 
 interface AllProductsOverviewProps {
   reports: DailyPerformanceReport[];
@@ -164,7 +165,7 @@ export const AllProductsOverview: React.FC<AllProductsOverviewProps> = ({
     const targetObj = targets.find(t => t.kpiId === prod.kpiId || (t.kpiName && prod.name && t.kpiName.toLowerCase().includes(prod.name.toLowerCase())));
     const target = targetObj ? targetObj.targetValue : prod.defaultTarget;
 
-    const percentage = target > 0 ? (achieved / target) * 100 : 0;
+    const percentage = target > 0 ? capPerformancePercentage((achieved / target) * 100) : 0;
     const remaining = Math.max(0, target - achieved);
     const excess = achieved > target ? achieved - target : 0;
 
@@ -172,7 +173,7 @@ export const AllProductsOverview: React.FC<AllProductsOverviewProps> = ({
       ...prod,
       target,
       achieved,
-      percentage: Number(percentage.toFixed(1)),
+      percentage,
       remaining,
       excess
     };
@@ -263,7 +264,7 @@ export const AllProductsOverview: React.FC<AllProductsOverviewProps> = ({
                   <Icon className="w-5 h-5" />
                 </div>
 
-                <div className={`px-2.5 py-1 rounded-full text-xs font-black flex items-center space-x-1 ${
+                <div className={`px-2.5 py-1 rounded-full text-xs font-black flex items-center space-x-1 font-mono ${
                   isTargetExceeded 
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
                     : prod.percentage >= 80 
@@ -271,7 +272,7 @@ export const AllProductsOverview: React.FC<AllProductsOverviewProps> = ({
                     : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
                 }`}>
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span>{prod.percentage}%</span>
+                  <span>{formatPerformancePercentage(prod.percentage, 1)}</span>
                 </div>
               </div>
 
@@ -312,7 +313,7 @@ export const AllProductsOverview: React.FC<AllProductsOverviewProps> = ({
               <div className="mt-3 relative pt-1">
                 <div className="overflow-hidden h-2 text-xs flex rounded-full bg-black/40 border border-white/10">
                   <div
-                    style={{ width: `${Math.min(prod.percentage, 100)}%` }}
+                    style={{ width: `${Math.max(0, Math.min(prod.percentage, 100))}%` }}
                     className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-700 ${
                       isTargetExceeded
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
