@@ -11,6 +11,7 @@ import {
   Users
 } from 'lucide-react';
 import { User, District, Branch, KPI, DailyPerformanceReport, PerformanceTarget } from '../../types';
+import { BranchPerformanceDetailsModal } from './BranchPerformanceDetailsModal';
 
 interface DistrictManagementDashboardProps {
   currentUser: User;
@@ -20,6 +21,7 @@ interface DistrictManagementDashboardProps {
   reports: DailyPerformanceReport[];
   targets: PerformanceTarget[];
   language?: string;
+  users?: User[];
 }
 
 export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardProps> = ({
@@ -29,8 +31,11 @@ export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardPr
   kpis,
   reports,
   targets,
-  language = 'en'
+  language = 'en',
+  users = []
 }) => {
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+
   const userDistrictId = currentUser.districtId || 'DIST-BDR';
   const userDistrictName = currentUser.districtName || 'Bahir Dar District';
 
@@ -63,7 +68,7 @@ export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardPr
           <div>
             <button 
               onClick={() => window.print()}
-              className="bg-[#C89A2B] hover:bg-[#b08522] text-[#4A2E18] font-semibold px-4 py-2 rounded-xl text-sm transition shadow flex items-center gap-2"
+              className="bg-[#C89A2B] hover:bg-[#b08522] text-[#4A2E18] font-semibold px-4 py-2 rounded-xl text-sm transition shadow flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" /> Print District Report
             </button>
@@ -126,12 +131,12 @@ export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardPr
                   { id: 'BR-360', name: 'Hamusit Branch', code: '360', type: 'Grade I', managerName: 'Negash Adugna', employeeCount: 12 },
                   { id: 'BR-361', name: 'Bahir Dar Main Branch', code: '361', type: 'Main Branch', managerName: 'Alemayehu Tadesse', employeeCount: 25 },
                   { id: 'BR-362', name: 'Tis Abay Branch', code: '362', type: 'Grade II', managerName: 'Meseret Bekele', employeeCount: 8 }
-                ]).map((b, i) => {
+                ]).map((b: any, i) => {
                   const score = (93.0 - i * 2.5).toFixed(1);
                   return (
                     <tr key={b.id} className="hover:bg-stone-50 transition">
                       <td className="py-3 px-4 font-semibold text-stone-800">{b.name}</td>
-                      <td className="py-3 px-4 text-stone-600">SOL: {b.code || 'N/A'} ({b.type || 'Standard'})</td>
+                      <td className="py-3 px-4 text-stone-600">SOL: {b.solId || b.code || 'N/A'} ({b.type || 'Standard'})</td>
                       <td className="py-3 px-4 text-stone-600">{b.managerName || 'Assigned Manager'}</td>
                       <td className="py-3 px-4 text-stone-600">{b.employeeCount || 10}</td>
                       <td className="py-3 px-4">
@@ -144,8 +149,8 @@ export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardPr
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button 
-                          onClick={() => alert(`Inspecting branch performance for ${b.name}`)}
-                          className="text-[#5C3A21] hover:text-[#C89A2B] font-semibold text-xs flex items-center gap-1 ml-auto"
+                          onClick={() => setSelectedBranch(b as Branch)}
+                          className="text-[#5C3A21] hover:text-[#C89A2B] font-semibold text-xs flex items-center gap-1 ml-auto cursor-pointer"
                         >
                           View Details <ChevronRight className="w-3.5 h-3.5" />
                         </button>
@@ -159,6 +164,17 @@ export const DistrictManagementDashboard: React.FC<DistrictManagementDashboardPr
         </div>
 
       </div>
+
+      {selectedBranch && (
+        <BranchPerformanceDetailsModal
+          branch={selectedBranch}
+          onClose={() => setSelectedBranch(null)}
+          users={users}
+          reports={reports}
+          kpis={kpis}
+          targets={targets}
+        />
+      )}
     </div>
   );
 };
