@@ -1,4 +1,12 @@
-export type UserRole = 'ADMINISTRATOR' | 'MANAGER' | 'EMPLOYEE';
+export type UserRole = 
+  | 'ADMINISTRATOR' 
+  | 'BOARD_OF_DIRECTORS' 
+  | 'CEO' 
+  | 'CHIEF_OFFICER' 
+  | 'DIRECTOR' 
+  | 'DISTRICT_DIRECTOR' 
+  | 'MANAGER' 
+  | 'EMPLOYEE';
 
 export * from './competitor';
 

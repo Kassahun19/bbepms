@@ -419,11 +419,16 @@ export const api = {
   quickSwitchUserRole: async (role: UserRole): Promise<User> => {
     const rolePresetMap: Record<UserRole, { userId: string; pass: string }> = {
       ADMINISTRATOR: { userId: '4994', pass: 'Admin@360' },
-      MANAGER: { userId: '4994', pass: 'Manager@360' },
-      EMPLOYEE: { userId: '4994', pass: 'Employee@360' }
+      BOARD_OF_DIRECTORS: { userId: 'BOARD01', pass: 'Board@360' },
+      CEO: { userId: 'CEO01', pass: 'Ceo@360' },
+      CHIEF_OFFICER: { userId: 'CHIEF01', pass: 'Chief@360' },
+      DIRECTOR: { userId: 'DIR01', pass: 'Director@360' },
+      DISTRICT_DIRECTOR: { userId: 'DISTDIR01', pass: 'District@360' },
+      MANAGER: { userId: '1323', pass: 'Negash@360' },
+      EMPLOYEE: { userId: '2213', pass: 'Mezgebu@360' }
     };
 
-    const preset = rolePresetMap[role];
+    const preset = rolePresetMap[role] || { userId: '4994', pass: 'Admin@360' };
     try {
       const data = await api.login(preset.userId, preset.pass);
       return data.user;

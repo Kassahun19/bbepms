@@ -14,6 +14,11 @@ import { UserProfileModal } from './components/profile/UserProfileModal';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { ManagerDashboard, ManagerTab } from './components/dashboard/ManagerDashboard';
 import { EmployeeDashboard } from './components/dashboard/EmployeeDashboard';
+import { BoardDashboard } from './components/dashboard/BoardDashboard';
+import { CeoDashboard } from './components/dashboard/CeoDashboard';
+import { ChiefOfficerDashboard } from './components/dashboard/ChiefOfficerDashboard';
+import { DirectorDashboard } from './components/dashboard/DirectorDashboard';
+import { DistrictManagementDashboard } from './components/dashboard/DistrictManagementDashboard';
 
 // Modals & Drawers
 import { GetStartedModal } from './components/common/GetStartedModal';
@@ -276,6 +281,66 @@ export const App: React.FC = () => {
                 onRefreshData={loadData}
                 onOpenAiAssistant={() => setIsAiDrawerOpen(true)}
                 onOpenProfile={() => setIsProfileOpen(true)}
+                language={language}
+              />
+            )}
+
+            {currentUser.role === 'BOARD_OF_DIRECTORS' && (
+              <BoardDashboard
+                currentUser={currentUser}
+                districts={districts}
+                branches={branches}
+                kpis={kpis}
+                reports={reports}
+                targets={targets}
+                language={language}
+              />
+            )}
+
+            {currentUser.role === 'CEO' && (
+              <CeoDashboard
+                currentUser={currentUser}
+                districts={districts}
+                branches={branches}
+                kpis={kpis}
+                reports={reports}
+                targets={targets}
+                language={language}
+              />
+            )}
+
+            {currentUser.role === 'CHIEF_OFFICER' && (
+              <ChiefOfficerDashboard
+                currentUser={currentUser}
+                districts={districts}
+                branches={branches}
+                kpis={kpis}
+                reports={reports}
+                targets={targets}
+                language={language}
+              />
+            )}
+
+            {currentUser.role === 'DIRECTOR' && (
+              <DirectorDashboard
+                currentUser={currentUser}
+                districts={districts}
+                branches={branches}
+                kpis={kpis}
+                reports={reports}
+                targets={targets}
+                language={language}
+              />
+            )}
+
+            {currentUser.role === 'DISTRICT_DIRECTOR' && (
+              <DistrictManagementDashboard
+                currentUser={currentUser}
+                districts={districts}
+                branches={branches}
+                kpis={kpis}
+                reports={reports}
+                targets={targets}
                 language={language}
               />
             )}
