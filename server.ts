@@ -1543,8 +1543,7 @@ app.delete('/api/documents/:id', async (req, res) => {
 
     return res.json({ success: true, message: 'Document permanently deleted successfully.', deletedId: targetId, deletedDoc });
   } else {
-    // Return success true if document was already removed or deleted
-    return res.json({ success: true, message: 'Document deleted or already removed.' });
+    return res.status(404).json({ error: 'Document not found or already deleted.' });
   }
 });
 

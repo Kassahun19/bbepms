@@ -1755,34 +1755,20 @@ export const api = {
   },
 
   deleteDocument: async (id: string, userRole?: string): Promise<any> => {
+    const res = await fetchJsonOrFallback<any>(`/api/documents/${id}${userRole ? `?userRole=${encodeURIComponent(userRole)}` : ''}`, {
+      method: 'DELETE'
+    });
+    if (res.error && !res.isHtmlOrOffline) {
+      throw new Error(res.error);
+    }
+    if (!res.data?.success && !res.isHtmlOrOffline) {
+      throw new Error(res.data?.error || 'Failed to delete document');
+    }
     try {
-      const res = await fetchJsonOrFallback<any>(`/api/documents/${id}${userRole ? `?userRole=${encodeURIComponent(userRole)}` : ''}`, {
-        method: 'DELETE'
-      });
-      if (res.data?.success) {
-        try {
-          await deleteDocument('bankMemos', id);
-          await deleteDocument('documents', id);
-        } catch (e) {}
-        return true;
-      }
-      if (res.error && !res.isHtmlOrOffline) {
-        throw new Error(res.error);
-      }
-      // Offline / fallback mode
       await deleteDocument('bankMemos', id);
       await deleteDocument('documents', id);
-      return true;
-    } catch (err: any) {
-      // Final fallback attempt via Firestore
-      try {
-        await deleteDocument('bankMemos', id);
-        await deleteDocument('documents', id);
-        return true;
-      } catch (f) {
-        throw new Error(err?.message || 'Failed to delete document');
-      }
-    }
+    } catch (e) {}
+    return true;
   },
 
   publishDocument: async (id: string, publisherName?: string, targetAudience?: string, userRole?: string): Promise<any> => {
