@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getFirestore,
+  initializeFirestore,
+  setLogLevel,
   collection,
   doc,
   getDocs,
@@ -13,6 +15,10 @@ import {
   where
 } from 'firebase/firestore';
 import appletConfig from '../../firebase-applet-config.json';
+
+try {
+  setLogLevel('silent');
+} catch {}
 
 const config: any = appletConfig || {};
 
@@ -42,7 +48,17 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app, firestoreDatabaseId || '(default)');
+
+let dbInstance: any;
+try {
+  dbInstance = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+  }, firestoreDatabaseId || '(default)');
+} catch {
+  dbInstance = getFirestore(app, firestoreDatabaseId || '(default)');
+}
+
+export const db = dbInstance;
 
 export {
   collection,

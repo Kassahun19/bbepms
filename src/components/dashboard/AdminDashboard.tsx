@@ -58,6 +58,7 @@ import { BranchCampaignWidget } from './BranchCampaignWidget';
 import { CompetitorIntelligenceModule } from '../competitor/CompetitorIntelligenceModule';
 import { AdminPerformanceRankingDashboard } from './AdminPerformanceRankingDashboard';
 import { BankDocumentsManagementPanel } from './BankDocumentsManagementPanel';
+import { ReusableDataTable, Column } from '../ui/ReusableDataTable';
 
 export interface KpiPresetOption {
   code: string;
@@ -1005,6 +1006,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const approvedCount = reports.filter(r => r.status === 'Approved').length;
   const rejectedCount = reports.filter(r => r.status === 'Rejected').length;
 
+  
+  const [employeeRoleFilter, setEmployeeRoleFilter] = useState('All');
+  const [employeeStatusFilter, setEmployeeStatusFilter] = useState('All');
+  const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
+
+  const branchColumns: Column<Branch>[] = [
+    { key: 'solId', header: 'SOL ID', render: (b) => <span className="font-extrabold text-[#C89A2B] font-mono">{b.solId || b.code}</span> },
+    { key: 'name', header: 'Branch Name', render: (b) => <span className="font-semibold text-white">{b.name}</span> },
+    { key: 'phone', header: 'Telephone Line(s)', render: (b) => <div className="flex items-center space-x-1"><Phone className="w-3 h-3 text-emerald-400 shrink-0" /><span>{b.phone || '+251 11 800 0000'}</span></div> },
+    { key: 'districtName', header: 'Parent District / Area Office', render: (b) => <span className="font-medium text-white">{b.districtName}</span> },
+    { key: 'region', header: 'Region', render: (b) => <span>{b.region || 'Addis Ababa'}</span> },
+    { key: 'location', header: 'Branch Address / Location' },
+    { key: 'type', header: 'Grade / Type', render: (b) => <span className="bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/30 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">{b.type || 'Grade I'}</span> },
+    { key: 'status', header: 'Status', render: (b) => <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${(b.status || 'Active') === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}`}>{b.status || 'Active'}</span> },
+    { key: 'actions', header: 'Actions', render: (b) => (
+      <div className="flex items-center justify-end space-x-1.5">
+        <button onClick={() => setViewingBranch(b)} title="View Branch Details (👁)" className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-cyan-300 transition-colors cursor-pointer"><Eye className="w-4 h-4" /></button>
+        <button onClick={() => setEditingBranch({...b})} title="Edit Branch Record (✏️)" className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-amber-400 transition-colors cursor-pointer"><Edit2 className="w-4 h-4" /></button>
+        <button onClick={() => handleDeleteBranch(b.id, b.name)} title="Delete Branch (🗑)" className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+      </div>
+    ) }
+  ];
+
   return (
     <div className="space-y-8">
       
@@ -1691,208 +1715,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
 
-          {/* Search, Filter, Sort Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {/* Search */}
-            <div className="relative sm:col-span-2">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                placeholder="Search Sol ID, Branch name, Telephone, Location..."
-                value={branchSearch}
-                onChange={(e) => { setBranchSearch(e.target.value); setBranchPage(1); }}
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
-              />
-            </div>
+          
+          {/* Server-Side Reusable Data Table */}
+          <ReusableDataTable
+            fetchData={api.getPaginatedBranches}
+            columns={branchColumns}
+            defaultSortBy="name"
+            filterState={{ districtId: branchDistrictFilter, region: branchRegionFilter, status: branchStatusFilter }}
+            filters={
+              <>
+                <select value={branchRegionFilter} onChange={(e) => setBranchRegionFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                  <option value="All">All Regions</option>
+                  {uniqueRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <select value={branchDistrictFilter} onChange={(e) => setBranchDistrictFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                  <option value="All">All Districts</option>
+                  {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+                <select value={branchStatusFilter} onChange={(e) => setBranchStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </>
+            }
+          />
 
-            {/* Region Filter */}
-            <select
-              value={branchRegionFilter}
-              onChange={(e) => { setBranchRegionFilter(e.target.value); setBranchPage(1); }}
-              className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none"
-            >
-              <option value="All">All Regions</option>
-              {uniqueRegions.map(r => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
 
-            {/* Parent District Filter */}
-            <select
-              value={branchDistrictFilter}
-              onChange={(e) => { setBranchDistrictFilter(e.target.value); setBranchPage(1); }}
-              className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none"
-            >
-              <option value="All">All Districts / Area Offices</option>
-              {districts.map(d => (
-                <option key={d.id} value={d.id}>{d.name} {d.solId ? `(SOL ${d.solId})` : ''}</option>
-              ))}
-            </select>
-
-            {/* Status Filter & Sort Toggle */}
-            <div className="flex items-center space-x-2">
-              <select
-                value={branchStatusFilter}
-                onChange={(e) => { setBranchStatusFilter(e.target.value); setBranchPage(1); }}
-                className="w-full px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-
-              <button
-                onClick={() => setBranchSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                className="p-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-[#C89A2B] hover:bg-white/10 shrink-0"
-                title={`Sort ${branchSortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
-              >
-                <ArrowUpDown className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Branch Responsive Data Table */}
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#6B3F1D]/50">
-            <table className="w-full text-left text-xs text-gray-300">
-              <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase tracking-wider border-b border-white/10">
-                <tr>
-                  <th className="p-3">
-                    <button
-                      onClick={() => setBranchSortBy('solId')}
-                      className="flex items-center space-x-1 hover:text-white"
-                    >
-                      <span>SOL ID</span>
-                      <ArrowUpDown className="w-3 h-3 opacity-60" />
-                    </button>
-                  </th>
-                  <th className="p-3">
-                    <button
-                      onClick={() => setBranchSortBy('name')}
-                      className="flex items-center space-x-1 hover:text-white"
-                    >
-                      <span>Branch Name</span>
-                      <ArrowUpDown className="w-3 h-3 opacity-60" />
-                    </button>
-                  </th>
-                  <th className="p-3">Telephone Line(s)</th>
-                  <th className="p-3">Parent District / Area Office</th>
-                  <th className="p-3">Region</th>
-                  <th className="p-3">Branch Address / Location</th>
-                  <th className="p-3">Grade / Type</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {paginatedBranches.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="p-8 text-center text-gray-400">
-                      No branch found matching the selected search and filter criteria.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedBranches.map(b => (
-                    <tr key={b.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-3 font-extrabold text-[#C89A2B] font-mono">{b.solId || b.code}</td>
-                      <td className="p-3 font-semibold text-white">{b.name}</td>
-                      <td className="p-3 font-mono text-gray-300">
-                        <div className="flex items-center space-x-1">
-                          <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
-                          <span>{b.phone || '+251 11 800 0000'}</span>
-                        </div>
-                      </td>
-                      <td className="p-3 font-medium text-white">{b.districtName}</td>
-                      <td className="p-3">{b.region || 'Addis Ababa'}</td>
-                      <td className="p-3 text-gray-300">{b.location}</td>
-                      <td className="p-3">
-                        <span className="bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/30 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">
-                          {b.type || 'Grade I'}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          (b.status || 'Active') === 'Active' 
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
-                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        }`}>
-                          {b.status || 'Active'}
-                        </span>
-                      </td>
-                      <td className="p-3 text-right">
-                        <div className="flex items-center justify-end space-x-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setViewingBranch(b)}
-                            title="View Branch Details (👁)"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-cyan-300 transition-colors cursor-pointer"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingBranch({ ...b })}
-                            title="Edit Branch Record (✏️)"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-amber-400 transition-colors cursor-pointer"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBranch(b.id, b.name)}
-                            title="Delete Branch (🗑)"
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Branch Pagination Controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-300 gap-3 pt-2">
-            <div className="flex items-center space-x-3">
-              <span>Rows per page:</span>
-              <select
-                value={branchRowsPerPage}
-                onChange={(e) => { setBranchRowsPerPage(Number(e.target.value)); setBranchPage(1); }}
-                className="px-2 py-1 rounded bg-[#6B3F1D] border border-white/20 text-white text-xs focus:outline-none"
-              >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span>
-                Showing {filteredBranches.length === 0 ? 0 : (branchPage - 1) * branchRowsPerPage + 1} to{' '}
-                {Math.min(branchPage * branchRowsPerPage, filteredBranches.length)} of {filteredBranches.length} entries
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                disabled={branchPage === 1}
-                onClick={() => setBranchPage(prev => Math.max(prev - 1, 1))}
-                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="font-bold text-[#C89A2B]">
-                Page {branchPage} of {totalBranchPages}
-              </span>
-              <button
-                disabled={branchPage >= totalBranchPages}
-                onClick={() => setBranchPage(prev => Math.min(prev + 1, totalBranchPages))}
-                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1973,6 +1822,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      
+      {/* TAB 4: EMPLOYEES */}
+      {activeTab === 'employees' && (
+        <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-lg text-white">Employee Staff Roster</h3>
+            <span className="text-xs text-[#C89A2B]">{employees.length} Registered Users</span>
+          </div>
+          <ReusableDataTable
+            fetchData={api.getPaginatedEmployees}
+            columns={[
+              { key: 'userId', header: 'Staff ID', render: (u) => <span className="font-extrabold text-[#C89A2B] font-mono">{u.userId}</span> },
+              { key: 'name', header: 'Employee Name', render: (u) => <span className="font-semibold text-white">{u.firstName} {u.lastName}</span> },
+              { key: 'role', header: 'System Role', render: (u) => <span className="bg-[#C89A2B]/20 text-[#C89A2B] px-2 py-0.5 rounded font-bold">{u.role}</span> },
+              { key: 'jobTitle', header: 'Job Title' },
+              { key: 'branchName', header: 'Assigned Branch' },
+              { key: 'districtName', header: 'District' },
+              { key: 'actions', header: 'Actions', render: (u) => (
+                <div className="flex items-center justify-end space-x-1.5">
+                  <button onClick={() => setViewingEmployee(u)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-cyan-300"><Eye className="w-4 h-4" /></button>
+                  <button onClick={() => setEditingEmployee({...u})} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-amber-400"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleDeleteEmployee(u.id, u.firstName)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-rose-400"><Trash2 className="w-4 h-4" /></button>
+                </div>
+              )}
+            ]}
+            defaultSortBy="userId"
+            filterState={{ role: employeeRoleFilter, status: employeeStatusFilter }}
+            filters={
+              <>
+                <select value={employeeRoleFilter} onChange={(e) => setEmployeeRoleFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                  <option value="All">All Roles</option>
+                  {['BOARD_OF_DIRECTORS', 'CEO', 'CHIEF_OFFICER', 'DIRECTOR', 'DISTRICT_DIRECTOR', 'MANAGER', 'EMPLOYEE'].map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <select value={employeeStatusFilter} onChange={(e) => setEmployeeStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                  <option value="All">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+                <button onClick={() => setIsAddEmployeeModalOpen(true)} className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]">
+                  <Plus className="w-4 h-4" /><span>Add Employee</span>
+                </button>
+              </>
+            }
+          />
         </div>
       )}
 

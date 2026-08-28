@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getFirestore,
+  initializeFirestore,
+  setLogLevel,
   doc,
   setDoc,
   getDoc,
@@ -10,6 +12,10 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import appletConfig from '../../firebase-applet-config.json';
+
+try {
+  setLogLevel('silent');
+} catch {}
 
 const config: any = appletConfig || {};
 
@@ -31,7 +37,17 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app, firestoreDatabaseId || '(default)');
+
+let dbInstance: any;
+try {
+  dbInstance = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+  }, firestoreDatabaseId || '(default)');
+} catch {
+  dbInstance = getFirestore(app, firestoreDatabaseId || '(default)');
+}
+
+export const db = dbInstance;
 
 // Persistent quota tracking across browser sessions
 const QUOTA_STORAGE_KEY = 'epms_firestore_quota_exhausted_until';
@@ -67,21 +83,24 @@ export function setFirestoreQuotaExhausted(durationMs: number = 60 * 60 * 1000):
 }
 
 function handleFirestoreError(err: any, context: string) {
-  const isQuota = 
+  const isQuotaOrUnavailable = 
     err?.code === 'resource-exhausted' || 
+    err?.code === 'unavailable' ||
+    err?.code === 'deadline-exceeded' ||
     err?.code === 8 ||
     err?.message?.includes('RESOURCE_EXHAUSTED') ||
     err?.message?.includes('Quota exceeded') ||
+    err?.message?.includes('Could not reach Cloud Firestore') ||
+    err?.message?.includes('offline') ||
     err?.message?.includes('quota');
 
-  if (isQuota) {
-    setFirestoreQuotaExhausted(60 * 60 * 1000); // 1-hour backoff
+  if (isQuotaOrUnavailable) {
+    setFirestoreQuotaExhausted(5 * 60 * 1000); // 5-minute backoff
     if (!quotaExceededLogged) {
-      console.info(`[EPMS Persistence] Firestore daily quota reached. Seamlessly routing all data through local server persistence.`);
+      console.info(`[EPMS Persistence] Firestore connection or quota unavailable. Seamlessly routing all data through local server persistence.`);
       quotaExceededLogged = true;
     }
   } else {
-    // Suppress verbose gRPC errors when quota or connection is unavailable
     if (err?.code !== 'unavailable' && err?.code !== 'cancelled') {
       console.warn(`[Firestore Notice] Note during ${context}:`, err?.message || err);
     }

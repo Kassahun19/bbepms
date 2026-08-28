@@ -19,6 +19,7 @@ import { CeoDashboard } from './components/dashboard/CeoDashboard';
 import { ChiefOfficerDashboard } from './components/dashboard/ChiefOfficerDashboard';
 import { DirectorDashboard } from './components/dashboard/DirectorDashboard';
 import { DistrictManagementDashboard } from './components/dashboard/DistrictManagementDashboard';
+import { RoleBasedOrgNavigation } from './components/navigation/RoleBasedOrgNavigation';
 
 // Modals & Drawers
 import { GetStartedModal } from './components/common/GetStartedModal';
@@ -80,12 +81,19 @@ export const App: React.FC = () => {
 
   const [roleHint, setRoleHint] = useState<UserRole | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (user?: User | null) => {
     try {
+      const activeUser = user !== undefined ? user : currentUser;
+      const role = activeUser?.role;
+      const uId = activeUser?.id || activeUser?.userId;
+      const distId = activeUser?.districtId;
+
+      const isExec = role && ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(role);
+
       const [dList, bList, eList, kList, rList, nList, aLogs, hList, tList] = await Promise.all([
-        api.getDistricts(),
-        api.getBranches(),
-        api.getEmployees(),
+        api.getDistricts(role, uId, distId),
+        api.getBranches(isExec ? undefined : distId),
+        api.getEmployees(isExec ? undefined : { districtId: distId }),
         api.getKPIs(),
         api.getDailyReports(),
         api.getNotifications(),
@@ -109,8 +117,8 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(currentUser);
+  }, [currentUser?.role, currentUser?.id]);
 
   const handleLogout = async () => {
     try {
@@ -129,10 +137,14 @@ export const App: React.FC = () => {
     try {
       const user = await api.quickSwitchUserRole(role);
       setCurrentUser(user);
+      localStorage.setItem('bunna_user', JSON.stringify(user));
+      await loadData(user);
     } catch (err) {
       console.warn("Role switch API fallback triggered", err);
       const fallbackUser = defaultUsers.find(u => u.role === role) || defaultUsers[0];
       setCurrentUser(fallbackUser);
+      localStorage.setItem('bunna_user', JSON.stringify(fallbackUser));
+      await loadData(fallbackUser);
     }
   };
 
@@ -286,63 +298,123 @@ export const App: React.FC = () => {
             )}
 
             {currentUser.role === 'BOARD_OF_DIRECTORS' && (
-              <BoardDashboard
-                currentUser={currentUser}
-                districts={districts}
-                branches={branches}
-                kpis={kpis}
-                reports={reports}
-                targets={targets}
-                language={language}
-              />
+              <>
+                <RoleBasedOrgNavigation
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  employees={employees}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+                <BoardDashboard
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+              </>
             )}
 
             {currentUser.role === 'CEO' && (
-              <CeoDashboard
-                currentUser={currentUser}
-                districts={districts}
-                branches={branches}
-                kpis={kpis}
-                reports={reports}
-                targets={targets}
-                language={language}
-              />
+              <>
+                <RoleBasedOrgNavigation
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  employees={employees}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+                <CeoDashboard
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+              </>
             )}
 
             {currentUser.role === 'CHIEF_OFFICER' && (
-              <ChiefOfficerDashboard
-                currentUser={currentUser}
-                districts={districts}
-                branches={branches}
-                kpis={kpis}
-                reports={reports}
-                targets={targets}
-                language={language}
-              />
+              <>
+                <RoleBasedOrgNavigation
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  employees={employees}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+                <ChiefOfficerDashboard
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+              </>
             )}
 
             {currentUser.role === 'DIRECTOR' && (
-              <DirectorDashboard
-                currentUser={currentUser}
-                districts={districts}
-                branches={branches}
-                kpis={kpis}
-                reports={reports}
-                targets={targets}
-                language={language}
-              />
+              <>
+                <RoleBasedOrgNavigation
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  employees={employees}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+                <DirectorDashboard
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+              </>
             )}
 
             {currentUser.role === 'DISTRICT_DIRECTOR' && (
-              <DistrictManagementDashboard
-                currentUser={currentUser}
-                districts={districts}
-                branches={branches}
-                kpis={kpis}
-                reports={reports}
-                targets={targets}
-                language={language}
-              />
+              <>
+                <RoleBasedOrgNavigation
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  employees={employees}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+                <DistrictManagementDashboard
+                  currentUser={currentUser}
+                  districts={districts}
+                  branches={branches}
+                  kpis={kpis}
+                  reports={reports}
+                  targets={targets}
+                  language={language}
+                />
+              </>
             )}
 
           </div>
@@ -371,6 +443,7 @@ export const App: React.FC = () => {
         onLoginSuccess={(user) => {
           setCurrentUser(user);
           localStorage.setItem('bunna_user', JSON.stringify(user));
+          loadData(user);
         }}
         onOpenRegister={() => setIsRegisterOpen(true)}
         selectedRoleHint={roleHint}

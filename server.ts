@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, setLogLevel, doc, getDoc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import fallbackPersistentData from './epms_persistent_data.json';
 import { defaultUsers } from './src/data/mockData';
 
@@ -79,8 +79,15 @@ const firebaseConfig = {
 
 let clientDb: any = null;
 try {
+  try { setLogLevel('silent'); } catch {}
   const fApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  clientDb = getFirestore(fApp, process.env.FIREBASE_DATABASE_ID || "ai-studio-bunnabankscepms-3a3ddc66-e2a1-4df7-9b2b-3c1fb20fb708");
+  try {
+    clientDb = initializeFirestore(fApp, {
+      experimentalAutoDetectLongPolling: true,
+    }, process.env.FIREBASE_DATABASE_ID || "ai-studio-bunnabankscepms-3a3ddc66-e2a1-4df7-9b2b-3c1fb20fb708");
+  } catch {
+    clientDb = getFirestore(fApp, process.env.FIREBASE_DATABASE_ID || "ai-studio-bunnabankscepms-3a3ddc66-e2a1-4df7-9b2b-3c1fb20fb708");
+  }
   console.log('[Firestore] Firebase Client SDK initialized successfully.');
 } catch (e: any) {
   console.warn('[Firestore] Firebase Client SDK initialization warning:', e?.message || e);
@@ -990,6 +997,31 @@ app.post('/api/auth/register', (req, res) => {
   res.json({ message: 'Success', user });
 });
 
+const paginateResults = (items: any[], pageStr?: string, limitStr?: string) => {
+  if (!pageStr && !limitStr) return items;
+  
+  const page = parseInt(pageStr as string) || 1;
+  let limit = parseInt(limitStr as string) || 25;
+  if (limitStr === 'All' || limitStr === 'all' || limit === -1) {
+    limit = items.length;
+  }
+  
+  const total = items.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  
+  return {
+    data: items.slice(startIndex, endIndex),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages
+    }
+  };
+};
+
 app.post('/api/auth/change-password', (req, res) => {
   const { userId, newPassword } = req.body;
   const user = db.users.find((u: any) => u.id === userId || u.userId === userId);
@@ -1055,28 +1087,169 @@ const createCrud = (route: string, collection: string) => {
   });
 };
 
-// Specialized endpoints for Districts & Branches with dynamic filtering
-app.get('/api/districts', (req, res) => {
-  const districts = (db.districts && Array.isArray(db.districts) && db.districts.length > 0) 
-    ? db.districts 
-    : [];
+// Specialized endpoints for Districts & Branches with dynamic filtering and security authorization
+function getCallerContext(req: any) {
+  const role = (req.headers['x-user-role'] || req.query.userRole || req.body?.userRole || '').toString().toUpperCase();
+  const userId = (req.headers['x-user-id'] || req.query.userId || req.body?.userId || '').toString();
+  const districtId = (req.headers['x-district-id'] || req.query.userDistrictId || req.query.districtId || req.body?.districtId || '').toString();
+  const branchId = (req.headers['x-branch-id'] || req.query.userBranchId || req.query.branchId || req.body?.branchId || '').toString();
+
+  let user: any = null;
+  if (userId) {
+    user = (db.users || []).find((u: any) => u.id === userId || u.userId === userId || (u.email && u.email.toLowerCase() === userId.toLowerCase()));
+  }
+
+  const effectiveRole = user ? user.role : (role || 'EMPLOYEE');
+  const effectiveDistrictId = user ? (user.districtId || districtId) : districtId;
+  const effectiveDistrictName = user ? (user.districtName || '') : '';
+  const effectiveBranchId = user ? (user.branchId || branchId) : branchId;
+
+  return {
+    user,
+    role: effectiveRole,
+    userId,
+    districtId: effectiveDistrictId,
+    districtName: effectiveDistrictName,
+    branchId: effectiveBranchId,
+    isBoardOrCeoOrAdmin: ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR'].includes(effectiveRole),
+    isChief: ['CHIEF_OFFICER', 'DIRECTOR'].includes(effectiveRole),
+    isDistrictDirector: effectiveRole === 'DISTRICT_DIRECTOR',
+    isManager: ['MANAGER', 'BRANCH_MANAGER'].includes(effectiveRole),
+    isEmployee: effectiveRole === 'EMPLOYEE'
+  };
+}
+
+app.get('/api/ceos', (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!ctx.isBoardOrCeoOrAdmin && !ctx.isChief) {
+    return res.status(403).json({ error: 'Unauthorized: Access restricted to Board, CEO, and Executive Officers.' });
+  }
+  const ceos = (db.users || []).filter((u: any) => 
+    u.role === 'CEO' || (u.jobTitle && u.jobTitle.toUpperCase().includes('CHIEF EXECUTIVE OFFICER'))
+  );
+  res.json(ceos);
+});
+
+app.get('/api/chiefs', (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!ctx.isBoardOrCeoOrAdmin && !ctx.isChief) {
+    return res.status(403).json({ error: 'Unauthorized: Access restricted to Board, CEO, and Executive Officers.' });
+  }
+  const chiefs = (db.users || []).filter((u: any) => 
+    u.role === 'CHIEF_OFFICER' || u.role === 'DIRECTOR' || (u.jobTitle && u.jobTitle.toLowerCase().includes('chief'))
+  );
+  res.json(chiefs);
+});
+
+app.get('/api/chiefs/:chiefId/districts', (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!ctx.isBoardOrCeoOrAdmin && !ctx.isChief) {
+    return res.status(403).json({ error: 'Unauthorized access.' });
+  }
+  const districts = db.districts || [];
   res.json(districts);
 });
 
+app.get('/api/districts', (req, res) => {
+  const ctx = getCallerContext(req);
+  let districts = (db.districts && Array.isArray(db.districts) && db.districts.length > 0) 
+    ? db.districts 
+    : [];
+
+  if (ctx.isDistrictDirector) {
+    districts = districts.filter((d: any) => 
+      d.id === ctx.districtId || 
+      d.code === ctx.districtId || 
+      (d.name && ctx.districtName && d.name.toLowerCase().trim() === ctx.districtName.toLowerCase().trim()) ||
+      (d.name && ctx.districtId && d.name.toLowerCase().includes(ctx.districtId.toLowerCase()))
+    );
+  }
+
+  const { search, sortBy, sortOrder, page, limit } = req.query as Record<string, string>;
+  const q = (search || '').toLowerCase().trim();
+  if (q) {
+    districts = districts.filter((d: any) => 
+      (d.name && d.name.toLowerCase().includes(q)) ||
+      (d.code && d.code.toLowerCase().includes(q)) ||
+      (d.region && d.region.toLowerCase().includes(q))
+    );
+  }
+
+  if (sortBy) {
+    districts.sort((a, b) => {
+      const aVal = (a[sortBy] || '').toString().toLowerCase();
+      const bVal = (b[sortBy] || '').toString().toLowerCase();
+      if (aVal < bVal) return sortOrder === 'desc' ? 1 : -1;
+      if (aVal > bVal) return sortOrder === 'desc' ? -1 : 1;
+      return 0;
+    });
+  }
+
+  res.json(paginateResults(districts, page, limit));
+});
+
+app.get('/api/districts/:districtId/branches', (req, res) => {
+  const ctx = getCallerContext(req);
+  const requestedDistId = req.params.districtId;
+
+  if (ctx.isDistrictDirector) {
+    const parentDist = (db.districts || []).find((d: any) => d.id === requestedDistId || d.code === requestedDistId || (d.name && d.name.toLowerCase() === requestedDistId.toLowerCase()));
+    const isMatch = requestedDistId === ctx.districtId || 
+      (parentDist && (parentDist.id === ctx.districtId || parentDist.code === ctx.districtId || (parentDist.name && ctx.districtName && parentDist.name.toLowerCase().trim() === ctx.districtName.toLowerCase().trim())));
+    
+    if (!isMatch) {
+      return res.status(403).json({ error: 'Unauthorized: District Directors are restricted to their assigned district branches.' });
+    }
+  }
+
+  const parentDist = (db.districts || []).find((d: any) => 
+    d.id === requestedDistId || 
+    d.code === requestedDistId || 
+    (d.name && d.name.toLowerCase().trim() === requestedDistId.toLowerCase().trim())
+  );
+
+  const branches = (db.branches || []).filter((b: any) => {
+    if (b.districtId === requestedDistId) return true;
+    if (parentDist) {
+      if (b.districtId === parentDist.id || b.districtId === parentDist.code) return true;
+      if (b.districtName && parentDist.name && b.districtName.toLowerCase().trim() === parentDist.name.toLowerCase().trim()) return true;
+    }
+    return false;
+  });
+
+  res.json(branches);
+});
+
 app.get('/api/branches', (req, res) => {
+  const ctx = getCallerContext(req);
   const { districtId, query, search, type } = req.query as Record<string, string>;
   let branches: any[] = db.branches || [];
 
-  if (districtId) {
+  let filterDistrictId = districtId;
+
+  if (ctx.isDistrictDirector) {
+    if (districtId && districtId !== ctx.districtId) {
+      const parentDist = (db.districts || []).find((d: any) => 
+        d.id === districtId || d.code === districtId || (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+      );
+      const isMatch = parentDist && (parentDist.id === ctx.districtId || parentDist.code === ctx.districtId || (parentDist.name && ctx.districtName && parentDist.name.toLowerCase().trim() === ctx.districtName.toLowerCase().trim()));
+      if (!isMatch) {
+        return res.status(403).json({ error: 'Unauthorized: District Directors are restricted to their assigned district branches.' });
+      }
+    }
+    filterDistrictId = ctx.districtId;
+  }
+
+  if (filterDistrictId) {
     const parentDist = (db.districts || []).find((d: any) => 
-      d.id === districtId || 
-      d.code === districtId || 
-      (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+      d.id === filterDistrictId || 
+      d.code === filterDistrictId || 
+      (d.name && d.name.toLowerCase() === filterDistrictId.toLowerCase())
     );
 
     branches = branches.filter((b: any) => {
       if (!b) return false;
-      if (b.districtId === districtId) return true;
+      if (b.districtId === filterDistrictId) return true;
       if (parentDist) {
         if (b.districtId === parentDist.id || b.districtId === parentDist.code) return true;
         if (b.districtName && parentDist.name && b.districtName.toLowerCase().trim() === parentDist.name.toLowerCase().trim()) return true;
@@ -1102,7 +1275,121 @@ app.get('/api/branches', (req, res) => {
     );
   }
 
-  res.json(branches);
+  const { sortBy, sortOrder, page, limit } = req.query as Record<string, string>;
+  if (sortBy) {
+    branches.sort((a, b) => {
+      const aVal = (a[sortBy] || '').toString().toLowerCase();
+      const bVal = (b[sortBy] || '').toString().toLowerCase();
+      if (aVal < bVal) return sortOrder === 'desc' ? 1 : -1;
+      if (aVal > bVal) return sortOrder === 'desc' ? -1 : 1;
+      return 0;
+    });
+  }
+
+  res.json(paginateResults(branches, page, limit));
+});
+
+app.get('/api/branches/:branchId/employees', (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetBranchId = req.params.branchId;
+
+  const branch = (db.branches || []).find((b: any) => b.id === targetBranchId || b.code === targetBranchId);
+
+  if (ctx.isDistrictDirector) {
+    if (branch && branch.districtId !== ctx.districtId && branch.districtName !== ctx.districtName) {
+      return res.status(403).json({ error: 'Unauthorized: Access denied to branch outside your assigned district.' });
+    }
+  } else if (ctx.isManager) {
+    if (targetBranchId !== ctx.branchId) {
+      return res.status(403).json({ error: 'Unauthorized: Managers are restricted to their own branch employees.' });
+    }
+  }
+
+  const employees = (db.users || []).filter((u: any) => 
+    u.branchId === targetBranchId || (branch && u.branchName === branch.name)
+  );
+
+  res.json(employees);
+});
+
+app.get('/api/employees', (req, res) => {
+  const ctx = getCallerContext(req);
+  const { districtId, branchId, role, status, search, query } = req.query as Record<string, string>;
+
+  let employees: any[] = db.users || [];
+
+  // Enforce strict role-based data isolation
+  if (ctx.isDistrictDirector) {
+    if (districtId && districtId !== ctx.districtId) {
+      const parentDist = (db.districts || []).find((d: any) => 
+        d.id === districtId || d.code === districtId || (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+      );
+      const isMatch = parentDist && (parentDist.id === ctx.districtId || parentDist.code === ctx.districtId || (parentDist.name && ctx.districtName && parentDist.name.toLowerCase().trim() === ctx.districtName.toLowerCase().trim()));
+      if (!isMatch) {
+        return res.status(403).json({ error: 'Unauthorized: District Directors are restricted to employees in their assigned district.' });
+      }
+    }
+    employees = employees.filter((e: any) => 
+      e.districtId === ctx.districtId || 
+      (ctx.districtName && e.districtName && e.districtName.toLowerCase().trim() === ctx.districtName.toLowerCase().trim()) ||
+      (ctx.districtId && e.districtId && e.districtId.includes(ctx.districtId))
+    );
+  } else if (ctx.isManager) {
+    if (branchId && branchId !== ctx.branchId) {
+      return res.status(403).json({ error: 'Unauthorized: Managers are restricted to employees in their assigned branch.' });
+    }
+    employees = employees.filter((e: any) => e.branchId === ctx.branchId);
+  } else if (ctx.isEmployee) {
+    employees = employees.filter((e: any) => e.id === ctx.userId || e.userId === ctx.userId);
+  }
+
+  if (!ctx.isDistrictDirector && districtId) {
+    const parentDist = (db.districts || []).find((d: any) => 
+      d.id === districtId || d.code === districtId || (d.name && d.name.toLowerCase() === districtId.toLowerCase())
+    );
+    employees = employees.filter((e: any) => 
+      e.districtId === districtId || 
+      (parentDist && (e.districtId === parentDist.id || e.districtId === parentDist.code || (e.districtName && parentDist.name && e.districtName.toLowerCase().trim() === parentDist.name.toLowerCase().trim())))
+    );
+  }
+
+  if (branchId) {
+    employees = employees.filter((e: any) => e.branchId === branchId);
+  }
+
+  if (role && role !== 'ALL') {
+    employees = employees.filter((e: any) => e.role === role);
+  }
+
+  if (status && status !== 'ALL') {
+    employees = employees.filter((e: any) => e.status === status);
+  }
+
+  const q = (search || query || '').toLowerCase().trim();
+  if (q) {
+    employees = employees.filter((e: any) => 
+      (e.firstName && e.firstName.toLowerCase().includes(q)) ||
+      (e.lastName && e.lastName.toLowerCase().includes(q)) ||
+      (e.userId && e.userId.toLowerCase().includes(q)) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(q)) ||
+      (e.email && e.email.toLowerCase().includes(q)) ||
+      (e.branchName && e.branchName.toLowerCase().includes(q)) ||
+      (e.districtName && e.districtName.toLowerCase().includes(q))
+    );
+  }
+
+  const { sortBy, sortOrder, page, limit } = req.query as Record<string, string>;
+  if (sortBy) {
+    employees.sort((a, b) => {
+      const aVal = (a[sortBy] || '').toString().toLowerCase();
+      const bVal = (b[sortBy] || '').toString().toLowerCase();
+      if (aVal < bVal) return sortOrder === 'desc' ? 1 : -1;
+      if (aVal > bVal) return sortOrder === 'desc' ? -1 : 1;
+      return 0;
+    });
+  }
+
+  res.json(paginateResults(employees, page, limit));
 });
 
 createCrud('/api/employees', 'users');

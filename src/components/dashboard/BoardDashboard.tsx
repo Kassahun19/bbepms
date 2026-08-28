@@ -185,25 +185,30 @@ export const BoardDashboard: React.FC<BoardDashboardProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top Districts */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-stone-200/80">
-            <h3 className="text-lg font-serif font-bold text-[#5C3A21] mb-4">Top Performing Districts</h3>
-            <div className="space-y-3">
-              {(districts.length > 0 ? districts.slice(0, 5) : [
-                { id: '1', name: 'East A.A District', code: 'EAD', branchCount: 12, region: 'Addis Ababa' },
-                { id: '2', name: 'Bahir Dar District', code: 'BDR', branchCount: 10, region: 'Amhara' },
-                { id: '3', name: 'Hawassa District', code: 'HWS', branchCount: 9, region: 'Sidama' }
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-serif font-bold text-[#5C3A21]">District Performance Overview</h3>
+              <span className="text-xs font-semibold text-[#5C3A21] bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/60">
+                {districts.length || 12} Active Districts
+              </span>
+            </div>
+            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              {(districts.length > 0 ? districts : [
+                { id: '1', name: 'East A.A District', code: 'EAD', branchCount: 35, region: 'Addis Ababa' },
+                { id: '2', name: 'Bahir Dar District', code: 'BDR', branchCount: 22, region: 'Amhara' },
+                { id: '3', name: 'Hawassa Area Office', code: 'HWA', branchCount: 26, region: 'Sidama' }
               ]).map((d, index) => (
-                <div key={d.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                <div key={d.id || index} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 hover:border-amber-200 transition-colors">
                   <div className="flex items-center gap-3">
                     <span className="w-7 h-7 rounded-full bg-[#C89A2B]/20 text-[#5C3A21] font-bold text-xs flex items-center justify-center">
                       #{index + 1}
                     </span>
                     <div>
                       <h4 className="font-semibold text-sm text-stone-800">{d.name}</h4>
-                      <p className="text-xs text-stone-500">{d.region} • {d.branchCount || 10} Branches</p>
+                      <p className="text-xs text-stone-500">{d.region || 'Region'} • {d.branchCount || 10} Branches</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-bold text-emerald-600">{(94.5 - index * 2.1).toFixed(1)}%</span>
+                    <span className="text-sm font-bold text-emerald-600">{(96.5 - (index % 10) * 1.3).toFixed(1)}%</span>
                     <p className="text-[10px] text-stone-400">Achievement</p>
                   </div>
                 </div>

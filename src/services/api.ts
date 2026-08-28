@@ -56,6 +56,18 @@ async function fetchJsonOrFallback<T>(url: string, options?: RequestInit): Promi
         if (u.role && !headers.has('x-user-role')) {
           headers.set('x-user-role', u.role);
         }
+        if ((u.id || u.userId) && !headers.has('x-user-id')) {
+          headers.set('x-user-id', u.id || u.userId);
+        }
+        const effectiveRole = headers.get('x-user-role') || u.role;
+        const isExecutiveOrBoard = ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(effectiveRole);
+
+        if (!isExecutiveOrBoard && u.districtId && !headers.has('x-district-id')) {
+          headers.set('x-district-id', u.districtId);
+        }
+        if (!isExecutiveOrBoard && u.branchId && !headers.has('x-branch-id')) {
+          headers.set('x-branch-id', u.branchId);
+        }
       } catch (e) {}
     }
 
@@ -439,8 +451,78 @@ export const api = {
   },
 
   // Locations & Organization
-  getDistricts: async (): Promise<District[]> => {
-    const res = await fetchJsonOrFallback<District[]>('/api/districts');
+  getPaginatedDistricts: async (params: { page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string }): Promise<{ data: District[], pagination: { total: number, page: number, limit: number, totalPages: number } }> => {
+    const query = new URLSearchParams(params as any).toString();
+    const res = await fetchJsonOrFallback<any>(`/api/districts?${query}`);
+    if (res.data && res.data.pagination) return res.data as any;
+    return { data: (res.data || []) as any, pagination: { page: params.page, limit: params.limit, total: Array.isArray(res.data) ? res.data.length : 0, totalPages: 1 } };
+  },
+
+  getPaginatedBranches: async (params: { page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string, filters?: any }): Promise<{ data: Branch[], pagination: { total: number, page: number, limit: number, totalPages: number } }> => {
+    const queryObj: any = { ...params, ...params.filters };
+    delete queryObj.filters;
+    const query = new URLSearchParams(queryObj).toString();
+    const res = await fetchJsonOrFallback<any>(`/api/branches?${query}`);
+    if (res.data && res.data.pagination) return res.data as any;
+    return { data: (res.data || []) as any, pagination: { page: params.page, limit: params.limit, total: Array.isArray(res.data) ? res.data.length : 0, totalPages: 1 } };
+  },
+
+  getPaginatedEmployees: async (params: { page: number, limit: number, search?: string, sortBy?: string, sortOrder?: string, filters?: any }): Promise<{ data: User[], pagination: { total: number, page: number, limit: number, totalPages: number } }> => {
+    const queryObj: any = { ...params, ...params.filters };
+    delete queryObj.filters;
+    const query = new URLSearchParams(queryObj).toString();
+    const res = await fetchJsonOrFallback<any>(`/api/employees?${query}`);
+    if (res.data && res.data.pagination) return res.data as any;
+    return { data: (res.data || []) as any, pagination: { page: params.page, limit: params.limit, total: Array.isArray(res.data) ? res.data.length : 0, totalPages: 1 } };
+  },
+
+  getCeos: async (userRole?: string, userId?: string): Promise<User[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const res = await fetchJsonOrFallback<User[]>('/api/ceos', { headers });
+    return res.data || [];
+  },
+
+  getChiefs: async (userRole?: string, userId?: string): Promise<User[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const res = await fetchJsonOrFallback<User[]>('/api/chiefs', { headers });
+    return res.data || [];
+  },
+
+  getChiefDistricts: async (chiefId: string, userRole?: string, userId?: string): Promise<District[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const res = await fetchJsonOrFallback<District[]>(`/api/chiefs/${chiefId}/districts`, { headers });
+    return res.data || [];
+  },
+
+  getDistrictBranches: async (districtId: string, userRole?: string, userId?: string): Promise<Branch[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const res = await fetchJsonOrFallback<Branch[]>(`/api/districts/${districtId}/branches`, { headers });
+    return res.data || [];
+  },
+
+  getBranchEmployees: async (branchId: string, userRole?: string, userId?: string): Promise<User[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const res = await fetchJsonOrFallback<User[]>(`/api/branches/${branchId}/employees`, { headers });
+    return res.data || [];
+  },
+
+  getDistricts: async (userRole?: string, userId?: string, districtId?: string): Promise<District[]> => {
+    const headers: Record<string, string> = {};
+    if (userRole) headers['x-user-role'] = userRole;
+    if (userId) headers['x-user-id'] = userId;
+    const isExec = userRole && ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(userRole);
+    if (districtId && !isExec) headers['x-district-id'] = districtId;
+    const res = await fetchJsonOrFallback<District[]>('/api/districts', { headers });
     const dList = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data : initialDistricts;
     
     return dList.map(d => {
