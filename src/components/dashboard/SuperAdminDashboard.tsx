@@ -604,26 +604,111 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       </div>
 
       {/* ALWAYS VISIBLE STATS METRICS GRID (BACKGROUND DASHBOARD HEADER) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mt-4 mb-6">
         {[
-          { label: 'Total Users', value: stats?.totalUsers || employees.length, sub: `${stats?.activeUsers || employees.length} Active`, icon: Users, color: 'text-amber-500', bg: 'bg-[#FFF3E0] shadow-amber-900/5' },
-          { label: 'Executive Chiefs', value: stats?.totalChiefs || 8, sub: `${stats?.totalCeos || 1} CEO Assigned`, icon: Briefcase, color: 'text-blue-500', bg: 'bg-[#E3F2FD] shadow-blue-900/5' },
-          { label: 'Districts', value: stats?.totalDistricts || districts.length, sub: `${stats?.totalDistrictDirectors || 2} Directors`, icon: Building2, color: 'text-emerald-500', bg: 'bg-[#E8F5E9] shadow-emerald-900/5' },
-          { label: 'Branches', value: stats?.totalBranches || branches.length, sub: `${stats?.totalBranchManagers || 2} Managers`, icon: Building, color: 'text-cyan-500', bg: 'bg-[#E0F7FA] shadow-cyan-900/5' },
-          { label: 'Active KPIs', value: stats?.activeKpis || kpis.length, sub: `${stats?.totalKpiTargets || targets.length} Targets Set`, icon: Target, color: 'text-purple-500', bg: 'bg-[#F3E5F5] shadow-purple-900/5' },
-          { label: 'Pending Approvals', value: stats?.pendingApprovals || 0, sub: `${securityAlerts.filter(a => !a.resolved).length} Alerts`, icon: CheckCircle2, color: 'text-rose-500', bg: 'bg-[#FFEBEE] shadow-rose-900/5' }
+          { 
+            label: 'Total Users', 
+            value: stats?.totalUsers || employees.length, 
+            sub: `${stats?.activeUsers || employees.length} Active`, 
+            icon: Users, 
+            iconColor: 'text-amber-600', 
+            badgeBg: 'bg-amber-500/20',
+            cardBg: 'bg-[#FFF8EC]', 
+            borderColor: 'border-amber-300',
+            textColor: 'text-amber-950',
+            numberColor: 'text-[#4D3000]',
+            subColor: 'text-amber-900',
+            shadow: 'shadow-lg shadow-amber-950/10 hover:shadow-amber-950/20' 
+          },
+          { 
+            label: 'Executive Chiefs', 
+            value: stats?.totalChiefs || 8, 
+            sub: `${stats?.totalCeos || 1} CEO Assigned`, 
+            icon: Briefcase, 
+            iconColor: 'text-blue-600', 
+            badgeBg: 'bg-blue-500/20',
+            cardBg: 'bg-[#EFF6FF]', 
+            borderColor: 'border-blue-300',
+            textColor: 'text-blue-950',
+            numberColor: 'text-[#0F3960]',
+            subColor: 'text-blue-900',
+            shadow: 'shadow-lg shadow-blue-950/10 hover:shadow-blue-950/20' 
+          },
+          { 
+            label: 'Districts', 
+            value: stats?.totalDistricts || districts.length, 
+            sub: `${stats?.totalDistrictDirectors || 2} Directors`, 
+            icon: Building2, 
+            iconColor: 'text-emerald-600', 
+            badgeBg: 'bg-emerald-500/20',
+            cardBg: 'bg-[#ECFDF5]', 
+            borderColor: 'border-emerald-300',
+            textColor: 'text-emerald-950',
+            numberColor: 'text-[#064E2B]',
+            subColor: 'text-emerald-900',
+            shadow: 'shadow-lg shadow-emerald-950/10 hover:shadow-emerald-950/20' 
+          },
+          { 
+            label: 'Branches', 
+            value: stats?.totalBranches || branches.length, 
+            sub: `${stats?.totalBranchManagers || 2} Managers`, 
+            icon: Building, 
+            iconColor: 'text-cyan-600', 
+            badgeBg: 'bg-cyan-500/20',
+            cardBg: 'bg-[#ECFEFF]', 
+            borderColor: 'border-cyan-300',
+            textColor: 'text-cyan-950',
+            numberColor: 'text-[#084B54]',
+            subColor: 'text-cyan-900',
+            shadow: 'shadow-lg shadow-cyan-950/10 hover:shadow-cyan-950/20' 
+          },
+          { 
+            label: 'Active KPIs', 
+            value: stats?.activeKpis || kpis.length, 
+            sub: `${stats?.totalKpiTargets || targets.length} Targets Set`, 
+            icon: Target, 
+            iconColor: 'text-purple-600', 
+            badgeBg: 'bg-purple-500/20',
+            cardBg: 'bg-[#FAF5FF]', 
+            borderColor: 'border-purple-300',
+            textColor: 'text-purple-950',
+            numberColor: 'text-[#4A154B]',
+            subColor: 'text-purple-900',
+            shadow: 'shadow-lg shadow-purple-950/10 hover:shadow-purple-950/20' 
+          },
+          { 
+            label: 'Pending Approvals', 
+            value: stats?.pendingApprovals || 0, 
+            sub: `${securityAlerts.filter(a => !a.resolved).length} Alerts`, 
+            icon: CheckCircle2, 
+            iconColor: 'text-rose-600', 
+            badgeBg: 'bg-rose-500/20',
+            cardBg: 'bg-[#FFF1F2]', 
+            borderColor: 'border-rose-300',
+            textColor: 'text-rose-950',
+            numberColor: 'text-[#5C1D24]',
+            subColor: 'text-rose-900',
+            shadow: 'shadow-lg shadow-rose-950/10 hover:shadow-rose-950/20' 
+          }
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className={`p-4 rounded-xl ${stat.bg} shadow-md border-0`}>
-              <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-                <span>{stat.label}</span>
-                <Icon className={`w-4 h-4 ${stat.color}`} />
+            <div 
+              key={i} 
+              className={`p-4 sm:p-4.5 rounded-2xl ${stat.cardBg} border-2 ${stat.borderColor} ${stat.shadow} transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between`}
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className={`text-xs sm:text-sm font-extrabold tracking-tight ${stat.textColor}`}>
+                  {stat.label}
+                </span>
+                <div className={`p-1.5 rounded-lg ${stat.badgeBg} flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.iconColor}`} />
+                </div>
               </div>
-              <div className="mt-2 text-2xl font-extrabold text-white drop-shadow-md tracking-tight">
+              <div className={`mt-2.5 text-3xl sm:text-4xl font-black ${stat.numberColor} tracking-tight leading-none`}>
                 {stat.value}
               </div>
-              <div className="mt-1 text-[11px] font-medium text-slate-500">
+              <div className={`mt-2 text-[11px] sm:text-xs font-bold ${stat.subColor}`}>
                 {stat.sub}
               </div>
             </div>
