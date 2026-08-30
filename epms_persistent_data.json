@@ -7387,27 +7387,6 @@
       "districtId": "DIST-BDR",
       "branchId": "BR-360",
       "password": "Kassahun@360"
-    },
-    {
-      "id": "USR-SUPER-ADMIN-001",
-      "userId": "SUPER_ADMIN",
-      "email": "admin@bunnabanksc.com",
-      "firstName": "Bank Super",
-      "middleName": "System",
-      "lastName": "Admin",
-      "password": "SuperAdmin@2026!",
-      "role": "BANK_SUPER_ADMIN",
-      "jobTitle": "Bank Super Administrator (System Control Center)",
-      "districtId": "DIST-HO",
-      "districtName": "Head Office",
-      "branchId": "BR-HQ",
-      "branchName": "Head Office",
-      "gender": "Male",
-      "age": 38,
-      "phone": "+251911000001",
-      "status": "Active",
-      "createdAt": "2026-01-01",
-      "lastLogin": "2026-08-30T15:34:21.243Z"
     }
   ],
   "kpis": [
@@ -11788,17 +11767,6 @@
   ],
   "announcements": [],
   "auditLogs": [
-    {
-      "id": "AUD-AUTH-1788104061244",
-      "userId": "USR-SUPER-ADMIN-001",
-      "userName": "Bank Super System",
-      "userRole": "BANK_SUPER_ADMIN",
-      "action": "LOGIN",
-      "entity": "AUTH",
-      "entityId": "USR-SUPER-ADMIN-001",
-      "details": "User SUPER_ADMIN logged in successfully",
-      "timestamp": "2026-08-30T15:34:21.244Z"
-    },
     {
       "status": "SUCCESS",
       "module": "Authentication",

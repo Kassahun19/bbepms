@@ -32,6 +32,7 @@ import { Language, District, Branch, User, DailyPerformanceReport, PerformanceTa
 import { translations } from '../../i18n/translations';
 import { BunnaBankLogo } from '../common/BunnaBankLogo';
 import { api } from '../../services/api';
+import { t } from '../../i18n/translator';
 
 interface LandingPageProps {
   language: Language;
@@ -54,7 +55,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   reports,
   targets
 }) => {
-  const t = translations[language];
+  const tr = translations[language] || translations.en;
+  const t = Object.assign(
+    (str: string) => tr[str] || str,
+    tr
+  );
 
   // Live Data State
   const [liveDistricts, setLiveDistricts] = useState<District[]>(districts || []);
@@ -354,7 +359,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#C89A2B]/20 border border-[#C89A2B]/40 text-[#C89A2B] text-xs font-bold tracking-wide">
                 <Sparkles className="w-4 h-4 animate-pulse" />
-                <span>Bunna Bank S.C. Official EPMS Portal</span>
+                <span>{t("Bunna Bank S.C. Official EPMS Portal")}</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-none">
@@ -402,7 +407,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 text-center">
                   <p className="text-2xl sm:text-3xl font-extrabold text-[#C89A2B]">{efficiencyCount}%</p>
-                  <p className="text-[11px] text-gray-200 font-medium mt-0.5">Approval Efficiency</p>
+                  <p className="text-[11px] text-gray-200 font-medium mt-0.5">{t("Approval Efficiency")}</p>
                 </div>
               </div>
 
@@ -441,12 +446,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         </div>
                         <div>
                           <div className="flex items-center space-x-2">
-                            <h3 className="font-extrabold text-sm text-white tracking-wide">Bunna Bank S.C.</h3>
+                            <h3 className="font-extrabold text-sm text-white tracking-wide">{t("Bunna Bank S.C.")}</h3>
                             <span className="px-2 py-0.5 rounded-full bg-[#C89A2B]/20 border border-[#C89A2B]/50 text-[#C89A2B] text-[10px] font-bold">
-                              FY 2025/26
-                            </span>
+                              {t("FY 2025/26")}</span>
                           </div>
-                          <p className="text-[11px] text-[#C89A2B] font-semibold mt-0.5">Overall Bank KPI Performance</p>
+                          <p className="text-[11px] text-[#C89A2B] font-semibold mt-0.5">{t("Overall Bank KPI Performance")}</p>
                         </div>
                       </div>
 
@@ -470,8 +474,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        All
-                      </button>
+                        {t("All")}</button>
                       <button
                         onClick={() => setKpiCategory('Finance')}
                         className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
@@ -480,8 +483,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Finance
-                      </button>
+                        {t("Finance")}</button>
                       <button
                         onClick={() => setKpiCategory('Stakeholder')}
                         className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
@@ -490,8 +492,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Stakeholder
-                      </button>
+                        {t("Stakeholder")}</button>
                       <button
                         onClick={() => setKpiCategory('Internal Business')}
                         className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
@@ -500,8 +501,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Internal Business
-                      </button>
+                        {t("Internal Business")}</button>
                       <button
                         onClick={() => setKpiCategory('Learning & Growth')}
                         className={`py-1.5 px-1 rounded-lg font-bold transition-all truncate ${
@@ -510,8 +510,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        Learning & Growth
-                      </button>
+                        {t("Learning & Growth")}</button>
                     </div>
                   </div>
 
@@ -542,7 +541,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                     {kpi.name}
                                   </p>
                                   <p className="text-[10px] text-gray-300 font-medium truncate">
-                                    Target: {kpi.target}
+                                    {t("Target:")}{kpi.target}
                                   </p>
                                 </div>
                               </div>
@@ -581,10 +580,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px]">
                     <div className="flex items-center space-x-1.5 text-emerald-300 font-medium">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Audit Verified • {liveBranches.length} Branches</span>
+                      <span>{t("Audit Verified •")}{liveBranches.length} {t("Branches")}</span>
                     </div>
                     <span className="text-[#C89A2B] font-bold flex items-center space-x-1">
-                      <span>Live EPMS Core</span>
+                      <span>{t("Live EPMS Core")}</span>
                       <Sparkles className="w-3 h-3 text-[#C89A2B] animate-spin" />
                     </span>
                   </div>
@@ -594,8 +593,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] shadow-2xl flex items-center space-x-3 border border-white/30">
                   <Award className="w-7 h-7" />
                   <div>
-                    <p className="font-black text-xs tracking-tight">Bunna Bank Live Attainment</p>
-                    <p className="text-[10px] font-bold opacity-90">Fiscal Year 2025/26: {overallAttainmentPct.toFixed(1)}%</p>
+                    <p className="font-black text-xs tracking-tight">{t("Bunna Bank Live Attainment")}</p>
+                    <p className="text-[10px] font-bold opacity-90">{t("Fiscal Year 2025/26:")}{overallAttainmentPct.toFixed(1)}%</p>
                   </div>
                 </div>
 

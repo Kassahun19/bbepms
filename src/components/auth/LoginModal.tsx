@@ -84,7 +84,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     // Validate Input Formats
     const trimmedId = userId.trim();
     if (!trimmedId) {
-      setError('Please enter your Staff / User ID.');
+      setError('Please enter your User Name.');
       return;
     }
     if (!password) {
@@ -108,7 +108,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         setLockoutTimer(30);
         setError('Too many failed attempts. Security protocol triggered: Account access paused for 30 seconds.');
       } else {
-        setError(err.message || `Invalid User ID or Password. (${3 - newFailCount} attempt(s) remaining)`);
+        setError(err.message || `Invalid User Name or Password. (${3 - newFailCount} attempt(s) remaining)`);
       }
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div>
-            <label className="block text-xs font-semibold text-gray-200 mb-1">User ID / Staff ID</label>
+            <label className="block text-xs font-semibold text-gray-200 mb-1">User Name</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-300">
                 <UserIcon className="w-4 h-4 text-[#C89A2B]" />
@@ -193,7 +193,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 disabled={lockoutTimer > 0}
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder="Enter Staff ID Number"
+                placeholder="Enter User Name"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/20 focus:border-[#C89A2B] focus:outline-none text-sm text-white placeholder-gray-300 font-medium disabled:opacity-50"
               />
             </div>

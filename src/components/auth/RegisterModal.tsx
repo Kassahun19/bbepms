@@ -175,8 +175,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
       return;
     }
 
-    if (!/^\d+$/.test(trimmed)) {
-      setUserIdStatus({ checked: true, available: false, message: 'Staff ID must contain numbers only (e.g. 4994, 1245, 687).' });
+    if (trimmed.length < 2) {
+      setUserIdStatus({ checked: true, available: false, message: 'User Name must be at least 2 characters.' });
       return;
     }
 
@@ -191,8 +191,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
     return () => clearTimeout(timer);
   }, [userId]);
-
-  if (!isOpen) return null;
 
   // Password requirement flags
   const pwdCriteria = {
@@ -941,14 +939,14 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-[11px] font-semibold text-gray-200">User ID / Staff ID (Numerals Only)</label>
+                  <label className="block text-[11px] font-semibold text-gray-200">User Name</label>
                   {userIdStatus.checked && (
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                       userIdStatus.available 
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
                         : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                     }`}>
-                      {userIdStatus.available ? '✓ User ID Available' : `✕ ${userIdStatus.message || 'Invalid User ID'}`}
+                      {userIdStatus.available ? '✓ User Name Available' : `✕ ${userIdStatus.message || 'Invalid User Name'}`}
                     </span>
                   )}
                 </div>
@@ -957,7 +955,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
                   required
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  placeholder="e.g. 4994, 1245, 687"
+                  placeholder="Enter User Name"
                   className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
                 />
               </div>

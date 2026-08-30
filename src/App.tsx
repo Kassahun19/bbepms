@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, UserRole, Language, District, Branch, KPI, DailyPerformanceReport, Notification, AuditLog, BankHoliday, PerformanceTarget } from './types';
 import { api } from './services/api';
 import { defaultUsers } from './data/mockData';
+import { useGlobalTranslation } from './hooks/useGlobalTranslation';
 
 // Components
 import { Header } from './components/common/Header';
@@ -36,7 +37,16 @@ import { TelegramBotModal } from './components/common/TelegramBotModal';
 
 export const App: React.FC = () => {
   // Global State
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    return (localStorage.getItem('bunna_language') as Language) || 'en';
+  });
+
+  useGlobalTranslation(language);
+
+  useEffect(() => {
+    localStorage.setItem('bunna_language', language);
+  }, [language]);
+
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem('bunna_user');
