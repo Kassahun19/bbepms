@@ -7387,6 +7387,27 @@
       "districtId": "DIST-BDR",
       "branchId": "BR-360",
       "password": "Kassahun@360"
+    },
+    {
+      "id": "USR-SUPER-ADMIN-001",
+      "userId": "SUPER_ADMIN",
+      "email": "admin@bunnabanksc.com",
+      "firstName": "Bank Super",
+      "middleName": "System",
+      "lastName": "Admin",
+      "password": "SuperAdmin@2026!",
+      "role": "BANK_SUPER_ADMIN",
+      "jobTitle": "Bank Super Administrator (System Control Center)",
+      "districtId": "DIST-HO",
+      "districtName": "Head Office",
+      "branchId": "BR-HQ",
+      "branchName": "Head Office",
+      "gender": "Male",
+      "age": 38,
+      "phone": "+251911000001",
+      "status": "Active",
+      "createdAt": "2026-01-01",
+      "lastLogin": "2026-08-30T15:34:21.243Z"
     }
   ],
   "kpis": [
@@ -11768,6 +11789,17 @@
   "announcements": [],
   "auditLogs": [
     {
+      "id": "AUD-AUTH-1788104061244",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "action": "LOGIN",
+      "entity": "AUTH",
+      "entityId": "USR-SUPER-ADMIN-001",
+      "details": "User SUPER_ADMIN logged in successfully",
+      "timestamp": "2026-08-30T15:34:21.244Z"
+    },
+    {
       "status": "SUCCESS",
       "module": "Authentication",
       "userId": "USR-ADM-001",
@@ -13894,5 +13926,673 @@
       "createdAt": "2026-08-26T15:40:33.144Z"
     }
   ],
-  "linkCodes": []
+  "linkCodes": [],
+  "chiefTypes": [
+    {
+      "id": "CT-01",
+      "code": "CFO",
+      "name": "Chief Financial Officer (CFO)",
+      "category": "Finance",
+      "description": "Oversees bank liquidity, financial growth, budgeting, FCY reserves, and profitability.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-02",
+      "code": "CSO",
+      "name": "Chief Strategy Officer (CSO)",
+      "category": "Strategy",
+      "description": "Drives long-term corporate growth, bank expansion, institutional goals, and quarterly milestones.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-03",
+      "code": "CDO",
+      "name": "Chief Digital Officer (CDO)",
+      "category": "Digital",
+      "description": "Leads digital banking transformation, DFS, mobile banking, agency banking, and Fintech alliances.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-04",
+      "code": "CCBO",
+      "name": "Chief Corporate Banking Officer (CCBO)",
+      "category": "Corporate",
+      "description": "Manages tier-1 corporate clients, institutional deposits, syndications, and high-value accounts.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-05",
+      "code": "CPCO",
+      "name": "Chief People & Culture Officer (CPCO)",
+      "category": "Human Capital",
+      "description": "Oversees talent acquisition, workforce productivity, performance culture, and HR governance.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-06",
+      "code": "CPIO",
+      "name": "Chief Product & Innovation Officer (CPIO)",
+      "category": "Innovation",
+      "description": "Designs and iterates modern banking products, savings schemes, and loan instruments.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-07",
+      "code": "CTO",
+      "name": "Chief Transformation Officer (CTO)",
+      "category": "Transformation",
+      "description": "Steers enterprise-wide modernizations, business process re-engineering, and agility programs.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-08",
+      "code": "CRBO",
+      "name": "Chief Retail Banking Officer (CRBO)",
+      "category": "Retail",
+      "description": "Orchestrates branch networks, customer acquisition, retail deposit mobilization, and branch operations.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-09",
+      "code": "CRO",
+      "name": "Chief Risk Officer (CRO)",
+      "category": "Risk",
+      "description": "Monitors credit risk, market volatility, compliance, NPL mitigation, and regulatory standards.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-10",
+      "code": "CIO",
+      "name": "Chief Information Officer (CIO)",
+      "category": "Technology",
+      "description": "Maintains core banking infrastructure, uptime, cybersecurity, and enterprise systems.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-11",
+      "code": "CIA",
+      "name": "Chief Internal Auditor (CIA)",
+      "category": "Audit",
+      "description": "Conducts independent assurance, risk audits, operational verifications, and compliance inspections.",
+      "status": "Active"
+    },
+    {
+      "id": "CT-1788094561048",
+      "code": "CTCODE-1788094559837",
+      "name": "Chief Type 1788094559837",
+      "shortName": "CTCODE-1788094559837",
+      "category": "Executive",
+      "description": "",
+      "assignedDistrictIds": [],
+      "status": "Active",
+      "createdAt": "2026-08-30T12:56:01.048Z"
+    }
+  ],
+  "systemSettings": {
+    "bankName": "Bunna Bank S.C.",
+    "bankShortName": "Bunna Bank",
+    "bankCode": "BUNNA-ET",
+    "tagline": "Bank of the Visionaries — Empowering Growth Across Ethiopia",
+    "logoUrl": "/bunna-logo.png",
+    "activeFiscalYearId": "FY-2025-2026",
+    "workingDays": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "saturdayWorkingHours": "Half Day",
+    "passwordPolicy": {
+      "minLength": 8,
+      "requireUppercase": true,
+      "requireNumbers": true,
+      "requireSpecialChars": true,
+      "expiryDays": 90,
+      "maxFailedAttempts": 5
+    },
+    "sessionTimeoutMinutes": 30,
+    "enableAuditLogging": true,
+    "enableEmailNotifications": true,
+    "enableSmsNotifications": false,
+    "theme": "Light",
+    "bankAcronym": "BUNNA",
+    "headquartersSol": "HQ-100",
+    "updatedAt": "2026-08-30T12:06:52.068Z"
+  },
+  "roles": [
+    {
+      "id": "ROLE-01",
+      "role": "BANK_SUPER_ADMIN",
+      "name": "Bank Super Administrator",
+      "code": "SUPER_ADMIN",
+      "description": "Supreme enterprise administrator with unrestricted system-wide authority across all branches, districts, chiefs, and system settings.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_USERS",
+        "CREATE_USERS",
+        "EDIT_USERS",
+        "DELETE_USERS",
+        "VIEW_CEO",
+        "MANAGE_CEO",
+        "VIEW_CHIEFS",
+        "MANAGE_CHIEFS",
+        "VIEW_DISTRICTS",
+        "MANAGE_DISTRICTS",
+        "VIEW_BRANCHES",
+        "MANAGE_BRANCHES",
+        "VIEW_EMPLOYEES",
+        "MANAGE_EMPLOYEES",
+        "VIEW_KPIS",
+        "MANAGE_KPIS",
+        "MANAGE_TARGETS",
+        "VIEW_REPORTS",
+        "APPROVE_REPORTS",
+        "MANAGE_SYSTEM_SETTINGS",
+        "VIEW_AUDIT_LOGS",
+        "MANAGE_ROLES",
+        "MANAGE_SECURITY"
+      ],
+      "scopeType": "GLOBAL",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-02",
+      "role": "BOARD_OF_DIRECTORS",
+      "name": "Board of Directors",
+      "code": "BOARD",
+      "description": "Executive governance body reviewing macro institutional performance, CEO evaluations, and strategic bank health.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_CEO",
+        "VIEW_CHIEFS",
+        "VIEW_DISTRICTS",
+        "VIEW_BRANCHES",
+        "VIEW_KPIS",
+        "VIEW_REPORTS",
+        "VIEW_AUDIT_LOGS"
+      ],
+      "scopeType": "GLOBAL",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-03",
+      "role": "CEO",
+      "name": "Chief Executive Officer",
+      "code": "CEO",
+      "description": "Top executive overseeing bank-wide operations, chief officers, regional districts, and enterprise performance.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_CHIEFS",
+        "VIEW_DISTRICTS",
+        "VIEW_BRANCHES",
+        "VIEW_EMPLOYEES",
+        "VIEW_KPIS",
+        "VIEW_REPORTS",
+        "APPROVE_REPORTS"
+      ],
+      "scopeType": "GLOBAL",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-04",
+      "role": "CHIEF_OFFICER",
+      "name": "Chief Officer",
+      "code": "CHIEF",
+      "description": "C-Suite executive leading specialized divisions and overseeing assigned regional districts and branches.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_DISTRICTS",
+        "VIEW_BRANCHES",
+        "VIEW_EMPLOYEES",
+        "VIEW_KPIS",
+        "VIEW_REPORTS",
+        "APPROVE_REPORTS"
+      ],
+      "scopeType": "GLOBAL",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-05",
+      "role": "DISTRICT_DIRECTOR",
+      "name": "District Director",
+      "code": "DISTRICT_DIR",
+      "description": "Regional director supervising all branches, branch managers, and customer mobilization within the assigned district.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_BRANCHES",
+        "VIEW_EMPLOYEES",
+        "VIEW_KPIS",
+        "MANAGE_TARGETS",
+        "VIEW_REPORTS",
+        "APPROVE_REPORTS"
+      ],
+      "scopeType": "DISTRICT",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-06",
+      "role": "MANAGER",
+      "name": "Branch Manager",
+      "code": "BRANCH_MGR",
+      "description": "Operational leader of a bank branch managing branch staff, setting targets, verifying daily KPI entries, and driving growth.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_EMPLOYEES",
+        "MANAGE_EMPLOYEES",
+        "VIEW_KPIS",
+        "MANAGE_TARGETS",
+        "VIEW_REPORTS",
+        "APPROVE_REPORTS"
+      ],
+      "scopeType": "BRANCH",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-07",
+      "role": "EMPLOYEE",
+      "name": "Branch Employee",
+      "code": "STAFF",
+      "description": "Frontline banking professional submitting verified daily performance achievements against assigned periodic targets.",
+      "permissions": [
+        "VIEW_DASHBOARD",
+        "VIEW_KPIS",
+        "VIEW_REPORTS"
+      ],
+      "scopeType": "SELF",
+      "isSystemRole": true,
+      "status": "Active"
+    },
+    {
+      "id": "ROLE-1788094561125",
+      "role": "RCODE-1788094559837",
+      "name": "Role 1788094559837",
+      "code": "RCODE-1788094559837",
+      "description": "Automated audit role",
+      "permissions": [],
+      "scopeType": "GLOBAL",
+      "status": "Active",
+      "createdAt": "2026-08-30T12:56:01.125Z"
+    }
+  ],
+  "permissions": [
+    {
+      "code": "VIEW_DASHBOARD",
+      "name": "View Admin Dashboard",
+      "category": "System & Security",
+      "description": "Access executive and admin control dashboards"
+    },
+    {
+      "code": "VIEW_USERS",
+      "name": "View User Directory",
+      "category": "Users",
+      "description": "Search and inspect system user accounts"
+    },
+    {
+      "code": "CREATE_USERS",
+      "name": "Create Users",
+      "category": "Users",
+      "description": "Provision new staff, manager, or executive accounts"
+    },
+    {
+      "code": "EDIT_USERS",
+      "name": "Edit Users",
+      "category": "Users",
+      "description": "Modify profile, credentials, and organizational assignments"
+    },
+    {
+      "code": "DELETE_USERS",
+      "name": "Deactivate / Delete Users",
+      "category": "Users",
+      "description": "Deactivate, archive, or delete user accounts"
+    },
+    {
+      "code": "VIEW_CEO",
+      "name": "View CEO Details",
+      "category": "Organization",
+      "description": "View CEO profile, milestones, and strategic initiatives"
+    },
+    {
+      "code": "MANAGE_CEO",
+      "name": "Manage CEO Account",
+      "category": "Organization",
+      "description": "Add, replace, or configure CEO assignment"
+    },
+    {
+      "code": "VIEW_CHIEFS",
+      "name": "View Chief Officers",
+      "category": "Organization",
+      "description": "Inspect Chief officers and assigned district portfolios"
+    },
+    {
+      "code": "MANAGE_CHIEFS",
+      "name": "Manage Chief Officers",
+      "category": "Organization",
+      "description": "Create, edit, reassign, and configure Chief officers"
+    },
+    {
+      "code": "VIEW_DISTRICTS",
+      "name": "View Districts",
+      "category": "Organization",
+      "description": "Browse all regional districts and area offices"
+    },
+    {
+      "code": "MANAGE_DISTRICTS",
+      "name": "Manage Districts",
+      "category": "Organization",
+      "description": "Create, update, deactivate districts and assign directors"
+    },
+    {
+      "code": "VIEW_BRANCHES",
+      "name": "View Branches",
+      "category": "Organization",
+      "description": "Browse branch directories, SOL IDs, and branches"
+    },
+    {
+      "code": "MANAGE_BRANCHES",
+      "name": "Manage Branches",
+      "category": "Organization",
+      "description": "Create, edit, and assign branch managers to branches"
+    },
+    {
+      "code": "VIEW_EMPLOYEES",
+      "name": "View Employees",
+      "category": "Organization",
+      "description": "Browse employee rosters, job titles, and branches"
+    },
+    {
+      "code": "MANAGE_EMPLOYEES",
+      "name": "Manage Employees",
+      "category": "Organization",
+      "description": "Create, update, transfer, and deactivate branch staff"
+    },
+    {
+      "code": "VIEW_KPIS",
+      "name": "View KPIs",
+      "category": "KPI & Targets",
+      "description": "Inspect institutional KPI catalogs and formulas"
+    },
+    {
+      "code": "MANAGE_KPIS",
+      "name": "Manage KPIs & Weights",
+      "category": "KPI & Targets",
+      "description": "Create and update KPI definitions and weight allocations"
+    },
+    {
+      "code": "MANAGE_TARGETS",
+      "name": "Manage Targets",
+      "category": "KPI & Targets",
+      "description": "Distribute and approve period performance targets"
+    },
+    {
+      "code": "VIEW_REPORTS",
+      "name": "View Performance Reports",
+      "category": "Performance & Reports",
+      "description": "Examine daily performance submissions and analytics"
+    },
+    {
+      "code": "APPROVE_REPORTS",
+      "name": "Approve & Reject Reports",
+      "category": "Performance & Reports",
+      "description": "Execute approval, rejection, or comments on reports"
+    },
+    {
+      "code": "MANAGE_SYSTEM_SETTINGS",
+      "name": "Manage Bank Settings",
+      "category": "System & Security",
+      "description": "Configure bank parameters, working days, and holidays"
+    },
+    {
+      "code": "VIEW_AUDIT_LOGS",
+      "name": "View Audit Logs",
+      "category": "Audit",
+      "description": "Inspect historical system audit logs and data diffs"
+    },
+    {
+      "code": "MANAGE_ROLES",
+      "name": "Manage Roles & Permissions",
+      "category": "System & Security",
+      "description": "Configure dynamic roles and permission matrices"
+    },
+    {
+      "code": "MANAGE_SECURITY",
+      "name": "Security & Session Control",
+      "category": "System & Security",
+      "description": "Revoke active sessions, unlock accounts, and view security alerts"
+    }
+  ],
+  "approvalRules": [
+    {
+      "id": "AR-01",
+      "name": "Employee to Branch Manager",
+      "stageOrder": 1,
+      "fromRole": "EMPLOYEE",
+      "approverRole": "MANAGER",
+      "scopeRequirement": "SAME_BRANCH",
+      "autoEscalateDays": 2,
+      "requireCommentOnReject": true,
+      "status": "Active"
+    },
+    {
+      "id": "AR-02",
+      "name": "Branch Manager to District Director",
+      "stageOrder": 2,
+      "fromRole": "MANAGER",
+      "approverRole": "DISTRICT_DIRECTOR",
+      "scopeRequirement": "SAME_DISTRICT",
+      "autoEscalateDays": 3,
+      "requireCommentOnReject": true,
+      "status": "Active"
+    },
+    {
+      "id": "AR-03",
+      "name": "District Director to Chief Officer",
+      "stageOrder": 3,
+      "fromRole": "DISTRICT_DIRECTOR",
+      "approverRole": "CHIEF_OFFICER",
+      "scopeRequirement": "BANK_WIDE",
+      "autoEscalateDays": 5,
+      "requireCommentOnReject": true,
+      "status": "Active"
+    },
+    {
+      "id": "AR-04",
+      "name": "Chief Officer to CEO",
+      "stageOrder": 4,
+      "fromRole": "CHIEF_OFFICER",
+      "approverRole": "CEO",
+      "scopeRequirement": "BANK_WIDE",
+      "autoEscalateDays": 7,
+      "requireCommentOnReject": true,
+      "status": "Active"
+    },
+    {
+      "id": "AR-05",
+      "name": "CEO to Board of Directors",
+      "stageOrder": 5,
+      "fromRole": "CEO",
+      "approverRole": "BOARD_OF_DIRECTORS",
+      "scopeRequirement": "BANK_WIDE",
+      "autoEscalateDays": 14,
+      "requireCommentOnReject": true,
+      "status": "Active"
+    }
+  ],
+  "securitySessions": [
+    {
+      "id": "SES-1788104061243-bwgs",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Web Browser",
+      "loginTime": "2026-08-30T15:34:21.244Z",
+      "lastActiveTime": "2026-08-30T15:34:21.244Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788103071553-t2u0",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+      "loginTime": "2026-08-30T15:17:51.553Z",
+      "lastActiveTime": "2026-08-30T15:17:51.553Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788102925302-km4e",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T15:15:25.302Z",
+      "lastActiveTime": "2026-08-30T15:15:25.302Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788102910718-ac4k",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T15:15:10.718Z",
+      "lastActiveTime": "2026-08-30T15:15:10.718Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788100663570-s7rq",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T14:37:43.570Z",
+      "lastActiveTime": "2026-08-30T14:37:43.570Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788100490448-oec9",
+      "userId": "USR-DIST-PREDEF-1",
+      "userName": "Bahir Dar District",
+      "userRole": "DISTRICT_DIRECTOR",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T14:34:50.448Z",
+      "lastActiveTime": "2026-08-30T14:34:50.448Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788100036740-kvxp",
+      "userId": "USR-EXEC-PREDEF-0",
+      "userName": "Board User",
+      "userRole": "BOARD_OF_DIRECTORS",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T14:27:16.741Z",
+      "lastActiveTime": "2026-08-30T14:27:16.741Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788095087699-jfwy",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T13:04:47.699Z",
+      "lastActiveTime": "2026-08-30T13:04:47.699Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788092924455-5ncm",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T12:28:44.455Z",
+      "lastActiveTime": "2026-08-30T12:28:44.455Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788090959624-h5kh",
+      "userId": "USR-SUPER-ADMIN-001",
+      "userName": "Bank Super System",
+      "userRole": "BANK_SUPER_ADMIN",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T11:55:59.625Z",
+      "lastActiveTime": "2026-08-30T11:55:59.625Z",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "SES-1788089962194-o73e",
+      "userId": "USR-ADM-001",
+      "userName": "Kassahun Mulatu",
+      "userRole": "ADMINISTRATOR",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "loginTime": "2026-08-30T11:39:22.195Z",
+      "lastActiveTime": "2026-08-30T11:39:22.195Z",
+      "status": "ACTIVE"
+    }
+  ],
+  "securityAlerts": [
+    {
+      "id": "ALT-FAIL-1788100601501",
+      "severity": "LOW",
+      "title": "Failed Login Attempt",
+      "description": "Unsuccessful login attempt for user identifier \"chief\"",
+      "timestamp": "2026-08-30T14:36:41.501Z",
+      "ipAddress": "127.0.0.1",
+      "resolved": false
+    },
+    {
+      "id": "ALT-FAIL-1788100591440",
+      "severity": "LOW",
+      "title": "Failed Login Attempt",
+      "description": "Unsuccessful login attempt for user identifier \"chiefs\"",
+      "timestamp": "2026-08-30T14:36:31.440Z",
+      "ipAddress": "127.0.0.1",
+      "resolved": false
+    },
+    {
+      "id": "ALT-FAIL-1788100373410",
+      "severity": "LOW",
+      "title": "Failed Login Attempt",
+      "description": "Unsuccessful login attempt for user identifier \"chief\"",
+      "timestamp": "2026-08-30T14:32:53.410Z",
+      "ipAddress": "127.0.0.1",
+      "resolved": false
+    },
+    {
+      "id": "ALT-FAIL-1788100349396",
+      "severity": "LOW",
+      "title": "Failed Login Attempt",
+      "description": "Unsuccessful login attempt for user identifier \"chief\"",
+      "timestamp": "2026-08-30T14:32:29.396Z",
+      "ipAddress": "127.0.0.1",
+      "resolved": false
+    },
+    {
+      "id": "ALT-FAIL-1788100330419",
+      "severity": "LOW",
+      "title": "Failed Login Attempt",
+      "description": "Unsuccessful login attempt for user identifier \"chief\"",
+      "timestamp": "2026-08-30T14:32:10.419Z",
+      "ipAddress": "127.0.0.1",
+      "resolved": false
+    }
+  ]
 }

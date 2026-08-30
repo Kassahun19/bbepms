@@ -48,17 +48,36 @@ export const GetStartedModal: React.FC<GetStartedModalProps> = ({
           <p className="text-xs text-[#C89A2B] mt-1">Select your access portal for Bunna Bank S.C. EPMS</p>
         </div>
 
-        <div className="space-y-4">
-          {/* Administrator Role Option */}
+        <div className="space-y-3">
+          {/* Bank Super Admin Option */}
           <button
-            onClick={() => onSelectRole('ADMINISTRATOR')}
-            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#4A2C17] to-[#3B2312] hover:to-[#2E1B0E] border border-[#C89A2B]/30 hover:border-[#C89A2B] transition-all flex items-center space-x-4 text-left group"
+            onClick={() => onSelectRole('BANK_SUPER_ADMIN')}
+            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-amber-900/60 to-[#3B2312] hover:to-[#2E1B0E] border border-amber-500/50 hover:border-amber-400 transition-all flex items-center space-x-4 text-left group shadow-lg"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#C89A2B]/20 group-hover:bg-[#C89A2B] text-[#C89A2B] group-hover:text-[#6B3F1D] flex items-center justify-center transition-colors">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 group-hover:bg-amber-500 text-amber-300 group-hover:text-slate-950 flex items-center justify-center transition-colors shrink-0">
               <Shield className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-base text-white">Administrator Portal</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-white">Bank Super Admin</h4>
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full">
+                  ENTERPRISE
+                </span>
+              </div>
+              <p className="text-xs text-amber-200/70">Master bank setup, executive structure, RBAC permissions, and security vault</p>
+            </div>
+          </button>
+
+          {/* Administrator Role Option */}
+          <button
+            onClick={() => onSelectRole('ADMINISTRATOR')}
+            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#4A2C17] to-[#3B2312] hover:to-[#2E1B0E] border border-[#C89A2B]/30 hover:border-[#C89A2B] transition-all flex items-center space-x-4 text-left group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#C89A2B]/20 group-hover:bg-[#C89A2B] text-[#C89A2B] group-hover:text-[#6B3F1D] flex items-center justify-center transition-colors shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Administrator Portal</h4>
               <p className="text-xs text-gray-300">District management, KPI governance, system audit logs & analytics</p>
             </div>
           </button>

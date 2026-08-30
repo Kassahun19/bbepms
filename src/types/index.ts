@@ -1,4 +1,5 @@
 export type UserRole = 
+  | 'BANK_SUPER_ADMIN'
   | 'ADMINISTRATOR' 
   | 'BOARD_OF_DIRECTORS' 
   | 'CEO' 
@@ -7,6 +8,120 @@ export type UserRole =
   | 'DISTRICT_DIRECTOR' 
   | 'MANAGER' 
   | 'EMPLOYEE';
+
+export interface ChiefType {
+  id: string;
+  code: string;
+  name: string;
+  shortName?: string;
+  category: string;
+  description: string;
+  assignedDistrictIds?: string[];
+  status: 'Active' | 'Inactive';
+  createdAt?: string;
+}
+
+export interface SystemSettings {
+  bankName: string;
+  bankShortName: string;
+  bankCode: string;
+  tagline: string;
+  logoUrl?: string;
+  activeFiscalYearId: string;
+  workingDays: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[];
+  saturdayWorkingHours: 'Half Day' | 'Full Day' | 'Non-Working';
+  passwordPolicy: {
+    minLength: number;
+    requireUppercase: boolean;
+    requireNumbers: boolean;
+    requireSpecialChars: boolean;
+    expiryDays: number;
+    maxFailedAttempts: number;
+  };
+  sessionTimeoutMinutes: number;
+  enableAuditLogging: boolean;
+  enableEmailNotifications: boolean;
+  enableSmsNotifications: boolean;
+  theme: 'Light' | 'Dark' | 'System';
+  updatedAt?: string;
+}
+
+export interface PermissionDefinition {
+  code: string;
+  name: string;
+  category: 'Organization' | 'Users' | 'KPI & Targets' | 'Performance & Reports' | 'System & Security' | 'Audit';
+  description: string;
+}
+
+export interface RoleDefinition {
+  id: string;
+  role: UserRole | string;
+  name: string;
+  code: string;
+  description: string;
+  permissions: string[];
+  scopeType: 'GLOBAL' | 'DISTRICT' | 'BRANCH' | 'SELF';
+  userCount?: number;
+  isSystemRole?: boolean;
+  status: 'Active' | 'Inactive';
+  createdAt?: string;
+}
+
+export interface SecuritySession {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  ipAddress: string;
+  userAgent: string;
+  loginTime: string;
+  lastActiveTime: string;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+}
+
+export interface SecurityAlert {
+  id: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  title: string;
+  description: string;
+  timestamp: string;
+  ipAddress?: string;
+  userId?: string;
+  resolved: boolean;
+}
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  totalBoardMembers: number;
+  totalCeos: number;
+  totalChiefs: number;
+  totalDistricts: number;
+  totalDistrictDirectors: number;
+  totalBranches: number;
+  totalBranchManagers: number;
+  totalEmployees: number;
+  activeKpis: number;
+  totalKpiGroups: number;
+  totalKpiTargets: number;
+  pendingApprovals: number;
+  completedReviews: number;
+  systemAlertsCount: number;
+  recentActivities: AuditLog[];
+}
+
+export interface ApprovalWorkflowRule {
+  id: string;
+  name: string;
+  stageOrder: number;
+  fromRole: UserRole;
+  approverRole: UserRole;
+  scopeRequirement: 'SAME_BRANCH' | 'SAME_DISTRICT' | 'BANK_WIDE';
+  autoEscalateDays: number;
+  requireCommentOnReject: boolean;
+  status: 'Active' | 'Inactive';
+}
 
 export * from './competitor';
 
@@ -41,6 +156,7 @@ export interface Branch {
   code: string;
   phone?: string;
   type?: 'Main Branch' | 'Grade I' | 'Grade II' | 'Grade III' | 'Special Branch' | string;
+  grade?: string;
   employeeCount: number;
   managerName: string;
   location: string;
@@ -77,6 +193,7 @@ export interface User {
   phone: string;
   avatarUrl?: string;
   status: 'Active' | 'Inactive' | 'Suspended';
+  isLocked?: boolean;
   createdAt: string;
 }
 
@@ -97,6 +214,8 @@ export interface KPI {
   unit: 'ETB' | 'Count' | 'Percentage' | 'Users' | 'Accounts' | 'Merchants' | 'Cards' | 'USD';
   weight: number; // percentage weight in overall score
   description: string;
+  frequency?: string;
+  status?: 'Active' | 'Inactive';
 }
 
 export interface PeriodTargetAllocations {
@@ -373,6 +492,10 @@ export interface AuditLog {
   userRole: string;
   action: string;
   module: string;
+  entity?: string;
+  details?: string;
+  previousValue?: any;
+  newValue?: any;
   ipAddress: string;
   timestamp: string;
   status: 'SUCCESS' | 'FAILED' | 'WARNING';

@@ -11,6 +11,7 @@ import { AboutPage } from './components/common/AboutPage';
 import { HowItWorksPage } from './components/common/HowItWorksPage';
 import { ContactPage } from './components/common/ContactPage';
 import { UserProfileModal } from './components/profile/UserProfileModal';
+import { SuperAdminDashboard } from './components/dashboard/SuperAdminDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { ManagerDashboard, ManagerTab } from './components/dashboard/ManagerDashboard';
 import { EmployeeDashboard } from './components/dashboard/EmployeeDashboard';
@@ -187,7 +188,7 @@ export const App: React.FC = () => {
   const unreadNotificationCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#222222] flex flex-col font-sans selection:bg-[#C89A2B] selection:text-[#6B3F1D]">
+    <div className="min-h-screen bg-[#F8F7F4] text-[#252525] flex flex-col font-sans selection:bg-[#D9A514] selection:text-[#4A2815]">
       
       {/* HEADER */}
       <Header
@@ -240,6 +241,24 @@ export const App: React.FC = () => {
           /* AUTHENTICATED DASHBOARD VIEWS */
           <div className="space-y-6">
             
+            {currentUser.role === 'BANK_SUPER_ADMIN' && (
+              <SuperAdminDashboard
+                user={currentUser}
+                districts={districts}
+                branches={branches}
+                employees={employees}
+                kpis={kpis}
+                reports={reports}
+                auditLogs={auditLogs}
+                holidays={holidays}
+                targets={targets}
+                onRefreshData={() => loadData()}
+                onOpenAiAssistant={() => setIsAiDrawerOpen(true)}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+                onOpenProfile={() => setIsProfileOpen(true)}
+              />
+            )}
+
             {currentUser.role === 'ADMINISTRATOR' && (
               <AdminDashboard
                 user={currentUser}

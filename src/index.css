@@ -1,39 +1,65 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #6B3F1D;
-  --color-primary-hover: #4A2C17;
-  --color-secondary: #C89A2B;
-  --color-secondary-light: #D8B45C;
-  --color-light-bg: #F5F5F5;
-  --color-primary-text: #222222;
-  --color-secondary-text: #666666;
-  --color-border-color: #E5E5E5;
-  --color-success: #2E7D32;
+  --color-bunna-primary: #6B3E1E;
+  --color-bunna-dark: #4A2815;
+  --color-bunna-secondary: #7A4825;
+  --color-bunna-gold: #D9A514;
+  --color-bunna-gold-bright: #F2C230;
+  --color-bunna-gold-light: #FFF4D6;
+  --color-bunna-white: #FFFFFF;
+  --color-bunna-offwhite: #F8F7F4;
+  --color-bunna-text-primary: #252525;
+  --color-bunna-text-secondary: #6B7280;
+  --color-bunna-border: #E5E0D8;
+  --color-bunna-success: #198754;
+  --color-bunna-warning: #D99A00;
+  --color-bunna-danger: #C0392B;
+  --color-bunna-info: #2563EB;
 
-  --color-bunna-brown: #6B3F1D;
-  --color-bunna-brown-dark: #4A2C17;
-  --color-bunna-brown-light: #8C562B;
-  --color-bunna-gold: #C89A2B;
-  --color-bunna-gold-light: #D8B45C;
-  --color-bunna-gold-dark: #A67C1E;
+  --color-primary: #6B3E1E;
+  --color-primary-hover: #4A2815;
+  --color-secondary: #D9A514;
+  --color-secondary-light: #F2C230;
+  --color-light-bg: #F8F7F4;
+  --color-primary-text: #252525;
+  --color-secondary-text: #6B7280;
+  --color-border-color: #E5E0D8;
+  --color-success: #198754;
 }
 
 :root {
-  --primary: #6B3F1D;
-  --primary-hover: #4A2C17;
-  --secondary: #C89A2B;
-  --secondary-light: #D8B45C;
+  --bunna-primary: #6B3E1E;
+  --bunna-dark: #4A2815;
+  --bunna-secondary: #7A4825;
+  --bunna-gold: #D9A514;
+  --bunna-gold-bright: #F2C230;
+  --bunna-gold-light: #FFF4D6;
+  --bunna-white: #FFFFFF;
+  --bunna-offwhite: #F8F7F4;
+  --bunna-text-primary: #252525;
+  --bunna-text-secondary: #6B7280;
+  --bunna-border: #E5E0D8;
+  --bunna-success: #198754;
+  --bunna-warning: #D99A00;
+  --bunna-danger: #C0392B;
+  --bunna-info: #2563EB;
+
+  --primary: #6B3E1E;
+  --primary-hover: #4A2815;
+  --secondary: #D9A514;
+  --secondary-light: #F2C230;
   --white: #FFFFFF;
-  --light-bg: #F5F5F5;
-  --primary-text: #222222;
-  --secondary-text: #666666;
-  --border: #E5E5E5;
-  --success: #2E7D32;
+  --light-bg: #F8F7F4;
+  --primary-text: #252525;
+  --secondary-text: #6B7280;
+  --border: #E5E0D8;
+  --success: #198754;
 }
 
 body {
-  background-color: #F5F5F5;
-  color: #222222;
+  background-color: #F8F7F4;
+  color: #252525;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
+

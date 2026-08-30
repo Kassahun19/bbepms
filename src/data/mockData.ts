@@ -9,7 +9,12 @@ import {
   Announcement,
   Notification,
   BankHoliday,
-  AuditLog
+  AuditLog,
+  ChiefType,
+  SystemSettings,
+  RoleDefinition,
+  PermissionDefinition,
+  ApprovalWorkflowRule
 } from '../types';
 import { bunnaDistrictsAndAreaOffices, bunnaBranchDirectory } from './bunnaBranchDirectory';
 
@@ -34,6 +39,26 @@ export const initialKPIs: KPI[] = [
 ];
 
 export const defaultUsers: User[] = [
+  {
+    id: 'USR-SUPER-ADMIN-001',
+    userId: 'SUPER_ADMIN',
+    email: 'admin@bunnabanksc.com',
+    firstName: 'Bank Super',
+    middleName: 'System',
+    lastName: 'Admin',
+    password: 'SuperAdmin@2026!',
+    role: 'BANK_SUPER_ADMIN',
+    jobTitle: 'Bank Super Administrator (System Control Center)',
+    districtId: 'DIST-HO',
+    districtName: 'Head Office',
+    branchId: 'BR-HQ',
+    branchName: 'Head Office',
+    gender: 'Male',
+    age: 38,
+    phone: '+251911000001',
+    status: 'Active',
+    createdAt: '2026-01-01'
+  },
   {
     id: 'USR-EXEC-PREDEF-0',
     userId: 'Board',
@@ -942,3 +967,156 @@ export const initialAuditLogs: AuditLog[] = [];
 export const initialDailyReports: DailyPerformanceReport[] = [];
 
 export const initialTargets: PerformanceTarget[] = [];
+
+export const initialChiefTypes: ChiefType[] = [
+  { id: 'CT-01', code: 'CFO', name: 'Chief Financial Officer (CFO)', category: 'Finance', description: 'Oversees bank liquidity, financial growth, budgeting, FCY reserves, and profitability.', status: 'Active' },
+  { id: 'CT-02', code: 'CSO', name: 'Chief Strategy Officer (CSO)', category: 'Strategy', description: 'Drives long-term corporate growth, bank expansion, institutional goals, and quarterly milestones.', status: 'Active' },
+  { id: 'CT-03', code: 'CDO', name: 'Chief Digital Officer (CDO)', category: 'Digital', description: 'Leads digital banking transformation, DFS, mobile banking, agency banking, and Fintech alliances.', status: 'Active' },
+  { id: 'CT-04', code: 'CCBO', name: 'Chief Corporate Banking Officer (CCBO)', category: 'Corporate', description: 'Manages tier-1 corporate clients, institutional deposits, syndications, and high-value accounts.', status: 'Active' },
+  { id: 'CT-05', code: 'CPCO', name: 'Chief People & Culture Officer (CPCO)', category: 'Human Capital', description: 'Oversees talent acquisition, workforce productivity, performance culture, and HR governance.', status: 'Active' },
+  { id: 'CT-06', code: 'CPIO', name: 'Chief Product & Innovation Officer (CPIO)', category: 'Innovation', description: 'Designs and iterates modern banking products, savings schemes, and loan instruments.', status: 'Active' },
+  { id: 'CT-07', code: 'CTO', name: 'Chief Transformation Officer (CTO)', category: 'Transformation', description: 'Steers enterprise-wide modernizations, business process re-engineering, and agility programs.', status: 'Active' },
+  { id: 'CT-08', code: 'CRBO', name: 'Chief Retail Banking Officer (CRBO)', category: 'Retail', description: 'Orchestrates branch networks, customer acquisition, retail deposit mobilization, and branch operations.', status: 'Active' },
+  { id: 'CT-09', code: 'CRO', name: 'Chief Risk Officer (CRO)', category: 'Risk', description: 'Monitors credit risk, market volatility, compliance, NPL mitigation, and regulatory standards.', status: 'Active' },
+  { id: 'CT-10', code: 'CIO', name: 'Chief Information Officer (CIO)', category: 'Technology', description: 'Maintains core banking infrastructure, uptime, cybersecurity, and enterprise systems.', status: 'Active' },
+  { id: 'CT-11', code: 'CIA', name: 'Chief Internal Auditor (CIA)', category: 'Audit', description: 'Conducts independent assurance, risk audits, operational verifications, and compliance inspections.', status: 'Active' }
+];
+
+export const initialSystemSettings: SystemSettings = {
+  bankName: 'Bunna Bank S.C.',
+  bankShortName: 'Bunna Bank',
+  bankCode: 'BUNNA-ET',
+  tagline: 'Bank of the Visionaries — Empowering Growth Across Ethiopia',
+  logoUrl: '/bunna-logo.png',
+  activeFiscalYearId: 'FY-2025-2026',
+  workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  saturdayWorkingHours: 'Half Day',
+  passwordPolicy: {
+    minLength: 8,
+    requireUppercase: true,
+    requireNumbers: true,
+    requireSpecialChars: true,
+    expiryDays: 90,
+    maxFailedAttempts: 5
+  },
+  sessionTimeoutMinutes: 30,
+  enableAuditLogging: true,
+  enableEmailNotifications: true,
+  enableSmsNotifications: false,
+  theme: 'Light'
+};
+
+export const initialPermissions: PermissionDefinition[] = [
+  { code: 'VIEW_DASHBOARD', name: 'View Admin Dashboard', category: 'System & Security', description: 'Access executive and admin control dashboards' },
+  { code: 'VIEW_USERS', name: 'View User Directory', category: 'Users', description: 'Search and inspect system user accounts' },
+  { code: 'CREATE_USERS', name: 'Create Users', category: 'Users', description: 'Provision new staff, manager, or executive accounts' },
+  { code: 'EDIT_USERS', name: 'Edit Users', category: 'Users', description: 'Modify profile, credentials, and organizational assignments' },
+  { code: 'DELETE_USERS', name: 'Deactivate / Delete Users', category: 'Users', description: 'Deactivate, archive, or delete user accounts' },
+  { code: 'VIEW_CEO', name: 'View CEO Details', category: 'Organization', description: 'View CEO profile, milestones, and strategic initiatives' },
+  { code: 'MANAGE_CEO', name: 'Manage CEO Account', category: 'Organization', description: 'Add, replace, or configure CEO assignment' },
+  { code: 'VIEW_CHIEFS', name: 'View Chief Officers', category: 'Organization', description: 'Inspect Chief officers and assigned district portfolios' },
+  { code: 'MANAGE_CHIEFS', name: 'Manage Chief Officers', category: 'Organization', description: 'Create, edit, reassign, and configure Chief officers' },
+  { code: 'VIEW_DISTRICTS', name: 'View Districts', category: 'Organization', description: 'Browse all regional districts and area offices' },
+  { code: 'MANAGE_DISTRICTS', name: 'Manage Districts', category: 'Organization', description: 'Create, update, deactivate districts and assign directors' },
+  { code: 'VIEW_BRANCHES', name: 'View Branches', category: 'Organization', description: 'Browse branch directories, SOL IDs, and branches' },
+  { code: 'MANAGE_BRANCHES', name: 'Manage Branches', category: 'Organization', description: 'Create, edit, and assign branch managers to branches' },
+  { code: 'VIEW_EMPLOYEES', name: 'View Employees', category: 'Organization', description: 'Browse employee rosters, job titles, and branches' },
+  { code: 'MANAGE_EMPLOYEES', name: 'Manage Employees', category: 'Organization', description: 'Create, update, transfer, and deactivate branch staff' },
+  { code: 'VIEW_KPIS', name: 'View KPIs', category: 'KPI & Targets', description: 'Inspect institutional KPI catalogs and formulas' },
+  { code: 'MANAGE_KPIS', name: 'Manage KPIs & Weights', category: 'KPI & Targets', description: 'Create and update KPI definitions and weight allocations' },
+  { code: 'MANAGE_TARGETS', name: 'Manage Targets', category: 'KPI & Targets', description: 'Distribute and approve period performance targets' },
+  { code: 'VIEW_REPORTS', name: 'View Performance Reports', category: 'Performance & Reports', description: 'Examine daily performance submissions and analytics' },
+  { code: 'APPROVE_REPORTS', name: 'Approve & Reject Reports', category: 'Performance & Reports', description: 'Execute approval, rejection, or comments on reports' },
+  { code: 'MANAGE_SYSTEM_SETTINGS', name: 'Manage Bank Settings', category: 'System & Security', description: 'Configure bank parameters, working days, and holidays' },
+  { code: 'VIEW_AUDIT_LOGS', name: 'View Audit Logs', category: 'Audit', description: 'Inspect historical system audit logs and data diffs' },
+  { code: 'MANAGE_ROLES', name: 'Manage Roles & Permissions', category: 'System & Security', description: 'Configure dynamic roles and permission matrices' },
+  { code: 'MANAGE_SECURITY', name: 'Security & Session Control', category: 'System & Security', description: 'Revoke active sessions, unlock accounts, and view security alerts' }
+];
+
+export const initialRoles: RoleDefinition[] = [
+  {
+    id: 'ROLE-01',
+    role: 'BANK_SUPER_ADMIN',
+    name: 'Bank Super Administrator',
+    code: 'SUPER_ADMIN',
+    description: 'Supreme enterprise administrator with unrestricted system-wide authority across all branches, districts, chiefs, and system settings.',
+    permissions: initialPermissions.map(p => p.code),
+    scopeType: 'GLOBAL',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-02',
+    role: 'BOARD_OF_DIRECTORS',
+    name: 'Board of Directors',
+    code: 'BOARD',
+    description: 'Executive governance body reviewing macro institutional performance, CEO evaluations, and strategic bank health.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_CEO', 'VIEW_CHIEFS', 'VIEW_DISTRICTS', 'VIEW_BRANCHES', 'VIEW_KPIS', 'VIEW_REPORTS', 'VIEW_AUDIT_LOGS'],
+    scopeType: 'GLOBAL',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-03',
+    role: 'CEO',
+    name: 'Chief Executive Officer',
+    code: 'CEO',
+    description: 'Top executive overseeing bank-wide operations, chief officers, regional districts, and enterprise performance.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_CHIEFS', 'VIEW_DISTRICTS', 'VIEW_BRANCHES', 'VIEW_EMPLOYEES', 'VIEW_KPIS', 'VIEW_REPORTS', 'APPROVE_REPORTS'],
+    scopeType: 'GLOBAL',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-04',
+    role: 'CHIEF_OFFICER',
+    name: 'Chief Officer',
+    code: 'CHIEF',
+    description: 'C-Suite executive leading specialized divisions and overseeing assigned regional districts and branches.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_DISTRICTS', 'VIEW_BRANCHES', 'VIEW_EMPLOYEES', 'VIEW_KPIS', 'VIEW_REPORTS', 'APPROVE_REPORTS'],
+    scopeType: 'GLOBAL',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-05',
+    role: 'DISTRICT_DIRECTOR',
+    name: 'District Director',
+    code: 'DISTRICT_DIR',
+    description: 'Regional director supervising all branches, branch managers, and customer mobilization within the assigned district.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_BRANCHES', 'VIEW_EMPLOYEES', 'VIEW_KPIS', 'MANAGE_TARGETS', 'VIEW_REPORTS', 'APPROVE_REPORTS'],
+    scopeType: 'DISTRICT',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-06',
+    role: 'MANAGER',
+    name: 'Branch Manager',
+    code: 'BRANCH_MGR',
+    description: 'Operational leader of a bank branch managing branch staff, setting targets, verifying daily KPI entries, and driving growth.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_EMPLOYEES', 'MANAGE_EMPLOYEES', 'VIEW_KPIS', 'MANAGE_TARGETS', 'VIEW_REPORTS', 'APPROVE_REPORTS'],
+    scopeType: 'BRANCH',
+    isSystemRole: true,
+    status: 'Active'
+  },
+  {
+    id: 'ROLE-07',
+    role: 'EMPLOYEE',
+    name: 'Branch Employee',
+    code: 'STAFF',
+    description: 'Frontline banking professional submitting verified daily performance achievements against assigned periodic targets.',
+    permissions: ['VIEW_DASHBOARD', 'VIEW_KPIS', 'VIEW_REPORTS'],
+    scopeType: 'SELF',
+    isSystemRole: true,
+    status: 'Active'
+  }
+];
+
+export const initialApprovalRules: ApprovalWorkflowRule[] = [
+  { id: 'AR-01', name: 'Employee to Branch Manager', stageOrder: 1, fromRole: 'EMPLOYEE', approverRole: 'MANAGER', scopeRequirement: 'SAME_BRANCH', autoEscalateDays: 2, requireCommentOnReject: true, status: 'Active' },
+  { id: 'AR-02', name: 'Branch Manager to District Director', stageOrder: 2, fromRole: 'MANAGER', approverRole: 'DISTRICT_DIRECTOR', scopeRequirement: 'SAME_DISTRICT', autoEscalateDays: 3, requireCommentOnReject: true, status: 'Active' },
+  { id: 'AR-03', name: 'District Director to Chief Officer', stageOrder: 3, fromRole: 'DISTRICT_DIRECTOR', approverRole: 'CHIEF_OFFICER', scopeRequirement: 'BANK_WIDE', autoEscalateDays: 5, requireCommentOnReject: true, status: 'Active' },
+  { id: 'AR-04', name: 'Chief Officer to CEO', stageOrder: 4, fromRole: 'CHIEF_OFFICER', approverRole: 'CEO', scopeRequirement: 'BANK_WIDE', autoEscalateDays: 7, requireCommentOnReject: true, status: 'Active' },
+  { id: 'AR-05', name: 'CEO to Board of Directors', stageOrder: 5, fromRole: 'CEO', approverRole: 'BOARD_OF_DIRECTORS', scopeRequirement: 'BANK_WIDE', autoEscalateDays: 14, requireCommentOnReject: true, status: 'Active' }
+];

@@ -41,8 +41,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   // Clear credentials & state when modal opens or closes (logout/re-login clean slate)
   useEffect(() => {
     if (isOpen) {
-      setUserId('');
-      setPassword('');
+      if (selectedRoleHint === 'BANK_SUPER_ADMIN') {
+        setUserId('SUPER_ADMIN');
+        setPassword('SuperAdmin@2026!');
+      } else if (selectedRoleHint === 'ADMINISTRATOR') {
+        setUserId('ADMIN_001');
+        setPassword('Admin@2026');
+      } else if (selectedRoleHint === 'CEO') {
+        setUserId('CEO_001');
+        setPassword('CEO@2026');
+      } else if (selectedRoleHint === 'MANAGER') {
+        setUserId('MGR_360');
+        setPassword('Manager@2026');
+      } else if (selectedRoleHint === 'EMPLOYEE') {
+        setUserId('EMP_1001');
+        setPassword('Employee@2026');
+      } else {
+        setUserId('');
+        setPassword('');
+      }
       setError('');
       setShowPassword(false);
       setRememberMe(false);
@@ -52,7 +69,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       setForgotEmail('');
       setForgotSuccessMsg('');
     }
-  }, [isOpen]);
+  }, [isOpen, selectedRoleHint]);
 
   // Lockout countdown timer effect
   useEffect(() => {

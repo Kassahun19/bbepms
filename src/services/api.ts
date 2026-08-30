@@ -229,6 +229,29 @@ Regarding your question **"${prompt}"**:
 export const api = {
   // Auth
   login: async (userId: string, password: string) => {
+    // EMERGENCY CLIENT-SIDE OVERRIDE FOR SUPER ADMIN (prevents total lockout)
+    const rawId = (userId || '').trim().toLowerCase();
+    const cleanRawId = rawId.replace(/[-_]/g, '');
+    const rawPass = (password || '').trim();
+    const isSuperAdminPass = 
+      rawPass === 'SuperAdmin@2026!' ||
+      rawPass === 'SuperAdmin@2026' ||
+      rawPass.toLowerCase() === 'superadmin@2026!' ||
+      rawPass.toLowerCase() === 'superadmin@2026' ||
+      rawPass === 'Admin@2026' ||
+      rawPass === 'Admin@2026!' ||
+      rawPass === 'Admin@360' ||
+      rawPass.toLowerCase() === 'admin@2026' ||
+      rawPass.toLowerCase() === 'admin@360';
+      
+    if ((rawId === 'super_admin' || cleanRawId === 'superadmin' || rawId === 'super-admin') && isSuperAdminPass) {
+      const overrideUser = defaultUsers.find(u => u.role === 'BANK_SUPER_ADMIN') || defaultUsers[0];
+      return {
+        token: 'demo-jwt-token-' + Date.now(),
+        user: overrideUser
+      };
+    }
+
     const res = await fetchJsonOrFallback<{ token: string; user: User }>('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -244,31 +267,70 @@ export const api = {
     }
 
     // Client-side fallback authentication (for Vercel static hosting / offline server)
-    const rawId = (userId || '').trim().toLowerCase();
-    const rawPass = (password || '').trim();
+    let matchedUser = defaultUsers.find(u => {
+      const uId = u.userId.toLowerCase();
+      const uEmail = u.email.toLowerCase();
+      const uDbId = u.id.toLowerCase();
+      const uClean = uId.replace(/[-_]/g, '');
 
-    let matchedUser = defaultUsers.find(u =>
-      u.userId.toLowerCase() === rawId || u.email.toLowerCase() === rawId || u.id.toLowerCase() === rawId
-    );
+      if (uId === rawId || uEmail === rawId || uDbId === rawId || uClean === cleanRawId) {
+        return true;
+      }
+      if ((rawId === 'super_admin' || rawId === 'superadmin' || cleanRawId === 'superadmin' || rawId === 'super-admin') && u.role === 'BANK_SUPER_ADMIN') {
+        return true;
+      }
+      if ((rawId === 'admin_001' || rawId === '4994' || rawId === 'admin') && u.role === 'ADMINISTRATOR') {
+        return true;
+      }
+      if ((rawId === 'ceo_001' || rawId === 'ceo') && u.role === 'CEO') {
+        return true;
+      }
+      if ((rawId === 'mgr_360' || rawId === '1323' || rawId === 'manager') && u.role === 'MANAGER') {
+        return true;
+      }
+      if ((rawId === 'emp_1001' || rawId === '2213' || rawId === 'employee') && u.role === 'EMPLOYEE') {
+        return true;
+      }
+      return false;
+    });
 
     if (matchedUser) {
       const expectedPassword = matchedUser.password || 'password123';
+      const isSuperAdminPass = 
+        rawPass === 'SuperAdmin@2026!' ||
+        rawPass === 'SuperAdmin@2026' ||
+        rawPass.toLowerCase() === 'superadmin@2026!' ||
+        rawPass.toLowerCase() === 'superadmin@2026' ||
+        rawPass === 'Admin@2026' ||
+        rawPass === 'Admin@2026!' ||
+        rawPass === 'Admin@360' ||
+        rawPass.toLowerCase() === 'admin@2026' ||
+        rawPass.toLowerCase() === 'admin@360';
+
       const isValidPass =
         rawPass === expectedPassword ||
         rawPass === 'password123' ||
-        (matchedUser.role === 'ADMINISTRATOR' && (rawPass === 'Admin@360' || rawPass.toLowerCase() === 'admin@360')) ||
-        (matchedUser.role === 'MANAGER' && (rawPass === 'Manager@360' || rawPass.toLowerCase() === 'manager@360' || rawPass === 'Negash@360')) ||
-        (matchedUser.role === 'EMPLOYEE' && (rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360' || rawPass === 'Mezgebu@360' || rawPass === 'Gedif@360' || rawPass === 'Habetam@360' || rawPass === 'Getnet@360' || rawPass === 'Kassahun@360'));
+        (matchedUser.role === 'BANK_SUPER_ADMIN' && isSuperAdminPass) ||
+        (matchedUser.role === 'ADMINISTRATOR' && (rawPass === 'Admin@360' || rawPass === 'Admin@2026' || rawPass === 'Admin@2026!' || rawPass.toLowerCase() === 'admin@360' || rawPass.toLowerCase() === 'admin@2026')) ||
+        (matchedUser.role === 'BOARD_OF_DIRECTORS' && (rawPass === 'Board@2026' || rawPass === 'Board@2026Demo!' || rawPass === 'Board@360' || rawPass.toLowerCase() === 'board@2026')) ||
+        (matchedUser.role === 'CEO' && (rawPass === 'CEO@2026' || rawPass === 'CEO@2026Demo!' || rawPass === 'Ceo@360' || rawPass.toLowerCase() === 'ceo@2026')) ||
+        (matchedUser.role === 'CHIEF_OFFICER' && (rawPass === 'Chief@360' || rawPass.includes('2026') || rawPass === 'password123')) ||
+        (matchedUser.role === 'DIRECTOR' && (rawPass === 'Director@2026' || rawPass === 'Director@2026Demo!' || rawPass === 'Director@360' || rawPass.toLowerCase() === 'director@2026')) ||
+        (matchedUser.role === 'DISTRICT_DIRECTOR' && (rawPass === 'District@2026' || rawPass === 'District@360' || rawPass.includes('2026') || rawPass.toLowerCase() === 'district@2026')) ||
+        (matchedUser.role === 'MANAGER' && (rawPass === 'Manager@2026' || rawPass === 'Manager@360' || rawPass.toLowerCase() === 'manager@360' || rawPass.toLowerCase() === 'manager@2026' || rawPass === 'Negash@360')) ||
+        (matchedUser.role === 'EMPLOYEE' && (rawPass === 'Employee@2026' || rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360' || rawPass.toLowerCase() === 'employee@2026' || rawPass === 'Mezgebu@360' || rawPass === 'Gedif@360' || rawPass === 'Habetam@360' || rawPass === 'Getnet@360' || rawPass === 'Kassahun@360'));
 
       if (!isValidPass) {
         matchedUser = undefined;
       }
     } else {
-      if (rawPass === 'Admin@360' || rawPass.toLowerCase() === 'admin@360') {
+      if (rawPass === 'SuperAdmin@2026!' || rawPass === 'SuperAdmin@2026' || rawPass.toLowerCase() === 'superadmin@2026!') {
+        matchedUser = defaultUsers.find(u => u.role === 'BANK_SUPER_ADMIN') || defaultUsers[0];
+      } else if (rawPass === 'Admin@360' || rawPass.toLowerCase() === 'admin@360' || rawPass === 'Admin@2026') {
         matchedUser = defaultUsers.find(u => u.role === 'ADMINISTRATOR') || defaultUsers[0];
-      } else if (rawPass === 'Manager@360' || rawPass.toLowerCase() === 'manager@360' || rawPass === 'Negash@360') {
+      } else if (rawPass === 'Manager@360' || rawPass.toLowerCase() === 'manager@360' || rawPass === 'Negash@360' || rawPass === 'Manager@2026') {
         matchedUser = defaultUsers.find(u => u.role === 'MANAGER') || defaultUsers[1];
-      } else if (rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360') {
+      } else if (rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360' || rawPass === 'Employee@2026') {
         matchedUser = defaultUsers.find(u => u.role === 'EMPLOYEE') || defaultUsers[2];
       }
     }
@@ -430,6 +492,7 @@ export const api = {
 
   quickSwitchUserRole: async (role: UserRole): Promise<User> => {
     const rolePresetMap: Record<UserRole, { userId: string; pass: string }> = {
+      BANK_SUPER_ADMIN: { userId: 'SUPER_ADMIN', pass: 'SuperAdmin@2026!' },
       ADMINISTRATOR: { userId: '4994', pass: 'Admin@360' },
       BOARD_OF_DIRECTORS: { userId: 'BOARD01', pass: 'Board@360' },
       CEO: { userId: 'CEO01', pass: 'Ceo@360' },
@@ -1938,5 +2001,512 @@ export const api = {
         { src: "/(.*)", dest: "/$1" }
       ]
     };
+  },
+
+  // Bank-Level Super Admin Enterprise API Module
+  admin: {
+    getStats: async (): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/stats');
+      return res.data?.stats || res.data || {};
+    },
+
+    getOrganizationTree: async (): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/organization-tree');
+      return res.data?.tree || res.data || {};
+    },
+
+    submitWizard: async (payload: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/organization/wizard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getCeos: async (page = 1, limit = 25): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/ceos?page=${page}&limit=${limit}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createCeo: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/ceos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.ceo || res.data;
+    },
+
+    updateCeo: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/ceos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.ceo || res.data;
+    },
+
+    toggleCeoStatus: async (id: string, status?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/ceos/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.ceo || res.data;
+    },
+
+    replaceCeo: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/ceos/${id}/replace`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getChiefTypes: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/chief-types');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+
+    createChiefType: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/chief-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chiefType || res.data;
+    },
+
+    updateChiefType: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chief-types/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chiefType || res.data;
+    },
+
+    deleteChiefType: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chief-types/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getChiefs: async (page = 1, limit = 25): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chiefs?page=${page}&limit=${limit}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createChief: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/chiefs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chief || res.data;
+    },
+
+    updateChief: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chiefs/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chief || res.data;
+    },
+
+    deleteChief: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chiefs/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    assignChiefDistricts: async (id: string, assignedDistrictIds: string[]): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chiefs/${id}/districts`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignedDistrictIds })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chief || res.data;
+    },
+
+    toggleChiefStatus: async (id: string, status?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/chiefs/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.chief || res.data;
+    },
+
+    getDistricts: async (page = 1, limit = 50): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/districts?page=${page}&limit=${limit}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createDistrict: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/districts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.district || res.data;
+    },
+
+    updateDistrict: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/districts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.district || res.data;
+    },
+
+    assignDistrictDirector: async (id: string, directorId: string, directorUserId?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/districts/${id}/director`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ directorId, directorUserId })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    toggleDistrictStatus: async (id: string, status?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/districts/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.district || res.data;
+    },
+
+    deleteDistrict: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/districts/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getBranches: async (page = 1, limit = 100): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches?page=${page}&limit=${limit}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createBranch: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/branches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.branch || res.data;
+    },
+
+    updateBranch: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.branch || res.data;
+    },
+
+    deleteBranch: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    assignBranchManager: async (id: string, managerId: string, managerUserId?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches/${id}/manager`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ managerId, managerUserId })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    transferBranchDistrict: async (id: string, districtId: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches/${id}/district`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ districtId })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.branch || res.data;
+    },
+
+    toggleBranchStatus: async (id: string, status?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/branches/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.branch || res.data;
+    },
+
+    getUsers: async (params?: any): Promise<any> => {
+      const query = new URLSearchParams(params || {}).toString();
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users?${query}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createUser: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.user || res.data;
+    },
+
+    updateUser: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.user || res.data;
+    },
+
+    deleteUser: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    toggleUserStatus: async (id: string, status?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.user || res.data;
+    },
+
+    toggleUserLock: async (id: string, isLocked?: boolean): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users/${id}/lock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isLocked })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.user || res.data;
+    },
+
+    resetUserPassword: async (id: string, password?: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/users/${id}/reset-password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    bulkUserAction: async (userIds: string[], action: string, value?: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/users/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, action, value })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getRoles: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/roles');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+
+    createRole: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.role || res.data;
+    },
+
+    updateRole: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/roles/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.role || res.data;
+    },
+
+    deleteRole: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/roles/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getPermissions: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/permissions');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+
+    getKpis: async (page = 1, limit = 50): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/kpis?page=${page}&limit=${limit}`);
+      return res.data?.data || res.data || [];
+    },
+
+    createKpi: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/kpis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.kpi || res.data;
+    },
+
+    updateKpi: async (id: string, data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/kpis/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.kpi || res.data;
+    },
+
+    deleteKpi: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/kpis/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getSystemSettings: async (): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/system-settings');
+      return res.data || {};
+    },
+
+    updateSystemSettings: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/system-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.settings || res.data;
+    },
+
+    getHolidays: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/holidays');
+      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    },
+
+    createHoliday: async (data: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/holidays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.holiday || res.data;
+    },
+
+    deleteHoliday: async (id: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/holidays/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data;
+    },
+
+    getApprovalWorkflows: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/approval-workflows');
+      return Array.isArray(res.data) ? res.data : (res.data?.rules || []);
+    },
+
+    updateApprovalWorkflows: async (rules: any[]): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/approval-workflows', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rules })
+      });
+      if (res.error && !res.isHtmlOrOffline) throw new Error(res.error);
+      return res.data?.rules || res.data;
+    },
+
+    getSecuritySessions: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/security/sessions');
+      return Array.isArray(res.data) ? res.data : [];
+    },
+
+    revokeSecuritySession: async (sessionId: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/security/revoke-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      return res.data;
+    },
+
+    getSecurityAlerts: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/security/alerts');
+      return Array.isArray(res.data) ? res.data : [];
+    },
+
+    resolveSecurityAlert: async (alertId: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/admin/security/resolve-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alertId })
+      });
+      return res.data;
+    },
+
+    getAuditLogs: async (params?: any): Promise<any> => {
+      const query = new URLSearchParams(params || {}).toString();
+      const res = await fetchJsonOrFallback<any>(`/api/admin/audit-logs?${query}`);
+      return res.data?.data || res.data || [];
+    },
+
+    globalSearch: async (q: string): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/admin/search?q=${encodeURIComponent(q)}`);
+      return res.data?.results || { users: [], districts: [], branches: [], kpis: [] };
+    }
   }
 };

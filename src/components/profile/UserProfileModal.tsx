@@ -82,6 +82,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const t = translations[language] || translations['en'];
   const [selectedUser, setSelectedUser] = useState<User>(user);
 
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   useEffect(() => {
     setSelectedUser(user);
     if (initialTab) {
@@ -213,11 +218,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const badgeInfo = getRoleBadge(user.role);
   const RoleIcon = badgeInfo.icon;
-
-  const { contentRef, handleBackdropClick } = useModalDismiss({
-    isOpen,
-    onClose,
-  });
 
   if (!isOpen) return null;
 
