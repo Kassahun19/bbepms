@@ -168,8 +168,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-xl tracking-tight text-white">{t.bankName}</span>
-                  <span className="bg-[#D9A514]/20 text-[#F2C230] border border-[#D9A514]/40 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    EPMS
+                  <span className="bg-[#D9A514]/20 text-[#F2C230] border border-[#D9A514]/40 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center space-x-1">
+                    <Target className="w-3 h-3" />
+                    <span>KPI</span>
                   </span>
                 </div>
                 <p className="text-xs text-[#D9A514] font-medium hidden sm:block">
