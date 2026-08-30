@@ -145,7 +145,9 @@ try {
     const officialContent = fs.readFileSync(officialPath, 'utf-8');
     const officialBranches = JSON.parse(officialContent);
     if (Array.isArray(officialBranches) && officialBranches.length > 0) {
-      db.branches = officialBranches;
+      if (!db.branches || db.branches.length === 0) {
+        db.branches = officialBranches;
+      }
     }
   }
 } catch (e) {}
@@ -627,7 +629,7 @@ async function syncDatabaseFromFirestore() {
       const cloudData = stateSnap.data();
       if (cloudData) {
         ['districts', 'branches', 'users', 'kpis', 'holidays', 'announcements', 'auditLogs', 'notifications', 'messages', 'bankMemos', 'fiscal_years'].forEach((key) => {
-          if (Array.isArray(cloudData[key]) && cloudData[key].length > 0) {
+          if (Array.isArray(cloudData[key])) {
             db[key] = cloudData[key];
           }
         });
