@@ -100,7 +100,7 @@ export const App: React.FC = () => {
       const uId = activeUser?.id || activeUser?.userId;
       const distId = activeUser?.districtId;
 
-      const isExec = role && ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(role);
+      const isExec = role && ['BANK_SUPER_ADMIN', 'BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(role);
 
       const [dList, bList, eList, kList, rList, nList, aLogs, hList, tList] = await Promise.all([
         api.getDistricts(role, uId, distId),

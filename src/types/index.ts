@@ -64,6 +64,7 @@ export interface RoleDefinition {
   userCount?: number;
   isSystemRole?: boolean;
   status: 'Active' | 'Inactive';
+  category?: string;
   createdAt?: string;
 }
 

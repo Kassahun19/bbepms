@@ -150,6 +150,17 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
 
+  // Action Target & Detail View Modals
+  const [viewingItem, setViewingItem] = useState<{ title: string; type: string; data: any } | null>(null);
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    type: 'user' | 'district' | 'branch' | 'kpi' | 'holiday' | 'role' | 'chief' | 'workflow';
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [editingWorkflow, setEditingWorkflow] = useState<ApprovalWorkflowRule | null>(null);
+  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+
   // Users Filter & Selection
   const [userRoleFilter, setUserRoleFilter] = useState<string>('ALL');
   const [userDistrictFilter, setUserDistrictFilter] = useState<string>('ALL');
@@ -289,6 +300,83 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       setSearchResults(res);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  // Delete Confirmation Handler
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmTarget) return;
+    const { type, id, name } = deleteConfirmTarget;
+    setLoading(true);
+    try {
+      if (type === 'user' || type === 'chief') {
+        await api.admin.deleteUser(id);
+        showToast(`Record "${name}" deleted successfully.`);
+      } else if (type === 'district') {
+        await api.admin.deleteDistrict(id);
+        showToast(`District "${name}" deleted successfully.`);
+      } else if (type === 'branch') {
+        await api.admin.deleteBranch(id);
+        showToast(`Branch "${name}" deleted successfully.`);
+      } else if (type === 'kpi') {
+        await api.admin.deleteKpi(id);
+        showToast(`KPI "${name}" deleted successfully.`);
+      } else if (type === 'holiday') {
+        await api.admin.deleteHoliday(id);
+        showToast(`Holiday "${name}" deleted successfully.`);
+      } else if (type === 'role') {
+        await api.admin.deleteRole(id);
+        showToast(`Role "${name}" deleted successfully.`);
+      } else if (type === 'workflow') {
+        const updatedRules = approvalRules.filter(r => r.id !== id);
+        await api.admin.updateApprovalWorkflows(updatedRules);
+        setApprovalRules(updatedRules);
+        showToast(`Workflow rule "${name}" deleted successfully.`);
+      }
+      setDeleteConfirmTarget(null);
+      await onRefreshData();
+      await loadAdminData();
+    } catch (err: any) {
+      showToast(err.message || `Failed to delete ${type}`, true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle Status Handlers
+  const handleToggleDistrictStatus = async (dist: District) => {
+    try {
+      const newStatus = dist.status === 'Active' ? 'Inactive' : 'Active';
+      await api.admin.toggleDistrictStatus(dist.id, newStatus);
+      showToast(`District "${dist.name}" is now ${newStatus}`);
+      await onRefreshData();
+      await loadAdminData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update district status', true);
+    }
+  };
+
+  const handleToggleBranchStatus = async (branch: Branch) => {
+    try {
+      const newStatus = branch.status === 'Active' ? 'Inactive' : 'Active';
+      await api.admin.toggleBranchStatus(branch.id, newStatus);
+      showToast(`Branch "${branch.name}" is now ${newStatus}`);
+      await onRefreshData();
+      await loadAdminData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update branch status', true);
+    }
+  };
+
+  const handleToggleKpiStatus = async (kpi: KPI) => {
+    try {
+      const newStatus = kpi.status === 'Active' ? 'Inactive' : 'Active';
+      await api.admin.updateKpi(kpi.id, { ...kpi, status: newStatus });
+      showToast(`KPI "${kpi.name}" is now ${newStatus}`);
+      await onRefreshData();
+      await loadAdminData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update KPI status', true);
     }
   };
 
@@ -695,20 +783,20 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
           return (
             <div 
               key={i} 
-              className={`p-4 sm:p-4.5 rounded-2xl ${stat.cardBg} border-2 ${stat.borderColor} ${stat.shadow} transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between`}
+              className={`p-5 sm:p-6 rounded-2xl ${stat.cardBg} border-[3px] ${stat.borderColor} ${stat.shadow} shadow-2xl ring-2 ring-black/5 hover:scale-[1.03] transition-all duration-300 flex flex-col justify-between`}
             >
               <div className="flex items-center justify-between gap-1">
-                <span className={`text-xs sm:text-sm font-extrabold tracking-tight ${stat.textColor}`}>
+                <span className={`text-xs sm:text-sm font-black uppercase tracking-wider ${stat.textColor}`}>
                   {stat.label}
                 </span>
-                <div className={`p-1.5 rounded-lg ${stat.badgeBg} flex items-center justify-center shrink-0`}>
-                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.iconColor}`} />
+                <div className={`p-2 rounded-xl ${stat.badgeBg} flex items-center justify-center shrink-0 ring-1 ring-black/10`}>
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.iconColor}`} />
                 </div>
               </div>
-              <div className={`mt-2.5 text-3xl sm:text-4xl font-black ${stat.numberColor} tracking-tight leading-none`}>
+              <div className={`mt-3.5 text-4xl sm:text-5xl font-black ${stat.numberColor} tracking-tight leading-none drop-shadow-sm`}>
                 {stat.value}
               </div>
-              <div className={`mt-2 text-[11px] sm:text-xs font-bold ${stat.subColor}`}>
+              <div className={`mt-3 text-xs sm:text-sm font-extrabold tracking-wide uppercase ${stat.subColor}`}>
                 {stat.sub}
               </div>
             </div>
@@ -954,22 +1042,61 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     <div>Status: <span className="text-emerald-400">{chief.status || 'Active'}</span></div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                    <button
-                      onClick={() => handleOpenResetPassword(chief)}
-                      className="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1 transition"
-                    >
-                      <Key className="w-3 h-3" /> Password
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingUser(chief);
-                        setIsUserModalOpen(true);
-                      }}
-                      className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
-                    >
-                      <Edit2 className="w-3 h-3" /> Edit
-                    </button>
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setViewingItem({
+                          title: `Executive Profile: ${chief.firstName} ${chief.lastName}`,
+                          type: 'Chief Officer',
+                          data: {
+                            'Staff ID': chief.userId,
+                            'Full Name': `${chief.firstName} ${chief.lastName}`,
+                            'Executive Title': chief.jobTitle || 'Chief Officer',
+                            'Official Email': chief.email || `${chief.userId.toLowerCase()}@bunnabanksc.com`,
+                            'Operating Status': chief.status || 'Active',
+                            'System Account Lock': chief.isLocked ? 'LOCKED' : 'UNLOCKED'
+                          }
+                        })}
+                        className="text-xs text-slate-400 hover:text-blue-300 flex items-center gap-1 transition"
+                        title="View Details"
+                      >
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                      <button
+                        onClick={() => handleOpenResetPassword(chief)}
+                        className="text-xs text-slate-400 hover:text-amber-400 flex items-center gap-1 transition"
+                        title="Reset Password"
+                      >
+                        <Key className="w-3 h-3" /> Password
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleToggleUserStatus(chief)}
+                        className={`text-xs flex items-center gap-1 transition ${chief.status === 'Active' ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-400 hover:text-emerald-300'}`}
+                        title={chief.status === 'Active' ? 'Deactivate' : 'Activate'}
+                      >
+                        {chief.status === 'Active' ? <XCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                        {chief.status === 'Active' ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingUser(chief);
+                          setIsUserModalOpen(true);
+                        }}
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
+                        title="Edit Officer"
+                      >
+                        <Edit2 className="w-3 h-3" /> Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmTarget({ type: 'chief', id: chief.id, name: `${chief.firstName} ${chief.lastName} (${chief.userId})` })}
+                        className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition p-0.5"
+                        title="Delete Officer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1048,15 +1175,48 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                             {dist.status || 'Active'}
                           </span>
                         </td>
-                        <td className="p-3 text-right space-x-2">
+                        <td className="p-3 text-right space-x-1.5">
+                          <button
+                            onClick={() => setViewingItem({
+                              title: `District Details: ${dist.name}`,
+                              type: 'Regional District',
+                              data: {
+                                'District ID': dist.id,
+                                'District Name': dist.name,
+                                'Region': dist.region || 'Regional',
+                                'Assigned Director': director ? `${director.firstName} ${director.lastName} (${director.userId})` : 'Unassigned',
+                                'Total Active Branches': distBranches.length,
+                                'Operating Status': dist.status || 'Active'
+                              }
+                            })}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                            title="View District Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 inline" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleDistrictStatus(dist)}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title={dist.status === 'Active' ? 'Deactivate District' : 'Activate District'}
+                          >
+                            {dist.status === 'Active' ? <XCircle className="w-3.5 h-3.5 inline text-rose-400" /> : <CheckCircle2 className="w-3.5 h-3.5 inline text-emerald-400" />}
+                          </button>
                           <button
                             onClick={() => {
                               setEditingDistrict(dist);
                               setIsDistrictModalOpen(true);
                             }}
                             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title="Edit District"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmTarget({ type: 'district', id: dist.id, name: dist.name })}
+                            className="px-2 py-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                            title="Delete District"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -1143,15 +1303,49 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                             {branch.status || 'Active'}
                           </span>
                         </td>
-                        <td className="p-3 text-right space-x-2">
+                        <td className="p-3 text-right space-x-1.5">
+                          <button
+                            onClick={() => setViewingItem({
+                              title: `Branch Details: ${branch.name}`,
+                              type: 'Bank Branch',
+                              data: {
+                                'SOL ID': branch.solId || branch.id,
+                                'Branch Name': branch.name,
+                                'District': branch.districtName || 'District',
+                                'Branch Manager': manager ? `${manager.firstName} ${manager.lastName}` : (branch.managerName || 'Unassigned'),
+                                'Total Staff': `${staffCount} Staff Members`,
+                                'Branch Grade': branch.grade || 'Grade 1',
+                                'Operating Status': branch.status || 'Active'
+                              }
+                            })}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                            title="View Branch Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 inline" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleBranchStatus(branch)}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title={branch.status === 'Active' ? 'Deactivate Branch' : 'Activate Branch'}
+                          >
+                            {branch.status === 'Active' ? <XCircle className="w-3.5 h-3.5 inline text-rose-400" /> : <CheckCircle2 className="w-3.5 h-3.5 inline text-emerald-400" />}
+                          </button>
                           <button
                             onClick={() => {
                               setEditingBranch(branch);
                               setIsBranchModalOpen(true);
                             }}
                             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title="Edit Branch"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmTarget({ type: 'branch', id: branch.id, name: branch.name })}
+                            className="px-2 py-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                            title="Delete Branch"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -1373,6 +1567,27 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                         </td>
                         <td className="p-3 text-right space-x-1.5">
                           <button
+                            onClick={() => setViewingItem({
+                              title: `Staff Profile: ${u.firstName} ${u.lastName}`,
+                              type: 'User Account',
+                              data: {
+                                'Staff ID': u.userId,
+                                'Full Name': `${u.firstName} ${u.middleName || ''} ${u.lastName}`.trim(),
+                                'System Role': u.role,
+                                'Job Title': u.jobTitle || 'Bank Staff',
+                                'District': u.districtName || 'Head Office',
+                                'Branch': u.branchName || 'Headquarters',
+                                'Official Email': u.email || `${u.userId.toLowerCase()}@bunnabanksc.com`,
+                                'Account Status': u.status || 'Active',
+                                'Security Lock State': u.isLocked ? 'LOCKED' : 'UNLOCKED'
+                              }
+                            })}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                            title="View Staff Profile"
+                          >
+                            <Eye className="w-3.5 h-3.5 inline" />
+                          </button>
+                          <button
                             onClick={() => handleOpenResetPassword(u)}
                             className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded border border-slate-700"
                             title="Reset Password"
@@ -1399,8 +1614,16 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                               setIsUserModalOpen(true);
                             }}
                             className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title="Edit User"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmTarget({ type: 'user', id: u.id, name: `${u.firstName} ${u.lastName} (${u.userId})` })}
+                            className="px-2 py-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 inline" />
                           </button>
                         </td>
                       </tr>
@@ -1497,6 +1720,81 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 </tbody>
               </table>
             </div>
+
+            {/* Defined System Roles Directory */}
+            <div className="pt-4 border-t border-slate-800 space-y-3">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                Defined Enterprise System Roles ({rolesList.length > 0 ? rolesList.length : 7} Roles)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border border-slate-800">
+                  <thead className="bg-slate-950 text-slate-300 font-semibold border-b border-slate-800">
+                    <tr>
+                      <th className="p-3">Role Code</th>
+                      <th className="p-3">Role Name</th>
+                      <th className="p-3">Category / Scope</th>
+                      <th className="p-3">Description</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {(rolesList.length > 0 ? rolesList : [
+                      { id: 'ROLE-001', code: 'BANK_SUPER_ADMIN', name: 'Bank Super Administrator', category: 'Executive', description: 'Full root enterprise access across all governance modules', status: 'Active' },
+                      { id: 'ROLE-002', code: 'BOARD_OF_DIRECTORS', name: 'Board of Directors', category: 'Executive', description: 'Governance oversight and annual strategy review', status: 'Active' },
+                      { id: 'ROLE-003', code: 'CEO', name: 'Chief Executive Officer', category: 'Executive', description: 'Bank-wide executive target cascade and performance monitoring', status: 'Active' },
+                      { id: 'ROLE-004', code: 'CHIEF_OFFICER', name: 'Executive Chief Officer', category: 'Executive', description: 'Sector-wide operational oversight and district management', status: 'Active' },
+                      { id: 'ROLE-005', code: 'DISTRICT_DIRECTOR', name: 'District Director', category: 'District', description: 'Regional branch performance oversight and target allocation', status: 'Active' },
+                      { id: 'ROLE-006', code: 'MANAGER', name: 'Branch Manager', category: 'Branch', description: 'Branch operation management and daily report verification', status: 'Active' },
+                      { id: 'ROLE-007', code: 'EMPLOYEE', name: 'Branch Officer / Staff', category: 'Branch', description: 'Daily KPI report submission and personal target tracking', status: 'Active' }
+                    ]).map((roleItem: any) => (
+                      <tr key={roleItem.id} className="hover:bg-slate-800/30 transition">
+                        <td className="p-3 font-mono font-bold text-amber-300">{roleItem.code}</td>
+                        <td className="p-3 font-semibold text-white">{roleItem.name}</td>
+                        <td className="p-3 text-slate-300">{roleItem.category || 'Executive'}</td>
+                        <td className="p-3 text-slate-400 max-w-xs truncate">{roleItem.description}</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded font-medium">
+                            {roleItem.status || 'Active'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right space-x-1.5">
+                          <button
+                            onClick={() => setViewingItem({
+                              title: `Role Definition: ${roleItem.name}`,
+                              type: 'System Role',
+                              data: roleItem
+                            })}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                            title="View Role Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 inline" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingRole(roleItem);
+                              setIsRoleModalOpen(true);
+                            }}
+                            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                            title="Edit Role"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmTarget({ type: 'role', id: roleItem.id, name: `${roleItem.name} (${roleItem.code})` })}
+                            className="px-2 py-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                            title="Delete Role"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 inline" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1560,15 +1858,49 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                         {kpi.status || 'Active'}
                       </span>
                     </td>
-                    <td className="p-3 text-right space-x-2">
+                    <td className="p-3 text-right space-x-1.5">
+                      <button
+                        onClick={() => setViewingItem({
+                          title: `KPI Indicator: ${kpi.name}`,
+                          type: 'Performance Indicator',
+                          data: {
+                            'KPI Code': kpi.code,
+                            'Indicator Name': kpi.name,
+                            'BSC Perspective Category': kpi.category || 'Finance',
+                            'Assigned Weight': `${kpi.weight}%`,
+                            'Measurement Unit': kpi.unit,
+                            'Evaluation Frequency': kpi.frequency || 'Daily',
+                            'Operating Status': kpi.status || 'Active'
+                          }
+                        })}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                        title="View KPI Details"
+                      >
+                        <Eye className="w-3.5 h-3.5 inline" />
+                      </button>
+                      <button
+                        onClick={() => handleToggleKpiStatus(kpi)}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                        title={kpi.status === 'Active' ? 'Deactivate KPI' : 'Activate KPI'}
+                      >
+                        {kpi.status === 'Active' ? <XCircle className="w-3.5 h-3.5 inline text-rose-400" /> : <CheckCircle2 className="w-3.5 h-3.5 inline text-emerald-400" />}
+                      </button>
                       <button
                         onClick={() => {
                           setEditingKpi(kpi);
                           setIsKpiModalOpen(true);
                         }}
                         className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+                        title="Edit KPI"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmTarget({ type: 'kpi', id: kpi.id, name: `${kpi.name} (${kpi.code})` })}
+                        className="px-2 py-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                        title="Delete KPI"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 inline" />
                       </button>
                     </td>
                   </tr>
@@ -1622,10 +1954,18 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       {activeTab === 'settings' && (
         <div className="space-y-6">
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Settings className="w-5 h-5 text-amber-400" />
-              Corporate Identity & Operational Parameters
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-400" />
+                Corporate Identity & Operational Parameters
+              </h2>
+              <button
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-lg text-xs transition"
+              >
+                <Edit2 className="w-3.5 h-3.5" /> Edit System Parameters
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
                 <span className="font-bold text-slate-300 text-sm">Bank Identity</span>
@@ -1671,9 +2011,30 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                     <div className="font-bold text-white">{h.name}</div>
                     <div className="text-slate-400 font-mono text-[11px]">{h.date}</div>
                   </div>
-                  <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded font-medium text-[10px]">
-                    Holiday
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setViewingItem({
+                        title: `Banking Holiday: ${h.name}`,
+                        type: 'Holiday Calendar Entry',
+                        data: {
+                          'Holiday Name': h.name,
+                          'Effective Date': h.date,
+                          'Status': 'Enforced (Non-Working Day)'
+                        }
+                      })}
+                      className="p-1 bg-slate-800 hover:bg-slate-700 text-blue-300 rounded border border-slate-700"
+                      title="View Holiday"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirmTarget({ type: 'holiday', id: h.id, name: `${h.name} (${h.date})` })}
+                      className="p-1 bg-rose-900/40 hover:bg-rose-800 text-rose-300 rounded border border-rose-700/50"
+                      title="Delete Holiday"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -2441,7 +2802,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
                 const payload = {
-                  id: (formData.get('id') as string) || `DIST-${Date.now().toString().slice(-4)}`,
+                  id: editingDistrict ? editingDistrict.id : ((formData.get('id') as string) || `DIST-${Date.now().toString().slice(-4)}`),
                   name: formData.get('name') as string,
                   region: formData.get('region') as string,
                   status: (formData.get('status') as string) || 'Active'
@@ -2551,7 +2912,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                 const districtId = formData.get('districtId') as string;
                 const foundDist = districts.find(d => d.id === districtId);
                 const payload = {
-                  id: (formData.get('id') as string) || `BR-${Date.now().toString().slice(-4)}`,
+                  id: editingBranch ? editingBranch.id : ((formData.get('id') as string) || `BR-${Date.now().toString().slice(-4)}`),
                   solId: (formData.get('solId') as string) || '100',
                   name: formData.get('name') as string,
                   districtId: districtId,
@@ -2790,6 +3151,132 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       )}
 
       {/* ========================================================================= */}
+      {/* ROLE DEFINE / EDIT MODAL                                                 */}
+      {/* ========================================================================= */}
+      {isRoleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-white animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Lock className="w-5 h-5 text-amber-400" />
+                {editingRole ? 'Edit System Role Definition' : 'Define New System Role'}
+              </h3>
+              <button onClick={() => setIsRoleModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const payload = {
+                  id: editingRole ? editingRole.id : (`ROLE-${Date.now().toString().slice(-4)}`),
+                  code: (formData.get('code') as string).toUpperCase().replace(/\s+/g, '_'),
+                  name: formData.get('name') as string,
+                  category: formData.get('category') as string,
+                  description: formData.get('description') as string,
+                  status: (formData.get('status') as string) || 'Active'
+                };
+                try {
+                  if (editingRole) {
+                    await api.admin.updateRole(editingRole.id, payload);
+                    showToast('Role updated successfully.');
+                  } else {
+                    await api.admin.createRole(payload);
+                    showToast('Role created successfully.');
+                  }
+                  setIsRoleModalOpen(false);
+                  await onRefreshData();
+                  await loadAdminData();
+                } catch (err: any) {
+                  showToast(err.message || 'Failed to save role', true);
+                }
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-slate-300 mb-1">Role Unique Code *</label>
+                <input
+                  name="code"
+                  defaultValue={editingRole?.code}
+                  required
+                  disabled={!!editingRole}
+                  placeholder="e.g. DISTRICT_MANAGER"
+                  className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-amber-400 font-mono disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Role Display Name *</label>
+                <input
+                  name="name"
+                  defaultValue={editingRole?.name}
+                  required
+                  placeholder="e.g. Senior District Manager"
+                  className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Tier / Category *</label>
+                <select
+                  name="category"
+                  defaultValue={editingRole?.category || 'Branch'}
+                  required
+                  className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-white"
+                >
+                  <option value="Executive">Executive</option>
+                  <option value="District">District</option>
+                  <option value="Branch">Branch</option>
+                  <option value="Administration">Administration</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Description / Functional Boundaries</label>
+                <textarea
+                  name="description"
+                  defaultValue={editingRole?.description}
+                  rows={3}
+                  placeholder="Describe core duties and dashboard permission mapping..."
+                  className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-white resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Status</label>
+                <select
+                  name="status"
+                  defaultValue={editingRole?.status || 'Active'}
+                  className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-white"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsRoleModalOpen(false)}
+                  className="px-4 py-2 border border-slate-700 text-slate-300 font-bold rounded-xl hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-xl shadow-md transition"
+                >
+                  {editingRole ? 'Save Changes' : 'Create Role'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* BANK HOLIDAY MODAL                                                        */}
       {/* ========================================================================= */}
       {isHolidayModalOpen && (
@@ -2860,6 +3347,173 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                   className="px-4 py-2 bg-[#D9A514] hover:bg-[#F2C230] text-[#4A2815] font-bold rounded-xl shadow-md transition"
                 >
                   Add Holiday
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* GENERIC ITEM DETAIL INSPECTOR MODAL                                       */}
+      {/* ========================================================================= */}
+      {viewingItem && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#4A2815] border border-[#D9A514]/40 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <span className="text-[10px] font-mono tracking-wider uppercase text-[#D9A514] font-semibold">{viewingItem.type}</span>
+                <h3 className="text-base font-bold text-white">{viewingItem.title}</h3>
+              </div>
+              <button
+                onClick={() => setViewingItem(null)}
+                className="p-1 text-gray-400 hover:text-white rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1 text-xs">
+              {Object.entries(viewingItem.data).map(([key, val]) => (
+                <div key={key} className="p-2.5 bg-black/30 border border-white/10 rounded-xl flex items-start justify-between gap-3">
+                  <span className="font-semibold text-gray-300 min-w-[120px]">{key}:</span>
+                  <span className="font-mono text-amber-200 text-right break-all">
+                    {typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val ?? 'N/A')}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-3 flex justify-end">
+              <button
+                onClick={() => setViewingItem(null)}
+                className="px-4 py-2 bg-[#D9A514] hover:bg-[#F2C230] text-[#4A2815] font-bold rounded-xl shadow-md transition text-xs"
+              >
+                Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* DELETE CONFIRMATION MODAL                                                 */}
+      {/* ========================================================================= */}
+      {deleteConfirmTarget && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-white">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="p-2.5 bg-rose-500/20 border border-rose-500/40 rounded-xl">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Confirm Permanent Deletion</h3>
+                <p className="text-xs text-rose-300 font-medium">This database operation cannot be undone</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs space-y-1">
+              <div className="text-slate-400">Target Record Type: <strong className="text-slate-200 uppercase">{deleteConfirmTarget.type}</strong></div>
+              <div className="text-slate-400">Record Name/ID: <strong className="text-amber-300 font-mono">{deleteConfirmTarget.name}</strong></div>
+            </div>
+
+            <p className="text-xs text-slate-300">
+              Are you sure you want to permanently delete this record from the database? All linked relations and history will be updated accordingly.
+            </p>
+
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTarget(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Confirm & Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* EDIT SYSTEM PARAMETERS MODAL                                              */}
+      {/* ========================================================================= */}
+      {isSettingsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#4A2815] border border-[#D9A514]/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 text-white">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[#D9A514]" />
+                Update System Parameters
+              </h3>
+              <button
+                onClick={() => setIsSettingsModalOpen(false)}
+                className="p-1 text-gray-400 hover:text-white rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                showToast('System parameters saved successfully.');
+                setIsSettingsModalOpen(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-gray-300 mb-1">Bank Full Name</label>
+                <input
+                  defaultValue="Bunna Bank S.C."
+                  className="w-full p-2.5 bg-black/40 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 mb-1">Session Inactivity Timeout (minutes)</label>
+                <input
+                  type="number"
+                  defaultValue="30"
+                  className="w-full p-2.5 bg-black/40 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 mb-1">Password Expiry Policy (days)</label>
+                <input
+                  type="number"
+                  defaultValue="90"
+                  className="w-full p-2.5 bg-black/40 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 mb-1">Max Failed Login Attempts</label>
+                <input
+                  type="number"
+                  defaultValue="5"
+                  className="w-full p-2.5 bg-black/40 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsModalOpen(false)}
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-200 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#D9A514] hover:bg-[#F2C230] text-[#4A2815] font-bold rounded-xl shadow-md transition"
+                >
+                  Save Parameters
                 </button>
               </div>
             </form>

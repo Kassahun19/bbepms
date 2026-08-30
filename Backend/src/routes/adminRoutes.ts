@@ -615,16 +615,21 @@ export function createAdminRoutes(
 
   router.put('/districts/:id', async (req, res) => {
     const targetId = String(req.params.id);
-    const dist = (db.districts || []).find((d: any) => 
-      String(d.id) === targetId || 
-      (d.code && String(d.code) === targetId)
+    if (!db.districts) db.districts = [];
+    let dist = db.districts.find((d: any) => 
+      String(d.id).toLowerCase() === targetId.toLowerCase() || 
+      (d.code && String(d.code).toLowerCase() === targetId.toLowerCase()) ||
+      (d.name && String(d.name).toLowerCase() === targetId.toLowerCase())
     );
-    if (!dist) return res.status(404).json({ error: 'District not found.' });
-    const prev = { ...dist };
-    const targetDocId = dist.id;
-    Object.assign(dist, req.body, { id: targetDocId });
+    const prev = dist ? { ...dist } : null;
+    if (!dist) {
+      dist = { id: targetId, ...req.body };
+      db.districts.push(dist);
+    } else {
+      Object.assign(dist, req.body, { id: dist.id });
+    }
     logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'DISTRICT', dist.id, `Updated District ${dist.name}`, prev, dist);
-    await saveFirestoreDoc('districts', targetDocId, dist);
+    await saveFirestoreDoc('districts', dist.id, dist);
     await saveDb();
     res.json({ success: true, district: dist });
   });
@@ -720,17 +725,22 @@ export function createAdminRoutes(
 
   router.put('/branches/:id', async (req, res) => {
     const targetId = String(req.params.id);
-    const branch = (db.branches || []).find((b: any) => 
-      String(b.id) === targetId || 
-      (b.code && String(b.code) === targetId) || 
-      (b.solId && String(b.solId) === targetId)
+    if (!db.branches) db.branches = [];
+    let branch = db.branches.find((b: any) => 
+      String(b.id).toLowerCase() === targetId.toLowerCase() || 
+      (b.code && String(b.code).toLowerCase() === targetId.toLowerCase()) || 
+      (b.solId && String(b.solId).toLowerCase() === targetId.toLowerCase()) ||
+      (b.name && String(b.name).toLowerCase() === targetId.toLowerCase())
     );
-    if (!branch) return res.status(404).json({ error: 'Branch not found.' });
-    const prev = { ...branch };
-    const targetDocId = branch.id;
-    Object.assign(branch, req.body, { id: targetDocId });
+    const prev = branch ? { ...branch } : null;
+    if (!branch) {
+      branch = { id: targetId, ...req.body };
+      db.branches.push(branch);
+    } else {
+      Object.assign(branch, req.body, { id: branch.id });
+    }
     logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'BRANCH', branch.id, `Updated Branch ${branch.name} (SOL: ${branch.solId})`, prev, branch);
-    await saveFirestoreDoc('branches', targetDocId, branch);
+    await saveFirestoreDoc('branches', branch.id, branch);
     await saveDb();
     res.json({ success: true, branch });
   });
@@ -877,11 +887,21 @@ export function createAdminRoutes(
   });
 
   router.put('/users/:id', async (req, res) => {
-    const user = (db.users || []).find((u: any) => u.id === req.params.id || u.userId === req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found.' });
-    const prev = { ...user };
+    const targetId = String(req.params.id);
+    if (!db.users) db.users = [];
+    let user = db.users.find((u: any) => 
+      String(u.id).toLowerCase() === targetId.toLowerCase() || 
+      (u.userId && String(u.userId).toLowerCase() === targetId.toLowerCase()) ||
+      (u.email && String(u.email).toLowerCase() === targetId.toLowerCase())
+    );
+    const prev = user ? { ...user } : null;
     const { password, ...rest } = req.body;
-    Object.assign(user, rest);
+    if (!user) {
+      user = { id: targetId, ...rest };
+      db.users.push(user);
+    } else {
+      Object.assign(user, rest, { id: user.id });
+    }
     if (password) {
       try {
         user.password = bcrypt.hashSync(password, 10);
@@ -889,7 +909,15 @@ export function createAdminRoutes(
         user.password = password;
       }
     }
-    logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'USER', user.id, `Updated user details for ${user.userId}`, prev, user);
+    if (req.body.districtId) {
+      const d = (db.districts || []).find((dist: any) => dist.id === req.body.districtId);
+      if (d) user.districtName = d.name;
+    }
+    if (req.body.branchId) {
+      const b = (db.branches || []).find((br: any) => br.id === req.body.branchId);
+      if (b) user.branchName = b.name;
+    }
+    logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'USER', user.id, `Updated user details for ${user.userId || user.firstName || user.id}`, prev, user);
     await saveFirestoreDoc('users', user.id, user);
     await saveDb();
     res.json({ success: true, user });
@@ -1010,9 +1038,19 @@ export function createAdminRoutes(
   });
 
   router.put('/roles/:id', async (req, res) => {
-    const role = (db.roles || []).find((r: any) => r.id === req.params.id || r.code === req.params.id);
-    if (!role) return res.status(404).json({ error: 'Role not found.' });
-    Object.assign(role, req.body);
+    const targetId = String(req.params.id);
+    if (!db.roles) db.roles = [];
+    let role = db.roles.find((r: any) => 
+      String(r.id).toLowerCase() === targetId.toLowerCase() || 
+      (r.code && String(r.code).toLowerCase() === targetId.toLowerCase()) ||
+      (r.name && String(r.name).toLowerCase() === targetId.toLowerCase())
+    );
+    if (!role) {
+      role = { id: targetId, ...req.body };
+      db.roles.push(role);
+    } else {
+      Object.assign(role, req.body, { id: role.id });
+    }
     logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'ROLE', role.id, `Updated Role ${role.name}`);
     await saveFirestoreDoc('roles', role.id, role);
     await saveDb();
@@ -1066,9 +1104,19 @@ export function createAdminRoutes(
   });
 
   router.put('/kpis/:id', async (req, res) => {
-    const kpi = (db.kpis || []).find((k: any) => k.id === req.params.id || k.code === req.params.id);
-    if (!kpi) return res.status(404).json({ error: 'KPI not found.' });
-    Object.assign(kpi, req.body);
+    const targetId = String(req.params.id);
+    if (!db.kpis) db.kpis = [];
+    let kpi = db.kpis.find((k: any) => 
+      String(k.id).toLowerCase() === targetId.toLowerCase() || 
+      (k.code && String(k.code).toLowerCase() === targetId.toLowerCase()) ||
+      (k.name && String(k.name).toLowerCase() === targetId.toLowerCase())
+    );
+    if (!kpi) {
+      kpi = { id: targetId, ...req.body };
+      db.kpis.push(kpi);
+    } else {
+      Object.assign(kpi, req.body, { id: kpi.id });
+    }
     logAudit(req.headers['x-user-id'] as string || 'Admin', 'Bank Super Admin', 'BANK_SUPER_ADMIN', 'UPDATE', 'KPI', kpi.id, `Updated KPI ${kpi.name}`);
     await saveFirestoreDoc('kpis', kpi.id, kpi);
     await saveDb();

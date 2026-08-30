@@ -61,7 +61,7 @@ async function fetchJsonOrFallback<T>(url: string, options?: RequestInit): Promi
           headers.set('x-user-id', u.id || u.userId);
         }
         const effectiveRole = headers.get('x-user-role') || u.role;
-        const isExecutiveOrBoard = ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(effectiveRole);
+        const isExecutiveOrBoard = ['BANK_SUPER_ADMIN', 'BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(effectiveRole);
 
         if (!isExecutiveOrBoard && u.districtId && !headers.has('x-district-id')) {
           headers.set('x-district-id', u.districtId);
@@ -93,6 +93,15 @@ async function fetchJsonOrFallback<T>(url: string, options?: RequestInit): Promi
   } catch (err: any) {
     return { isHtmlOrOffline: true, error: err.message || 'Network error' };
   }
+}
+
+function extractArray<T>(data: any, fallback: T[]): T[] {
+  if (!data) return fallback;
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object' && Array.isArray(data.data)) {
+    return data.data;
+  }
+  return fallback;
 }
 
 function generateClientSideAiResponse(prompt: string, userRole?: string, userId?: string, contextData?: any) {
@@ -472,10 +481,10 @@ export const api = {
     const headers: Record<string, string> = {};
     if (userRole) headers['x-user-role'] = userRole;
     if (userId) headers['x-user-id'] = userId;
-    const isExec = userRole && ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(userRole);
+    const isExec = userRole && ['BANK_SUPER_ADMIN', 'BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'CHIEF_OFFICER', 'DIRECTOR'].includes(userRole);
     if (districtId && !isExec) headers['x-district-id'] = districtId;
-    const res = await fetchJsonOrFallback<District[]>('/api/districts', { headers });
-    const dList = (res.data && Array.isArray(res.data) && res.data.length > 0) ? res.data : initialDistricts;
+    const res = await fetchJsonOrFallback<any>('/api/districts', { headers });
+    const dList = extractArray<District>(res.data, initialDistricts);
     
     return dList.map(d => {
       const assignedBranches = initialBranches.filter(b => 
@@ -545,15 +554,15 @@ export const api = {
 
   getBranches: async (districtId?: string): Promise<Branch[]> => {
     const url = districtId ? `/api/branches?districtId=${encodeURIComponent(districtId)}` : '/api/branches';
-    const res = await fetchJsonOrFallback<Branch[]>(url);
-    if (res.data && Array.isArray(res.data) && res.data.length > 0) return res.data;
+    const res = await fetchJsonOrFallback<any>(url);
+    const bList = extractArray<Branch>(res.data, initialBranches);
     if (districtId) {
       const parentDist = initialDistricts.find(d => 
         d.id === districtId || 
         d.code === districtId || 
         (d.name && d.name.toLowerCase() === districtId.toLowerCase())
       );
-      const filtered = initialBranches.filter(b => {
+      const filtered = bList.filter(b => {
         if (!b) return false;
         if (b.districtId === districtId) return true;
         if (parentDist) {
@@ -563,9 +572,9 @@ export const api = {
         }
         return false;
       });
-      return filtered.length > 0 ? filtered : initialBranches;
+      return filtered;
     }
-    return initialBranches;
+    return bList;
   },
 
   createBranch: async (branchData: Partial<Branch>): Promise<Branch> => {
@@ -631,13 +640,8 @@ export const api = {
 
   getEmployees: async (filters?: { districtId?: string; branchId?: string; role?: string }): Promise<User[]> => {
     const params = new URLSearchParams(filters as any).toString();
-    const res = await fetchJsonOrFallback<User[]>(`/api/employees?${params}`);
-    if (res.data && Array.isArray(res.data)) return res.data;
-    let list = defaultUsers;
-    if (filters?.districtId) list = list.filter(u => u.districtId === filters.districtId);
-    if (filters?.branchId) list = list.filter(u => u.branchId === filters.branchId);
-    if (filters?.role) list = list.filter(u => u.role === filters.role);
-    return list;
+    const res = await fetchJsonOrFallback<any>(`/api/employees?${params}`);
+    return extractArray<User>(res.data, defaultUsers);
   },
 
   updateEmployee: async (id: string, empData: Partial<User>): Promise<User> => {
@@ -665,9 +669,8 @@ export const api = {
 
   // KPIs & Targets
   getKPIs: async (): Promise<KPI[]> => {
-    const res = await fetchJsonOrFallback<KPI[]>('/api/kpis');
-    if (res.data && Array.isArray(res.data) && res.data.length > 0) return res.data;
-    return initialKPIs;
+    const res = await fetchJsonOrFallback<any>('/api/kpis');
+    return extractArray<KPI>(res.data, initialKPIs);
   },
 
   createKPI: async (kpiData: Partial<KPI>): Promise<KPI> => {
@@ -716,13 +719,8 @@ export const api = {
 
   getTargets: async (filters?: { employeeId?: string; branchId?: string; status?: string; year?: number }): Promise<PerformanceTarget[]> => {
     const params = new URLSearchParams(filters as any).toString();
-    const res = await fetchJsonOrFallback<PerformanceTarget[]>(`/api/targets?${params}`);
-    if (res.data && Array.isArray(res.data)) return res.data;
-    let list = initialTargets;
-    if (filters?.employeeId) list = list.filter(t => t.employeeId === filters.employeeId);
-    if (filters?.branchId) list = list.filter(t => t.branchId === filters.branchId);
-    if (filters?.status) list = list.filter(t => (t.status || 'ACCEPTED') === filters.status);
-    return list;
+    const res = await fetchJsonOrFallback<any>(`/api/targets?${params}`);
+    return extractArray<PerformanceTarget>(res.data, initialTargets);
   },
 
   saveTargets: async (targetsList: PerformanceTarget | PerformanceTarget[]): Promise<PerformanceTarget[]> => {
@@ -800,9 +798,10 @@ export const api = {
         });
       }
       const params = new URLSearchParams(cleanFilters).toString();
-      const res = await fetchJsonOrFallback<DailyPerformanceReport[]>(`/api/kpi-reports?${params}`);
-      if (res.data && Array.isArray(res.data)) {
-        return res.data;
+      const res = await fetchJsonOrFallback<any>(`/api/kpi-reports?${params}`);
+      const list = extractArray<DailyPerformanceReport>(res.data, []);
+      if (list && list.length > 0) {
+        return list;
       }
     } catch (e) {
       console.warn('[EPMS Data] API /api/kpi-reports fetch error, accessing Cloud Firestore directly:', e);
