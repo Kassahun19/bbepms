@@ -515,7 +515,7 @@ function normalizeKpiReport(input: any) {
 }
 
 let lastSyncTime = 0;
-const SYNC_CACHE_MS = 10 * 60 * 1000; // 10 minute cache to prevent aggressive Firestore polling
+const SYNC_CACHE_MS = 2 * 1000; // 2 seconds cache to allow parallel page-load requests to deduplicate, while keeping serverless instances in sync
 let firestoreQuotaExhaustedUntil = 0;
 let firestoreQuotaLogged = false;
 
@@ -737,10 +737,13 @@ if (clientDb) {
   dbPromise = Promise.race([fetchPromise, timeoutPromise]);
 }
 
+let activeSyncPromise: Promise<void> | null = null;
+
 // Ensure database is fully synced before proceeding (critical for serverless / Vercel cold starts / restarts)
 async function ensureDbSynced(force = false) {
   if (dbPromise) {
     await dbPromise;
+    dbPromise = null; // Clean up so subsequent requests don't keep awaiting the initial resolved promise
   }
 
   if (isFirestoreQuotaExhausted()) {
@@ -752,7 +755,13 @@ async function ensureDbSynced(force = false) {
     return;
   }
 
-  await syncDatabaseFromFirestore();
+  // Coalesce multiple concurrent sync requests into a single promise to prevent thundering herd requests
+  if (!activeSyncPromise) {
+    activeSyncPromise = syncDatabaseFromFirestore().finally(() => {
+      activeSyncPromise = null;
+    });
+  }
+  await activeSyncPromise;
 }
 
 // Global middleware to sync Firestore database on every API/install request
@@ -990,7 +999,7 @@ app.get('/api/performance/comparison/:fiscalYearId', (req, res) => {
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { userId, password } = req.body;
   let rawId = (userId || '').trim().toLowerCase();
   if (rawId.includes(' or ')) {
@@ -1085,7 +1094,7 @@ app.post('/api/auth/login', (req, res) => {
 
     if (user && !db.users.find((u: any) => u.userId === user.userId || u.id === user.id)) {
       db.users.push(user);
-      saveDb();
+      await saveDb();
     }
   }
 
@@ -1172,7 +1181,7 @@ app.post('/api/auth/login', (req, res) => {
     });
     if (db.auditLogs.length > 500) db.auditLogs.pop();
 
-    saveDb();
+    await saveDb();
 
     return res.json({ 
       success: true, 
@@ -1185,7 +1194,7 @@ app.post('/api/auth/login', (req, res) => {
   res.status(401).json({ error: 'Invalid User ID or Password' });
 });
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const { userId, branchId, roleType, ...rest } = req.body;
   const role = roleType === 'Managerial' ? 'MANAGER' : 'EMPLOYEE';
 
@@ -1212,8 +1221,8 @@ app.post('/api/auth/register', (req, res) => {
     ...rest
   };
   db.users.push(user);
-  saveFirestoreDoc('users', user.id, user);
-  saveDb();
+  await saveFirestoreDoc('users', user.id, user);
+  await saveDb();
   res.json({ message: 'Success', user });
 });
 
@@ -1242,13 +1251,13 @@ const paginateResults = (items: any[], pageStr?: string, limitStr?: string) => {
   };
 };
 
-app.post('/api/auth/change-password', (req, res) => {
+app.post('/api/auth/change-password', async (req, res) => {
   const { userId, newPassword } = req.body;
   const user = db.users.find((u: any) => u.id === userId || u.userId === userId);
   if (user) {
     user.password = newPassword;
-    saveFirestoreDoc('users', user.id, user);
-    saveDb();
+    await saveFirestoreDoc('users', user.id, user);
+    await saveDb();
     return res.json({ message: 'Success', user });
   }
   res.status(404).json({ error: 'Not found' });
