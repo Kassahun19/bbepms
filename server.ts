@@ -55,6 +55,7 @@ import {
   calculateEmployeeRankings,
   normalizeReport
 } from './Backend/src/services/performanceAnalytics';
+import { evaluateEpmsCoachQuery } from './src/services/epmsCoachEngine';
 
 app.use('/install', installRoutes);
 app.use('/api', installRoutes);
@@ -4013,31 +4014,94 @@ app.put('/api/manager/employees/:id/status', (req, res) => {
 app.post('/api/ai/assistant', async (req, res) => {
   const { prompt, userId, userRole, contextData } = req.body;
   try {
+    const districts = db.districts || [];
+    const branches = db.branches || [];
+    const users = db.users || [];
+    const reports = db.reports || [];
+    const targets = db.targets || [];
+
+    const districtRankings = calculateDistrictRankings(districts, branches, users, reports, targets);
+    const branchRankings = calculateBranchRankings(branches, districts, users, reports, targets);
+    const employeeRankings = calculateEmployeeRankings(users, reports, targets);
+
+    const coachResult = evaluateEpmsCoachQuery(prompt, {
+      districts,
+      branches,
+      users,
+      reports,
+      targets,
+      districtRankings,
+      branchRankings,
+      employeeRankings,
+      lastContext: contextData?.lastContext,
+      userRole
+    });
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
-      // If Gemini API is called and exceeds quota, catch and fallback gracefully
       try {
         const { GoogleGenAI } = await import('@google/genai');
-        const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: `You are Bunna Bank S.C. EPMS AI Performance Coach. User Role: ${userRole}. Prompt: ${prompt}`
+        const ai = new GoogleGenAI({ 
+          apiKey,
+          httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
         });
+
+        const systemInstruction = `You are the Bunna Bank S.C. EPMS AI Performance Coach & Advisor.
+You assist bank executives, district directors, branch managers, and banking staff across Ethiopia.
+
+CRITICAL MANDATES:
+1. Generate responses based strictly on accurate, verified EPMS data provided below.
+2. Format responses to be SHORT, PRECISE, EASY TO READ, and VISUALLY ATTRACTIVE using compact progress bars (e.g. ███████████████████░ 94%), status badges (🟢 Exceeding Expectations, 🟢 Excellent Performance, 🔵 Strong Performance, 🟡 Satisfactory Performance, 🟠 Needs Improvement, 🔴 Underperforming), and clear bullet points.
+3. Every response MUST include an actionable MANAGEMENT DECISION or RECOMMENDATION (e.g. 💡 Decision: ... or 🎯 Management Decision: ...).
+4. Never invent non-existent districts, branches, employees, targets, or performance percentages.
+5. If data for a requested entity is missing, state: "⚠️ I don't have enough verified data to determine this." and mention available entities.
+
+LIVE EPMS PERFORMANCE DATASET:
+Districts Ranking:
+${JSON.stringify(districtRankings.map(d => ({ rank: d.name, score: d.performanceScore, pct: d.achievementPercentage, status: d.status })), null, 2)}
+
+Top Branches:
+${JSON.stringify(branchRankings.slice(0, 5).map(b => ({ name: b.name, district: b.districtName, score: b.performanceScore, status: b.status })), null, 2)}
+
+Bottom Branches:
+${JSON.stringify(branchRankings.slice(-5).map(b => ({ name: b.name, district: b.districtName, score: b.performanceScore, status: b.status })), null, 2)}
+
+Top Staff:
+${JSON.stringify(employeeRankings.slice(0, 5).map(e => ({ name: e.name, branch: e.branchName, score: e.performanceScore, status: e.status })), null, 2)}
+
+Bottom Staff:
+${JSON.stringify(employeeRankings.slice(-5).map(e => ({ name: e.name, branch: e.branchName, score: e.performanceScore, status: e.status })), null, 2)}
+`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: prompt,
+          config: {
+            systemInstruction
+          }
+        });
+
         if (response && response.text) {
-          return res.json({ response: response.text });
+          return res.json({ 
+            response: response.text, 
+            reply: response.text, 
+            context: coachResult.context 
+          });
         }
       } catch (aiErr: any) {
         console.warn('[Gemini AI Quota / Error Notice]:', aiErr?.message || aiErr);
       }
     }
-    
-    // Graceful fallback response
+
+    // Deterministic EPMS Coach Engine response
     res.json({ 
-      response: `[Bunna Bank S.C. EPMS AI Assistant]: Regarding "${prompt}", I have analyzed your request based on Bunna Bank S.C. performance metrics and KPI targets. Please review your branch dashboard or district leaderboards for more information.` 
+      response: coachResult.text, 
+      reply: coachResult.text, 
+      context: coachResult.context 
     });
   } catch (e: any) {
     res.json({ 
-      response: `[Bunna Bank S.C. EPMS AI Assistant - Notice]: AI rate limit or quota currently reached. Operating in offline expert coaching mode. Request processed successfully.` 
+      response: `⚠️ I don't have enough verified EPMS data to process this request right now.` 
     });
   }
 });

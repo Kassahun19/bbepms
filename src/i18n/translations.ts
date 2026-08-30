@@ -88,12 +88,12 @@ const translationData: Record<string, Record<string, string>> = {
     securityPermissions: "Security & Permissions",
     auditTrail: "Audit Trail",
     myRoleProfile: "My Role Profile",
-    askAiCoach: "Ask AI Performance Coach",
+    askAiCoach: "Ask Bunna AI",
     
     // AI Assistant
     aiAssistantTitle: "Daily KPI AI Performance Assistant",
     aiPromptPlaceholder: "Ask about KPIs, policies, target projections, or summaries...",
-    askAi: "Ask AI Coach",
+    askAi: "Ask Bunna AI",
     
     // Landing & Footer
     heroTitle: "Daily KPI Performance Management System",
@@ -198,12 +198,12 @@ const translationData: Record<string, Record<string, string>> = {
     securityPermissions: "ደህንነት እና ፈቃዶች",
     auditTrail: "የኦዲት መዝገብ",
     myRoleProfile: "የእኔ የሥራ መገለጫ",
-    askAiCoach: "የ AI አፈፃፀም አሰልጣኝን ጠይቁ",
+    askAiCoach: "ቡና AIን ይጠይቁ",
     
     // AI Assistant
     aiAssistantTitle: "ዕለታዊ የ KPI AI አፈፃፀም ረዳት",
     aiPromptPlaceholder: "ስለ KPI፣ ደንቦች፣ ትንበያ ወይም አጠቃላይ ማጠቃለያ ይጠይቁ...",
-    askAi: "የ AI ረዳቱን ይጠይቁ",
+    askAi: "ቡና AIን ይጠይቁ",
     
     // Landing & Footer
     heroTitle: "ዕለታዊ የ KPI አፈፃፀም ማኔጅመንት ስርዓት",

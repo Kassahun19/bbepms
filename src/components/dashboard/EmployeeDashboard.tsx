@@ -161,14 +161,6 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({
               <span>{t.myRoleProfile || 'My Role Profile'}</span>
             </button>
           )}
-
-          <button
-            onClick={onOpenAiAssistant}
-            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center space-x-2 cursor-pointer transition-all"
-          >
-            <Sparkles className="w-4 h-4 text-[#C89A2B]" />
-            <span>{t.askAiCoach || 'Ask AI Performance Coach'}</span>
-          </button>
         </div>
       </div>
 

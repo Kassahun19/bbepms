@@ -30,6 +30,7 @@ import { RegisterModal } from './components/auth/RegisterModal';
 import { NotificationDrawer } from './components/common/NotificationDrawer';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { AIAssistantDrawer } from './components/ai/AIAssistantDrawer';
+import { FloatingAiCoachButton } from './components/ai/FloatingAiCoachButton';
 import { CalendarView } from './components/calendar/CalendarView';
 import { ReportExportModal } from './components/reports/ReportExportModal';
 import { ApiDocsModal } from './components/docs/ApiDocsModal';
@@ -511,6 +512,12 @@ export const App: React.FC = () => {
         userRole={currentUser?.role}
         targetEmployee={aiTargetEmployee}
         onClearTargetEmployee={() => setAiTargetEmployee(null)}
+      />
+
+      <FloatingAiCoachButton
+        onClick={() => setIsAiDrawerOpen(true)}
+        language={language}
+        isDrawerOpen={isAiDrawerOpen}
       />
 
       <CalendarView

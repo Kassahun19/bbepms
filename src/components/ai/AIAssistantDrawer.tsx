@@ -49,13 +49,14 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
   const initialGreeting = {
     id: 'welcome-1',
     sender: 'ai',
-    text: `**Welcome to Bunna Bank AI Assistant!** 🏦
-*Online • EPMS Intelligent Performance Coach*
+    text: `**Welcome to Bunna Bank EPMS AI Performance Coach & Advisor!** 🏦
+*Online • Decision-Oriented Performance Intelligence Engine*
 
 Ask me anything about:
-• **KPI Targets & Achievements:** Deposits, FCY, Bunna Mobile, Accounts, Merchants & Cards
-• **Branch Performance & July Summaries:** Real-time metrics & district rankings
-• **Reporting Guidelines & Approvals:** Daily logging cutoffs & manager approval workflows
+• **Districts:** Top performers, lowest performers, medium tier, comparative analysis & rankings
+• **Branches:** Leading branches, bottom 5 branches, branch breakdowns & coaching priorities
+• **Employees:** Top staff, lowest performers, target achievements & 1-on-1 coaching actions
+• **Management Decisions:** Actionable recommendations for resource scaling & performance reviews
 • **Custom Queries:** Type any specific question in English or አማርኛ!`
   };
 
@@ -68,6 +69,7 @@ Ask me anything about:
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [lastSummarizedId, setLastSummarizedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastContextRef = useRef<any>({});
 
   const { contentRef, handleBackdropClick } = useModalDismiss({
     isOpen,
@@ -151,13 +153,23 @@ Ask me anything about:
     setLoading(true);
 
     try {
+      const payloadContext = {
+        lastContext: lastContextRef.current,
+        ...(targetEmployee ? { employeeId: targetEmployee.id, employeeName: getUserFullName(targetEmployee) } : {})
+      };
+
       const data = await api.askAiAssistant(
         textToSend,
         userRole,
         targetEmployee?.id,
-        targetEmployee ? { employeeId: targetEmployee.id, employeeName: getUserFullName(targetEmployee) } : undefined
+        payloadContext
       );
-      const replyText = data.response || data.reply || data.answer || data.text || 'Bunna Bank AI evaluation complete.';
+
+      if (data.context) {
+        lastContextRef.current = data.context;
+      }
+
+      const replyText = data.response || data.reply || data.answer || data.text || 'Bunna Bank EPMS AI evaluation complete.';
       
       setMessages(prev => [
         ...prev,
@@ -165,7 +177,7 @@ Ask me anything about:
           id: String(Date.now() + 1),
           sender: 'ai',
           text: replyText,
-          followUps: ['Show FY 2025/26 targets', 'How to submit daily report?', 'What are top district rankings?']
+          followUps: ['Show top district rankings', 'Which District needs immediate attention?', 'What decisions should management take?']
         }
       ]);
     } catch (err: any) {
@@ -179,6 +191,7 @@ Ask me anything about:
   };
 
   const handleClearHistory = () => {
+    lastContextRef.current = {};
     setMessages([initialGreeting]);
     setShowClearConfirm(false);
   };
@@ -198,7 +211,7 @@ Ask me anything about:
       setIsListening(true);
       // Simulate voice dictation greeting after 2.5s
       setTimeout(() => {
-        setInput("Summarize my branch performance for July 2026.");
+        setInput("Which District is performing the best?");
         setIsListening(false);
       }, 2500);
     } else {
@@ -221,34 +234,31 @@ Ask me anything about:
 
   // Categories of recommended auto-typing prompts
   const recommendationPrompts = [
-    { label: '📊 July Branch Summary', prompt: 'Summarize my branch performance for July 2026.' },
-    { label: '🎯 FY 2025/26 Targets', prompt: 'What are the key KPI targets for Bunna Bank FY 2025/26?' },
-    { label: '📝 How to Submit Report', prompt: 'How do I submit my daily performance report?' },
-    { label: '🏆 Top Districts', prompt: 'Which districts are leading the leaderboard rankings?' },
-    { label: '💵 Foreign Currency (FCY)', prompt: 'What is the Foreign Currency Inflow target and achievement?' },
-    { label: '📱 Bunna Mobile KPI', prompt: 'What is the Bunna Mobile banking activation target?' },
+    { label: '🏆 Best District', prompt: 'Which District is performing the best?' },
+    { label: '🔴 District Needing Attention', prompt: 'Which District needs immediate attention?' },
+    { label: '📊 Top 5 Branches', prompt: 'Show me the top 5 Branches.' },
+    { label: '⚠️ Bottom 5 Branches', prompt: 'Show me the bottom 5 Branches.' },
+    { label: '👤 Best Employee', prompt: 'Which employees are performing the best?' },
+    { label: '⚖️ Compare Districts', prompt: 'Compare Bahir Dar District with Gondar District.' },
+    { label: '🎯 Management Decisions', prompt: 'What decisions should management take based on current performance?' },
     { label: '🌍 አማርኛ መመሪያ', prompt: 'ስለ Bunna Bank EPMS በኢትዮጵያ አማርኛ ገለጻ ስጠኝ።' }
   ];
 
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-md flex justify-end"
+      className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-end justify-center sm:justify-end p-0 sm:p-6"
     >
       
-      {/* Hanging Glass Container */}
+      {/* ChatGPT-style Responsive Workspace Card */}
       <motion.div
         ref={contentRef}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-        className="w-full max-w-lg bg-gradient-to-b from-[#6B3F1D] via-[#4A2C17] to-[#3A2212] border-l-2 border-[#C89A2B]/60 text-white h-full shadow-[0_0_50px_rgba(200,154,43,0.25)] flex flex-col relative overflow-hidden"
+        initial={{ y: 60, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 60, opacity: 0, scale: 0.95 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 260 }}
+        className="w-full sm:w-[540px] max-w-full sm:max-w-xl max-h-[92vh] sm:max-h-[85vh] bg-gradient-to-b from-[#6B3F1D] via-[#4A2C17] to-[#3A2212] border-t-2 sm:border-2 border-[#C89A2B]/60 text-white rounded-t-3xl sm:rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] flex flex-col relative overflow-hidden transition-all duration-300"
       >
-        {/* Top Hanging Mount Cables (Visual Accent) */}
-        <div className="absolute top-0 left-10 w-0.5 h-6 bg-[#C89A2B]/40 z-20 pointer-events-none" />
-        <div className="absolute top-0 right-16 w-0.5 h-6 bg-[#C89A2B]/40 z-20 pointer-events-none" />
-
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#C89A2B]/30 flex items-center justify-between bg-[#6B3F1D]/95 backdrop-blur-xl relative z-10 shadow-lg">
           <div className="flex items-center space-x-3">
@@ -270,7 +280,7 @@ Ask me anything about:
                   <span>Online</span>
                 </span>
               </div>
-              <p className="text-[11px] text-[#C89A2B] font-semibold mt-0.5">EPMS RAG Performance Coach & Advisor</p>
+              <p className="text-[11px] text-[#C89A2B] font-semibold mt-0.5">Daily KPI Performance Coach & Advisor</p>
             </div>
           </div>
 
@@ -395,7 +405,7 @@ Ask me anything about:
         )}
 
         {/* Messages List Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        <div className="overflow-y-auto p-4 space-y-4 custom-scrollbar max-h-[50vh] sm:max-h-[55vh] min-h-[120px] transition-all duration-300">
           <AnimatePresence initial={false}>
             {messages.map((m) => {
               const isUser = m.sender === 'user';

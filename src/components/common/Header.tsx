@@ -253,17 +253,6 @@ export const Header: React.FC<HeaderProps> = (props) => {
               <Search className="w-4 h-4 text-[#D9A514]" />
             </button>
 
-            {/* AI Assistant Button */}
-            {onOpenAiAssistant && (
-              <button
-                onClick={onOpenAiAssistant}
-                className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#D9A514] to-[#F2C230] text-[#4A2815] font-bold text-xs shadow-md hover:brightness-105 transition-all transform active:scale-95"
-              >
-                <Sparkles className="w-4 h-4 animate-spin text-[#4A2815]" style={{ animationDuration: '6s' }} />
-                <span>{t.askAi}</span>
-              </button>
-            )}
-
             {/* API Docs & Schema */}
             <button
               onClick={onOpenApiDocs}
@@ -587,15 +576,6 @@ export const Header: React.FC<HeaderProps> = (props) => {
           )}
 
           <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
-            {onOpenAiAssistant && (
-              <button
-                onClick={() => { onOpenAiAssistant(); setMobileMenuOpen(false); }}
-                className="w-full py-2.5 bg-[#D9A514] text-[#4A2815] font-bold rounded-xl text-xs flex items-center justify-center space-x-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>{t.askAi}</span>
-              </button>
-            )}
             {activeUser ? (
               <button
                 onClick={() => { onLogout(); setMobileMenuOpen(false); }}

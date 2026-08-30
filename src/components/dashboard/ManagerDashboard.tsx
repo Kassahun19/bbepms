@@ -337,14 +337,6 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                 <Download className="w-4 h-4 text-[#D4AF37]" />
                 <span>Export Reports</span>
               </button>
-
-              <button
-                onClick={onOpenAiAssistant}
-                className="px-5 py-2.5 rounded-xl bg-[#D4AF37] text-[#0B4228] font-bold text-xs shadow-lg hover:bg-[#e0be4d] flex items-center space-x-2 cursor-pointer transition-all"
-              >
-                <Sparkles className="w-4 h-4 text-[#0B4228]" />
-                <span>AI Assistant</span>
-              </button>
             </div>
           </div>
 

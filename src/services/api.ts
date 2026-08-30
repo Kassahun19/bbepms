@@ -39,6 +39,7 @@ import {
   initialAiInsights,
   initialCompetitorAlerts
 } from '../data/competitorMockData';
+import { evaluateEpmsCoachQuery } from './epmsCoachEngine';
 import { getCollectionItems, saveDocument, deleteDocument, isFirestoreQuotaExhausted } from '../lib/firestore-db';
 
 // Helper to safely parse JSON response or throw formatted error or return null for non-JSON
@@ -95,134 +96,22 @@ async function fetchJsonOrFallback<T>(url: string, options?: RequestInit): Promi
 }
 
 function generateClientSideAiResponse(prompt: string, userRole?: string, userId?: string, contextData?: any) {
-  const lowerPrompt = (prompt || '').toLowerCase().trim();
-  let empName = contextData?.employeeName;
-  let empId = contextData?.employeeId || contextData?.id;
-
-  if (!empName) {
-    const foundUser = defaultUsers.find(u => {
-      const full = `${u.firstName} ${u.middleName || u.lastName}`.toLowerCase();
-      return lowerPrompt.includes(u.firstName.toLowerCase()) || lowerPrompt.includes(full);
-    });
-    if (foundUser) {
-      empName = `${foundUser.firstName} ${foundUser.middleName || foundUser.lastName}`;
-      empId = foundUser.id;
-    }
-  }
-
-  let textResult = '';
-
-  // 1. Specific Employee Performance Summary
-  if (empName) {
-    textResult = `**Executive Evaluation: ${empName}**
-*Bunna Bank S.C. EPMS • ${contextData?.branchName || 'Main HQ Branch'}*
-
-• **Daily Submissions:** Performance summary tracks real-time verified daily logs submitted by staff.
-• **Status:** All daily performance entries for Deposits, FCY, Digital Financial Services, and Account Openings are reviewed and approved by the branch manager.
-• **Compliance & Rating:** Real-time on-time daily logs and approval score reflect live records.`;
-  }
-  // 2. How to Submit / Daily Reporting
-  else if (lowerPrompt.includes('submit') || lowerPrompt.includes('log') || lowerPrompt.includes('report') || lowerPrompt.includes('how to add') || lowerPrompt.includes('draft')) {
-    textResult = `**How to Submit Your Daily Performance Report**
-
-1. **Navigate:** Click **"Submit Report"** in the top navigation bar.
-2. **Input Metrics:** Fill in your daily achievements for Deposits (ETB), Foreign Currency, Account Openings, Mobile Banking, and QR Merchants.
-3. **Save or Submit:** Click **"Save Draft"** to finish later, or **"Submit Report"** to send directly for manager review.
-4. **Cutoff Time:** Submissions must be logged before **10:00 AM** daily.`;
-  }
-  // 3. Approvals & Manager Workflows
-  else if (lowerPrompt.includes('approval') || lowerPrompt.includes('approve') || lowerPrompt.includes('pending') || lowerPrompt.includes('reject') || lowerPrompt.includes('manager')) {
-    textResult = `**Manager Approval Workflow & Queue**
-
-• **Daily Review:** Managers inspect and review all submitted branch reports daily before 10:00 AM.
-• **Status Options:** Reports are marked as **Approved** (verified) or **Rejected** (requires metric correction with feedback).
-• **Audit Trail:** Every approval action is logged with timestamp for transparent district audit reporting.`;
-  }
-  // 4. Bank Information & EPMS Overview
-  else if (lowerPrompt.includes('bunna') || lowerPrompt.includes('about') || lowerPrompt.includes('what is epms') || lowerPrompt.includes('epms') || lowerPrompt.includes('system') || lowerPrompt.includes('app')) {
-    textResult = `**About Bunna Bank S.C. EPMS**
-*Empowering Performance. Driving Excellence.*
-
-• **Overview:** The Employee Performance Management System (EPMS) powers Bunna Bank's nationwide branches and staff across Ethiopia in real time.
-• **Core Objectives:** Real-time KPI target tracking, daily report validation, automated manager approvals, district leaderboards, and AI performance coaching.
-• **Tagline:** Bank with Purpose, Perform with Excellence.`;
-  }
-  // 5. Foreign Currency / FCY
-  else if (lowerPrompt.includes('fcy') || lowerPrompt.includes('foreign') || lowerPrompt.includes('remittance') || lowerPrompt.includes('currency') || lowerPrompt.includes('dollar')) {
-    textResult = `**Foreign Currency Inflow (FCY) KPI Target**
-
-• **Overview:** FCY tracking monitors international trade settlement, remittance services, and diaspora banking accounts across Bunna Bank network.
-• **Live Integration:** All foreign currency contributions are tracked from employee-submitted daily logs and manager approvals in real time.`;
-  }
-  // 6. Digital Banking Products (Mobile, IB, POS/QR, Cards)
-  else if (lowerPrompt.includes('mobile') || lowerPrompt.includes('dfs') || lowerPrompt.includes('digital') || lowerPrompt.includes('qr') || lowerPrompt.includes('pos') || lowerPrompt.includes('card') || lowerPrompt.includes('atm')) {
-    textResult = `**Digital Financial Services (DFS) & Products**
-
-• **Bunna Mobile Banking:** Real-time activation tracking via daily employee reports.
-• **Internet Banking:** Online account onboarding and corporate portal integrations.
-• **Merchant QR Solutions:** Merchant merchant point-of-sale and digital payment points.
-• **ATM Cards Issued:** Instant debit card provisioning and customer card activations.`;
-  }
-  // 7. Multi-language / Amharic Support
-  else if (lowerPrompt.includes('amharic') || lowerPrompt.includes('language') || lowerPrompt.includes('አማርኛ') || lowerPrompt.includes('translate')) {
-    textResult = `**Multi-Language Support (English & አማርኛ)**
-
-• **Language Switcher:** Toggle between **English** and **አማርኛ (Amharic)** anytime using the **"አማርኛ"** button in the top navigation header.
-• **Full Localization:** All navigation tabs, KPI forms, status badges, and dashboards update instantly to your preferred language.`;
-  }
-  // 8. Contact & Support
-  else if (lowerPrompt.includes('contact') || lowerPrompt.includes('support') || lowerPrompt.includes('help') || lowerPrompt.includes('inquiry') || lowerPrompt.includes('issue')) {
-    textResult = `**Bunna Bank EPMS Support & Assistance**
-
-• **Submit Inquiry:** Navigate to **"Contact"** in the navigation bar to submit an inquiry directly to the EPMS support team.
-• **Headquarters:** Bunna Bank S.C. HQ, Addis Ababa, Ethiopia.
-• **Direct Email:** support@bunnabanksc.com | Phone: +251 (0) 11 111 2233.`;
-  }
-  // 9. Roles & Permissions
-  else if (lowerPrompt.includes('role') || lowerPrompt.includes('admin') || lowerPrompt.includes('employee') || lowerPrompt.includes('permission')) {
-    textResult = `**EPMS User Roles & Access Rights**
-
-• **Employee:** Log daily achievements, track personal KPI progress, save drafts.
-• **Manager:** Set employee targets, review and approve/reject daily reports, view branch analytics.
-• **Admin:** Manage users, branches, districts, global targets, system configuration, and audit logs.`;
-  }
-  // 10. General KPI Targets & Overall Performance
-  else if (lowerPrompt.includes('target') || lowerPrompt.includes('kpi') || lowerPrompt.includes('goal')) {
-    textResult = `**Bunna Bank FY 2025/26 Target & Performance Tracking**
-
-• **Live Integration:** All target metrics (Deposits, FCY, Digital Services, Accounts, Mobile Activations) are dynamically computed from targets assigned by managers and daily reports submitted by branch staff.
-• **Status:** Navigate to your role dashboard to view live targets and submit daily performance entries.`;
-  }
-  // 11. Leaderboard & District Rankings
-  else if (lowerPrompt.includes('district') || lowerPrompt.includes('rank') || lowerPrompt.includes('leader') || lowerPrompt.includes('top')) {
-    textResult = `**Bunna Bank District & Branch Leaderboard**
-
-• **Dynamic Rankings:** Districts and branches are ranked in real-time based on approved daily performance reports against manager-assigned targets.
-• **Leaderboards:** Check the District or Branch tab in the Admin or Manager dashboard to see live performance scores.`;
-  }
-  // 12. Branch / July / General Performance Summary
-  else if (lowerPrompt.includes('branch') || lowerPrompt.includes('july') || lowerPrompt.includes('performance') || lowerPrompt.includes('summary') || lowerPrompt.includes('month')) {
-    textResult = `**Branch Performance Summary**
-*Bunna Bank S.C. Live Analysis*
-
-• **Daily Submissions:** Branch performance reflects user-submitted daily logs for Deposits, FCY, DFS, and Digital Onboarding.
-• **Approval Workflow:** Managers review and approve submitted reports to update branch attainment scores.`;
-  }
-  // 13. Dynamic Catch-All Answer for any custom user question
-  else {
-    textResult = `**Bunna Bank AI EPMS Assistant**
-
-Regarding your question **"${prompt}"**:
-• **Status:** Bunna Bank S.C. EPMS tracks 8 major financial & digital KPIs across all nationwide districts and branches.
-• **Live Data:** Performance metrics update continuously as employees submit daily performance reports and managers approve them.
-• **Quick Tip:** You can ask about *daily report submissions*, *branch performance*, *manager approvals*, *KPI targets*, *Amharic language support*, or *district rankings* anytime!`;
-  }
+  const coachResult = evaluateEpmsCoachQuery(prompt, {
+    districts: initialDistricts,
+    branches: initialBranches,
+    users: defaultUsers,
+    reports: initialDailyReports,
+    targets: initialTargets,
+    lastContext: contextData?.lastContext,
+    userRole
+  });
 
   return {
-    response: textResult,
-    reply: textResult,
-    answer: textResult,
-    text: textResult
+    response: coachResult.text,
+    reply: coachResult.text,
+    answer: coachResult.text,
+    text: coachResult.text,
+    context: coachResult.context
   };
 }
 
