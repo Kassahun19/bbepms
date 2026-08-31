@@ -7238,6 +7238,26 @@
   ],
   "users": [
     {
+      "id": "USR-SUPER-ADMIN-001",
+      "userId": "Super_Admin",
+      "email": "admin@bunnabanksc.com",
+      "firstName": "Super",
+      "middleName": "System",
+      "lastName": "Administrator",
+      "password": "SuperAdmin@2026!",
+      "role": "BANK_SUPER_ADMIN",
+      "jobTitle": "Bank Super Administrator (System Control Center)",
+      "districtId": "DIST-HO",
+      "districtName": "Head Office",
+      "branchId": "BR-HQ",
+      "branchName": "Head Office",
+      "gender": "Male",
+      "age": 40,
+      "phone": "+251911000001",
+      "status": "Active",
+      "createdAt": "2026-01-01"
+    },
+    {
       "middleName": "Mulatu",
       "lastName": "Mulatu",
       "firstName": "Kassahun",
@@ -11966,175 +11986,9 @@
       "userRole": "MANAGER"
     }
   ],
-  "notifications": [
-    {
-      "id": "NOTIF-1787853698638-dk89",
-      "userId": "ALL",
-      "title": "New Memo Published: Test Doc",
-      "message": "Ref: BN-DOC-8405. Effective: 2026-08-27. Target: ALL.",
-      "type": "announcement",
-      "read": true,
-      "timestamp": "2026-08-27T18:01:38.638Z",
-      "link": "/memos"
-    },
-    {
-      "id": "NOTIF-1787853088332-89h2",
-      "userId": "ALL",
-      "title": "New Memo Published: Memo",
-      "message": "Ref: BN-3518/2026. Effective: 2026-08-27. Target: ALL.",
-      "type": "announcement",
-      "read": true,
-      "timestamp": "2026-08-27T17:51:28.332Z",
-      "link": "/memos"
-    },
-    {
-      "id": "NOTIF-1787851615610-oi3f",
-      "userId": "ALL",
-      "title": "New Memo Published: Trfffgggg",
-      "message": "Ref: BN-4300/2026. Effective: 2026-08-27. Target: ALL.",
-      "type": "announcement",
-      "read": true,
-      "timestamp": "2026-08-27T17:26:55.611Z",
-      "link": "/memos"
-    }
-  ],
+  "notifications": [],
   "messages": [],
-  "bankMemos": [
-    {
-      "id": "DOC-1787852282707-rixy",
-      "title": "Memo",
-      "memoNumber": "BN-3518/2026",
-      "referenceNumber": "BN-3518/2026",
-      "documentType": "Memo",
-      "category": "Memo",
-      "subject": "Memo",
-      "content": "Hi all. How's work?",
-      "importantInstructions": "",
-      "effectiveDate": "2026-08-27",
-      "issueDate": "2026-08-27",
-      "expiryDate": "",
-      "issuingDepartment": "Executive Directorate",
-      "authorizedIssuer": "System Administrator",
-      "targetAudience": "ALL",
-      "priority": "Normal",
-      "fileUrl": "blob:https://ais-dev-wqqxzqfnrirmvoy5v2voo5-46967922848.europe-west2.run.app/6c2c76d9-90e3-4800-a5b1-fb49f1f3925e",
-      "fileName": "Bunna_Bank_Report_Hamusit_Branch_2026-08-27.xls",
-      "fileType": "XLS",
-      "fileSize": "0.0 MB",
-      "status": "PUBLISHED",
-      "version": "1.0",
-      "createdBy": "System Admin",
-      "createdAt": "2026-08-27T17:38:02.707Z",
-      "updatedAt": "2026-08-27T17:51:27.936Z",
-      "publishedBy": "System Admin",
-      "publishedAt": "2026-08-27T17:51:28.332Z",
-      "readBy": [
-        "USR-4994"
-      ],
-      "versions": [
-        {
-          "version": "1.0",
-          "content": "Hi all",
-          "updatedAt": "2026-08-27T17:51:27.936Z",
-          "updatedBy": "Admin"
-        }
-      ],
-      "auditTrail": [
-        {
-          "action": "CREATED",
-          "by": "System Admin",
-          "timestamp": "2026-08-27T17:38:02.707Z"
-        },
-        {
-          "action": "EDITED",
-          "by": "Admin",
-          "timestamp": "2026-08-27T17:51:27.936Z"
-        },
-        {
-          "action": "PUBLISHED",
-          "by": "System Admin",
-          "timestamp": "2026-08-27T17:51:28.332Z"
-        },
-        {
-          "action": "VIEWED",
-          "userId": "USR-4994",
-          "by": "USR-4994",
-          "timestamp": "2026-08-27T18:31:49.906Z"
-        }
-      ],
-      "publisher": "System Admin"
-    },
-    {
-      "id": "DOC-1787851755783-0mn7",
-      "title": "Test Doc",
-      "memoNumber": "BN-DOC-8405",
-      "referenceNumber": "BN-DOC-8405",
-      "documentType": "Memo",
-      "category": "Memo",
-      "subject": "Test Doc",
-      "content": "Hello there.",
-      "importantInstructions": "",
-      "effectiveDate": "2026-08-27",
-      "issueDate": "2026-08-27",
-      "expiryDate": "",
-      "issuingDepartment": "Executive Directorate",
-      "authorizedIssuer": "System Administrator",
-      "targetAudience": "ALL",
-      "priority": "Normal",
-      "fileUrl": "",
-      "fileName": "",
-      "fileType": "PDF",
-      "fileSize": "2.4 MB",
-      "status": "PUBLISHED",
-      "version": "1.0",
-      "createdBy": "System Admin",
-      "createdAt": "2026-08-27T17:29:15.783Z",
-      "updatedAt": "2026-08-27T18:01:38.241Z",
-      "publishedBy": "System Admin",
-      "publishedAt": "2026-08-27T18:01:38.638Z",
-      "readBy": [
-        "USR-4994"
-      ],
-      "versions": [
-        {
-          "version": "1.0",
-          "content": "Hello",
-          "updatedAt": "2026-08-27T18:01:38.240Z",
-          "updatedBy": "Admin"
-        }
-      ],
-      "auditTrail": [
-        {
-          "action": "CREATED",
-          "by": "System Admin",
-          "timestamp": "2026-08-27T17:29:15.783Z"
-        },
-        {
-          "action": "ARCHIVED",
-          "by": "Admin",
-          "timestamp": "2026-08-27T17:29:24.531Z"
-        },
-        {
-          "action": "EDITED",
-          "by": "Admin",
-          "timestamp": "2026-08-27T18:01:38.241Z"
-        },
-        {
-          "action": "PUBLISHED",
-          "by": "System Admin",
-          "timestamp": "2026-08-27T18:01:38.638Z"
-        },
-        {
-          "action": "VIEWED",
-          "userId": "USR-4994",
-          "by": "USR-4994",
-          "timestamp": "2026-08-27T18:32:53.880Z"
-        }
-      ],
-      "archivedAt": "2026-08-27T17:29:24.531Z",
-      "publisher": "System Admin"
-    }
-  ],
+  "bankMemos": [],
   "departments": [
     {
       "id": "DEP-01",
@@ -14394,6 +14248,17 @@
     }
   ],
   "securitySessions": [
+    {
+      "id": "SES-1788192941225-5igs",
+      "userId": "USR-ADM-001",
+      "userName": "Kassahun Mulatu",
+      "userRole": "ADMINISTRATOR",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36",
+      "loginTime": "2026-08-31T16:15:41.225Z",
+      "lastActiveTime": "2026-08-31T16:15:41.225Z",
+      "status": "ACTIVE"
+    },
     {
       "id": "SES-1788104061243-bwgs",
       "userId": "USR-SUPER-ADMIN-001",

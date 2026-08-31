@@ -127,6 +127,26 @@ export const initialKPIs: KPI[] = [
 
 export const defaultUsers: User[] = [
   {
+    "id": "USR-SUPER-ADMIN-001",
+    "userId": "Super_Admin",
+    "email": "admin@bunnabanksc.com",
+    "firstName": "Super",
+    "middleName": "System",
+    "lastName": "Administrator",
+    "password": "SuperAdmin@2026!",
+    "role": "BANK_SUPER_ADMIN",
+    "jobTitle": "Bank Super Administrator (System Control Center)",
+    "districtId": "DIST-HO",
+    "districtName": "Head Office",
+    "branchId": "BR-HQ",
+    "branchName": "Head Office",
+    "gender": "Male",
+    "age": 40,
+    "phone": "+251911000001",
+    "status": "Active",
+    "createdAt": "2026-01-01"
+  },
+  {
     "middleName": "Mulatu",
     "lastName": "Mulatu",
     "firstName": "Kassahun",

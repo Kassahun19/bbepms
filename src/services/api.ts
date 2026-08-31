@@ -1895,29 +1895,7 @@ export const api = {
   admin: {
     getStats: async (): Promise<any> => {
       const res = await fetchJsonOrFallback<any>('/api/admin/stats');
-      if (res.data && (res.data.stats || res.data.totalUsers !== undefined)) {
-        return res.data.stats || res.data;
-      }
-      return {
-        totalUsers: defaultUsers.length,
-        activeUsers: defaultUsers.filter(u => u.status === 'Active').length,
-        inactiveUsers: defaultUsers.filter(u => u.status !== 'Active').length,
-        totalBoardMembers: defaultUsers.filter(u => u.role === 'BOARD_OF_DIRECTORS').length,
-        totalCeos: defaultUsers.filter(u => u.role === 'CEO').length || 1,
-        totalChiefs: 8,
-        totalDistricts: initialDistricts.length,
-        totalDistrictDirectors: 2,
-        totalBranches: initialBranches.length,
-        totalBranchManagers: 2,
-        totalEmployees: defaultUsers.filter(u => u.role === 'EMPLOYEE').length,
-        activeKpis: initialKPIs.length,
-        totalKpiGroups: 4,
-        totalKpiTargets: initialTargets.length,
-        pendingApprovals: (initialDailyReports || []).filter(r => (r.status || '').toLowerCase() === 'pending').length || 1,
-        completedReviews: (initialDailyReports || []).filter(r => (r.status || '').toLowerCase() === 'approved').length,
-        systemAlertsCount: 0,
-        recentActivities: initialAuditLogs || []
-      };
+      return res.data?.stats || res.data || {};
     },
 
     getOrganizationTree: async (): Promise<any> => {
