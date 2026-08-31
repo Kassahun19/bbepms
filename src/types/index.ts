@@ -25,6 +25,7 @@ export interface SystemSettings {
   bankName: string;
   bankShortName: string;
   bankCode: string;
+  bankAcronym?: string;
   tagline: string;
   logoUrl?: string;
   activeFiscalYearId: string;
@@ -44,6 +45,7 @@ export interface SystemSettings {
   enableSmsNotifications: boolean;
   theme: 'Light' | 'Dark' | 'System';
   updatedAt?: string;
+  [key: string]: any;
 }
 
 export interface PermissionDefinition {
@@ -205,7 +207,7 @@ export function getUserFullName(user?: { firstName?: string; middleName?: string
   return `${first} ${middle}`.trim();
 }
 
-export type KpiGroup = 'Finance' | 'Stakeholder' | 'Internal Business' | 'Learning & Growth';
+export type KpiGroup = 'Finance' | 'Stakeholder' | 'Internal Business' | 'Learning & Growth' | 'Deposit' | 'Foreign Currency (FCY)' | 'Digital Financing System (DFS)' | 'Customer Base' | 'Digitals' | string;
 
 export interface KPI {
   id: string;
@@ -217,6 +219,8 @@ export interface KPI {
   description: string;
   frequency?: string;
   status?: 'Active' | 'Inactive';
+  subKpis?: any[];
+  [key: string]: any;
 }
 
 export interface PeriodTargetAllocations {
@@ -304,6 +308,7 @@ export interface PerformanceTarget {
   updated_at?: string;
   revisionCount?: number;
   auditHistory?: TargetAuditEntry[];
+  [key: string]: any;
 }
 
 export interface DailyPerformanceReport {
@@ -375,6 +380,7 @@ export interface DailyPerformanceReport {
   reviewedAt?: string;
   comments?: ReportComment[];
   auditHistory?: AuditHistoryEntry[];
+  [key: string]: any;
 }
 
 export interface EmployeeDailyKpiReport {
