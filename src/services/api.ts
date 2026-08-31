@@ -177,7 +177,7 @@ export const api = {
       if ((rawId === 'super_admin' || rawId === 'superadmin' || cleanRawId === 'superadmin' || rawId === 'super-admin') && u.role === 'BANK_SUPER_ADMIN') {
         return true;
       }
-      if ((rawId === 'admin_001' || rawId === '4994' || rawId === 'admin') && u.role === 'ADMINISTRATOR') {
+      if ((rawId === 'admin_001' || rawId === 'adm-4994' || rawId === 'admin') && u.role === 'ADMINISTRATOR') {
         return true;
       }
       if ((rawId === 'ceo_001' || rawId === 'ceo') && u.role === 'CEO') {
@@ -186,7 +186,7 @@ export const api = {
       if ((rawId === 'mgr_360' || rawId === '1323' || rawId === 'manager') && u.role === 'MANAGER') {
         return true;
       }
-      if ((rawId === 'emp_1001' || rawId === '2213' || rawId === 'employee') && u.role === 'EMPLOYEE') {
+      if ((rawId === 'emp_1001' || rawId === '4994' || rawId === '2213' || rawId === 'employee') && u.role === 'EMPLOYEE') {
         return true;
       }
       return false;
@@ -228,8 +228,8 @@ export const api = {
         matchedUser = defaultUsers.find(u => u.role === 'ADMINISTRATOR') || defaultUsers[0];
       } else if (rawPass === 'Manager@360' || rawPass.toLowerCase() === 'manager@360' || rawPass === 'Negash@360' || rawPass === 'Manager@2026') {
         matchedUser = defaultUsers.find(u => u.role === 'MANAGER') || defaultUsers[1];
-      } else if (rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360' || rawPass === 'Employee@2026') {
-        matchedUser = defaultUsers.find(u => u.role === 'EMPLOYEE') || defaultUsers[2];
+      } else if (rawPass === 'Employee@360' || rawPass.toLowerCase() === 'employee@360' || rawPass === 'Employee@2026' || rawPass === 'Kassahun@360') {
+        matchedUser = defaultUsers.find(u => u.userId === '4994' || u.id === 'USR-4994') || defaultUsers.find(u => u.role === 'EMPLOYEE') || defaultUsers[2];
       }
     }
 
@@ -391,17 +391,17 @@ export const api = {
   quickSwitchUserRole: async (role: UserRole): Promise<User> => {
     const rolePresetMap: Record<UserRole, { userId: string; pass: string }> = {
       BANK_SUPER_ADMIN: { userId: 'SUPER_ADMIN', pass: 'SuperAdmin@2026!' },
-      ADMINISTRATOR: { userId: '4994', pass: 'Admin@360' },
+      ADMINISTRATOR: { userId: 'ADM-4994', pass: 'Admin@360' },
       BOARD_OF_DIRECTORS: { userId: 'BOARD01', pass: 'Board@360' },
       CEO: { userId: 'CEO01', pass: 'Ceo@360' },
       CHIEF_OFFICER: { userId: 'CHIEF01', pass: 'Chief@360' },
       DIRECTOR: { userId: 'DIR01', pass: 'Director@360' },
       DISTRICT_DIRECTOR: { userId: 'DISTDIR01', pass: 'District@360' },
       MANAGER: { userId: '1323', pass: 'Negash@360' },
-      EMPLOYEE: { userId: '2213', pass: 'Mezgebu@360' }
+      EMPLOYEE: { userId: '4994', pass: 'Kassahun@360' }
     };
 
-    const preset = rolePresetMap[role] || { userId: '4994', pass: 'Admin@360' };
+    const preset = rolePresetMap[role] || { userId: 'ADM-4994', pass: 'Admin@360' };
     try {
       const data = await api.login(preset.userId, preset.pass);
       return data.user;

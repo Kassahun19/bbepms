@@ -547,13 +547,33 @@ function handleFirestoreServerErr(err: any, context: string) {
   }
 }
 
+// Helper function to prevent database syncs/saves/deletions from hanging infinitely
+function withTimeout<T>(promise: Promise<T>, ms: number, context: string): Promise<T | null> {
+  return new Promise<T | null>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      console.warn(`[Firestore Timeout] ${context} timed out after ${ms}ms. Moving on seamlessly to protect API responsiveness.`);
+      resolve(null);
+    }, ms);
+    promise.then(
+      (res) => {
+        clearTimeout(timer);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 // Helper to save an individual document directly to Cloud Firestore collection
 async function saveFirestoreDoc(collName: string, id: string, data: any) {
   if (!clientDb || !id || isFirestoreQuotaExhausted()) return;
   try {
     const docRef = doc(clientDb, collName, String(id));
     const cleanData = JSON.parse(JSON.stringify(data));
-    await setDoc(docRef, cleanData, { merge: true });
+    await withTimeout(setDoc(docRef, cleanData, { merge: true }), 2500, `saving ${collName}/${id}`);
   } catch (err: any) {
     handleFirestoreServerErr(err, `saving ${collName}/${id}`);
   }
@@ -564,7 +584,7 @@ async function deleteFirestoreDoc(collName: string, id: string) {
   if (!clientDb || !id || isFirestoreQuotaExhausted()) return;
   try {
     const docRef = doc(clientDb, collName, String(id));
-    await deleteDoc(docRef);
+    await withTimeout(deleteDoc(docRef), 2500, `deleting ${collName}/${id}`);
   } catch (err: any) {
     handleFirestoreServerErr(err, `deleting ${collName}/${id}`);
   }
@@ -860,7 +880,7 @@ async function saveDb() {
   if (clientDb && !isFirestoreQuotaExhausted()) {
     try {
       const docRef = doc(clientDb, 'epms_state', 'singleton');
-      await setDoc(docRef, db);
+      await withTimeout(setDoc(docRef, db), 2500, 'background singleton saveDb');
       lastSyncTime = Date.now();
     } catch (e: any) {
       handleFirestoreServerErr(e, 'background singleton saveDb');
@@ -1047,7 +1067,7 @@ app.post('/api/auth/login', async (req, res) => {
     if ((rawId === 'super_admin' || rawId === 'superadmin' || cleanRawId === 'superadmin' || rawId === 'super-admin') && u.role === 'BANK_SUPER_ADMIN') {
       return true;
     }
-    if ((rawId === 'admin_001' || rawId === 'admin' || rawId === 'adm-4994' || rawId === '4994' || cleanRawId === 'admin001') && u.role === 'ADMINISTRATOR') {
+    if ((rawId === 'admin_001' || rawId === 'admin' || rawId === 'adm-4994' || cleanRawId === 'admin001') && u.role === 'ADMINISTRATOR') {
       return true;
     }
     if ((rawId === 'ceo_001' || rawId === 'ceo' || rawId === 'ceo01' || cleanRawId === 'ceo001') && u.role === 'CEO') {
@@ -1059,7 +1079,7 @@ app.post('/api/auth/login', async (req, res) => {
     if ((rawId === 'mgr_360' || rawId === 'mgr_001' || rawId === '1323' || rawId === 'manager' || cleanRawId === 'mgr360') && u.role === 'MANAGER') {
       return true;
     }
-    if ((rawId === 'emp_1001' || rawId === 'emp_001' || rawId === '2213' || rawId === 'employee' || cleanRawId === 'emp1001') && u.role === 'EMPLOYEE') {
+    if ((rawId === 'emp_1001' || rawId === 'emp_001' || rawId === '4994' || rawId === '2213' || rawId === 'employee' || cleanRawId === 'emp1001') && u.role === 'EMPLOYEE') {
       return true;
     }
     return false;
@@ -1079,7 +1099,7 @@ app.post('/api/auth/login', async (req, res) => {
       if ((rawId === 'super_admin' || rawId === 'superadmin' || cleanRawId === 'superadmin') && u.role === 'BANK_SUPER_ADMIN') {
         return true;
       }
-      if ((rawId === 'admin_001' || rawId === '4994') && u.role === 'ADMINISTRATOR') {
+      if ((rawId === 'admin_001' || rawId === 'adm-4994') && u.role === 'ADMINISTRATOR') {
         return true;
       }
       if ((rawId === 'ceo_001' || rawId === 'ceo') && u.role === 'CEO') {
@@ -1088,7 +1108,7 @@ app.post('/api/auth/login', async (req, res) => {
       if ((rawId === 'mgr_360' || rawId === '1323') && u.role === 'MANAGER') {
         return true;
       }
-      if ((rawId === 'emp_1001' || rawId === '2213') && u.role === 'EMPLOYEE') {
+      if ((rawId === 'emp_1001' || rawId === '4994' || rawId === '2213') && u.role === 'EMPLOYEE') {
         return true;
       }
       return false;
@@ -4338,7 +4358,7 @@ const saveSession = async (chatId: number, session: TelegramSession) => {
           cleaned[key] = val;
         }
       }
-      await setDoc(docRef, cleaned);
+      await withTimeout(setDoc(docRef, cleaned), 2500, `saving telegram session ${chatId}`);
     } catch (e) {
       console.warn('[Firestore Session Save Fail]:', e);
     }
