@@ -1376,12 +1376,33 @@ function getCallerContext(req: any) {
     districtId: effectiveDistrictId,
     districtName: effectiveDistrictName,
     branchId: effectiveBranchId,
-    isBoardOrCeoOrAdmin: ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR'].includes(effectiveRole),
+    isBoardOrCeoOrAdmin: ['BOARD_OF_DIRECTORS', 'CEO', 'ADMINISTRATOR', 'BANK_SUPER_ADMIN'].includes(effectiveRole),
     isChief: ['CHIEF_OFFICER', 'DIRECTOR'].includes(effectiveRole),
     isDistrictDirector: effectiveRole === 'DISTRICT_DIRECTOR',
     isManager: ['MANAGER', 'BRANCH_MANAGER'].includes(effectiveRole),
     isEmployee: effectiveRole === 'EMPLOYEE'
   };
+}
+
+function recordServerAuditLog(userId?: string, userName?: string, userRole?: string, action?: string, entity?: string, entityId?: string, details?: string, previousValue?: any, newValue?: any) {
+  if (!db.auditLogs) db.auditLogs = [];
+  const logItem = {
+    id: `AUD-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    userId: userId || 'System',
+    userName: userName || 'Bank Admin',
+    userRole: userRole || 'ADMINISTRATOR',
+    action: action || 'ACTION',
+    entity: entity || 'SYSTEM',
+    entityId: entityId || 'N/A',
+    details: details || 'Administrative event logged',
+    previousValue: previousValue ? JSON.stringify(previousValue) : undefined,
+    newValue: newValue ? JSON.stringify(newValue) : undefined,
+    timestamp: new Date().toISOString()
+  };
+  db.auditLogs.unshift(logItem);
+  if (db.auditLogs.length > 1000) db.auditLogs.pop();
+  saveFirestoreDoc('auditLogs', logItem.id, logItem).catch(() => {});
+  return logItem;
 }
 
 app.get('/api/ceos', (req, res) => {
@@ -1485,6 +1506,74 @@ app.get('/api/districts/:districtId/branches', (req, res) => {
   res.json(branches);
 });
 
+// District Mutations
+app.post('/api/districts', async (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!db.districts) db.districts = [];
+  const body = req.body || {};
+  const code = (body.code || `DIST-${Date.now().toString().slice(-4)}`).toUpperCase();
+  const id = body.id || code;
+  const name = body.name || `District ${code}`;
+  const newDistrict = {
+    id,
+    code,
+    name,
+    region: body.region || 'Addis Ababa',
+    managerName: body.managerName || body.directorName || 'Unassigned',
+    directorId: body.directorId || '',
+    branchCount: Number(body.branchCount) || 0,
+    totalEmployees: Number(body.totalEmployees) || 0,
+    status: body.status || 'Active',
+    createdAt: new Date().toISOString()
+  };
+  db.districts.push(newDistrict);
+  await saveFirestoreDoc('districts', newDistrict.id, newDistrict);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'CREATE', 'DISTRICT', newDistrict.id, `Created District ${newDistrict.name} (${newDistrict.code})`, null, newDistrict);
+  res.status(201).json({ success: true, district: newDistrict, data: newDistrict });
+});
+
+app.put('/api/districts/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  if (!db.districts) db.districts = [];
+  let dist = db.districts.find((d: any) => 
+    String(d.id).toLowerCase() === targetId.toLowerCase() || 
+    (d.code && String(d.code).toLowerCase() === targetId.toLowerCase()) || 
+    (d.name && String(d.name).toLowerCase() === targetId.toLowerCase())
+  );
+  const prev = dist ? { ...dist } : null;
+  if (!dist) {
+    dist = { id: targetId, ...req.body };
+    db.districts.push(dist);
+  } else {
+    Object.assign(dist, req.body, { id: dist.id });
+  }
+  await saveFirestoreDoc('districts', dist.id, dist);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'UPDATE', 'DISTRICT', dist.id, `Updated District ${dist.name} (${dist.code || dist.id})`, prev, dist);
+  res.json({ success: true, district: dist, data: dist });
+});
+
+app.delete('/api/districts/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  const index = (db.districts || []).findIndex((d: any) => 
+    String(d.id).toLowerCase() === targetId.toLowerCase() || 
+    (d.code && String(d.code).toLowerCase() === targetId.toLowerCase()) || 
+    (d.name && String(d.name).toLowerCase() === targetId.toLowerCase())
+  );
+  if (index !== -1) {
+    const removed = db.districts.splice(index, 1)[0];
+    await deleteFirestoreDoc('districts', removed.id);
+    await saveDb();
+    recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'DELETE', 'DISTRICT', removed.id, `Deleted District ${removed.name}`, removed, null);
+    res.json({ success: true, message: 'District deleted successfully' });
+  } else {
+    res.status(404).json({ error: 'District not found' });
+  }
+});
+
 // Bunna Bank Manual Global Endpoints
 app.get('/api/manual/branches', (req, res) => {
   try {
@@ -1580,6 +1669,89 @@ app.get('/api/branches', (req, res) => {
   }
 
   res.json(paginateResults(branches, page, limit));
+});
+
+// Branch Mutations
+app.post('/api/branches', async (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!db.branches) db.branches = [];
+  const body = req.body || {};
+  const solId = body.solId ? String(body.solId).padStart(4, '0') : String(Math.floor(100 + Math.random() * 900));
+  const id = body.id || `BR-${solId}`;
+  const name = body.name || `Branch ${solId}`;
+  let districtName = body.districtName || '';
+  if (!districtName && body.districtId) {
+    const d = (db.districts || []).find((dist: any) => dist.id === body.districtId || dist.code === body.districtId);
+    if (d) districtName = d.name;
+  }
+  const newBranch = {
+    id,
+    solId,
+    code: body.code || `BR-${solId}`,
+    name,
+    districtId: body.districtId || 'DIST-001',
+    districtName: districtName || 'Addis Ababa District',
+    type: body.type || body.grade || 'Grade I',
+    grade: body.grade || body.type || 'Grade I',
+    managerName: body.managerName || 'Unassigned',
+    managerId: body.managerId || '',
+    employeeCount: Number(body.employeeCount) || 0,
+    location: body.location || 'Commercial Area',
+    status: body.status || 'Active',
+    createdAt: new Date().toISOString()
+  };
+  db.branches.push(newBranch);
+  await saveFirestoreDoc('branches', newBranch.id, newBranch);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'CREATE', 'BRANCH', newBranch.id, `Created Branch ${newBranch.name} (SOL: ${newBranch.solId})`, null, newBranch);
+  res.status(201).json({ success: true, branch: newBranch, data: newBranch });
+});
+
+app.put('/api/branches/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  if (!db.branches) db.branches = [];
+  let branch = db.branches.find((b: any) => 
+    String(b.id).toLowerCase() === targetId.toLowerCase() || 
+    (b.code && String(b.code).toLowerCase() === targetId.toLowerCase()) || 
+    (b.solId && String(b.solId).toLowerCase() === targetId.toLowerCase()) ||
+    (b.name && String(b.name).toLowerCase() === targetId.toLowerCase())
+  );
+  const prev = branch ? { ...branch } : null;
+  if (!branch) {
+    branch = { id: targetId, ...req.body };
+    db.branches.push(branch);
+  } else {
+    Object.assign(branch, req.body, { id: branch.id });
+  }
+  if (branch.districtId && !branch.districtName) {
+    const d = (db.districts || []).find((dist: any) => dist.id === branch.districtId || dist.code === branch.districtId);
+    if (d) branch.districtName = d.name;
+  }
+  await saveFirestoreDoc('branches', branch.id, branch);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'UPDATE', 'BRANCH', branch.id, `Updated Branch ${branch.name} (SOL: ${branch.solId})`, prev, branch);
+  res.json({ success: true, branch, data: branch });
+});
+
+app.delete('/api/branches/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  const index = (db.branches || []).findIndex((b: any) => 
+    String(b.id).toLowerCase() === targetId.toLowerCase() || 
+    (b.code && String(b.code).toLowerCase() === targetId.toLowerCase()) || 
+    (b.solId && String(b.solId).toLowerCase() === targetId.toLowerCase()) ||
+    (b.name && String(b.name).toLowerCase() === targetId.toLowerCase())
+  );
+  if (index !== -1) {
+    const removed = db.branches.splice(index, 1)[0];
+    await deleteFirestoreDoc('branches', removed.id);
+    await saveDb();
+    recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'DELETE', 'BRANCH', removed.id, `Deleted Branch ${removed.name} (SOL: ${removed.solId})`, removed, null);
+    res.json({ success: true, message: 'Branch deleted successfully' });
+  } else {
+    res.status(404).json({ error: 'Branch not found' });
+  }
 });
 
 app.get('/api/branches/:branchId/employees', (req, res) => {
@@ -1685,8 +1857,282 @@ app.get('/api/employees', (req, res) => {
   res.json(paginateResults(employees, page, limit));
 });
 
-createCrud('/api/employees', 'users');
-createCrud('/api/kpis', 'kpis');
+// User / Employee Mutations
+app.post('/api/employees', async (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!db.users) db.users = [];
+  const body = req.body || {};
+  const userId = body.userId || `EMP-${Date.now().toString().slice(-4)}`;
+  const id = body.id || userId;
+  const rawPass = body.password || 'Bunna@2026';
+  let hashedPassword = rawPass;
+  try {
+    hashedPassword = bcrypt.hashSync(rawPass, 10);
+  } catch {}
+  const newUser = {
+    id,
+    userId,
+    password: hashedPassword,
+    rawPassword: rawPass,
+    firstName: body.firstName || 'Employee',
+    middleName: body.middleName || '',
+    lastName: body.lastName || 'User',
+    email: body.email || `${userId.toLowerCase()}@bunnabanksc.com`,
+    role: body.role || 'EMPLOYEE',
+    jobTitle: body.jobTitle || 'Customer Service Officer',
+    jobGrade: body.jobGrade || 'Job Grade 8',
+    districtId: body.districtId || '',
+    districtName: body.districtName || '',
+    branchId: body.branchId || '',
+    branchName: body.branchName || '',
+    status: body.status || 'Active',
+    phone: body.phone || '+251 91 000 0000',
+    hireDate: body.hireDate || new Date().toISOString().split('T')[0],
+    createdAt: new Date().toISOString()
+  };
+  db.users.push(newUser);
+  await saveFirestoreDoc('users', newUser.id, newUser);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'CREATE', 'USER', newUser.id, `Created user ${newUser.firstName} ${newUser.lastName} (${newUser.userId})`, null, newUser);
+  const { password: _, rawPassword: __, ...safeUser } = newUser;
+  res.status(201).json({ success: true, user: safeUser, employee: safeUser, data: safeUser });
+});
+
+app.put('/api/employees/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  if (!db.users) db.users = [];
+  let user = db.users.find((u: any) => 
+    String(u.id).toLowerCase() === targetId.toLowerCase() || 
+    (u.userId && String(u.userId).toLowerCase() === targetId.toLowerCase()) || 
+    (u.email && String(u.email).toLowerCase() === targetId.toLowerCase())
+  );
+  const prev = user ? { ...user } : null;
+  if (!user) {
+    user = { id: targetId, ...req.body };
+    db.users.push(user);
+  } else {
+    const updates = { ...req.body };
+    if (updates.password && updates.password !== user.password && !updates.password.startsWith('pbkdf2:')) {
+      updates.rawPassword = updates.password;
+      try {
+        updates.password = bcrypt.hashSync(updates.password, 10);
+      } catch {}
+    }
+    Object.assign(user, updates, { id: user.id });
+  }
+  await saveFirestoreDoc('users', user.id, user);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'UPDATE', 'USER', user.id, `Updated user ${user.firstName} ${user.lastName} (${user.userId})`, prev, user);
+  const { password: _, rawPassword: __, ...safeUser } = user;
+  res.json({ success: true, user: safeUser, employee: safeUser, data: safeUser });
+});
+
+app.delete('/api/employees/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  const index = (db.users || []).findIndex((u: any) => 
+    String(u.id).toLowerCase() === targetId.toLowerCase() || 
+    (u.userId && String(u.userId).toLowerCase() === targetId.toLowerCase()) || 
+    (u.email && String(u.email).toLowerCase() === targetId.toLowerCase())
+  );
+  if (index !== -1) {
+    const removed = db.users.splice(index, 1)[0];
+    await deleteFirestoreDoc('users', removed.id);
+    await saveDb();
+    recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'DELETE', 'USER', removed.id, `Deleted user ${removed.firstName} ${removed.lastName} (${removed.userId})`, removed, null);
+    res.json({ success: true, message: 'User deleted successfully' });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
+});
+
+// KPIs CRUD
+app.get('/api/kpis', (req, res) => {
+  const { category, search, page, limit } = req.query as Record<string, string>;
+  let kpis = db.kpis || [];
+  if (category && category !== 'ALL') {
+    kpis = kpis.filter((k: any) => (k.category || '').toLowerCase() === category.toLowerCase());
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    kpis = kpis.filter((k: any) => 
+      (k.name && k.name.toLowerCase().includes(q)) ||
+      (k.code && k.code.toLowerCase().includes(q)) ||
+      (k.description && k.description.toLowerCase().includes(q))
+    );
+  }
+  res.json(paginateResults(kpis, page, limit));
+});
+
+app.post('/api/kpis', async (req, res) => {
+  const ctx = getCallerContext(req);
+  if (!db.kpis) db.kpis = [];
+  const body = req.body || {};
+  const code = body.code || `KPI-${Date.now().toString().slice(-4)}`;
+  const id = body.id || code;
+  const newKpi = {
+    id,
+    code,
+    name: body.name || 'New KPI',
+    category: body.category || 'Financial',
+    unit: body.unit || 'ETB',
+    description: body.description || '',
+    weight: Number(body.weight) || 10,
+    target: Number(body.target) || 0,
+    status: body.status || 'Active',
+    createdAt: new Date().toISOString()
+  };
+  db.kpis.push(newKpi);
+  await saveFirestoreDoc('kpis', newKpi.id, newKpi);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'CREATE', 'KPI', newKpi.id, `Created KPI ${newKpi.name} (${newKpi.code})`, null, newKpi);
+  res.status(201).json({ success: true, kpi: newKpi, data: newKpi });
+});
+
+app.put('/api/kpis/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  if (!db.kpis) db.kpis = [];
+  let kpi = db.kpis.find((k: any) => 
+    String(k.id).toLowerCase() === targetId.toLowerCase() || 
+    (k.code && String(k.code).toLowerCase() === targetId.toLowerCase())
+  );
+  const prev = kpi ? { ...kpi } : null;
+  if (!kpi) {
+    kpi = { id: targetId, ...req.body };
+    db.kpis.push(kpi);
+  } else {
+    Object.assign(kpi, req.body, { id: kpi.id });
+  }
+  await saveFirestoreDoc('kpis', kpi.id, kpi);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'UPDATE', 'KPI', kpi.id, `Updated KPI ${kpi.name} (${kpi.code})`, prev, kpi);
+  res.json({ success: true, kpi, data: kpi });
+});
+
+app.delete('/api/kpis/:id', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  const index = (db.kpis || []).findIndex((k: any) => 
+    String(k.id).toLowerCase() === targetId.toLowerCase() || 
+    (k.code && String(k.code).toLowerCase() === targetId.toLowerCase())
+  );
+  if (index !== -1) {
+    const removed = db.kpis.splice(index, 1)[0];
+    await deleteFirestoreDoc('kpis', removed.id);
+    await saveDb();
+    recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'DELETE', 'KPI', removed.id, `Deleted KPI ${removed.name}`, removed, null);
+    res.json({ success: true, message: 'KPI deleted successfully' });
+  } else {
+    res.status(404).json({ error: 'KPI not found' });
+  }
+});
+
+// Holidays Endpoints
+const getHolidaysHandler = (req: any, res: any) => {
+  res.json(db.holidays || []);
+};
+
+const postHolidayHandler = async (req: any, res: any) => {
+  const ctx = getCallerContext(req);
+  if (!db.holidays) db.holidays = [];
+  const body = req.body || {};
+  const newHol = {
+    id: body.id || `HOL-${Date.now().toString().slice(-4)}`,
+    name: body.name || 'Bank Holiday',
+    date: body.date || new Date().toISOString().split('T')[0],
+    isRecurring: Boolean(body.isRecurring),
+    type: body.type || 'National',
+    description: body.description || ''
+  };
+  db.holidays.push(newHol);
+  await saveFirestoreDoc('holidays', newHol.id, newHol);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'CREATE', 'HOLIDAY', newHol.id, `Added Holiday ${newHol.name} on ${newHol.date}`, null, newHol);
+  res.status(201).json({ success: true, holiday: newHol, data: newHol });
+};
+
+const putHolidayHandler = async (req: any, res: any) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  if (!db.holidays) db.holidays = [];
+  let hol = db.holidays.find((h: any) => String(h.id) === targetId || String(h.date) === targetId);
+  const prev = hol ? { ...hol } : null;
+  if (!hol) {
+    hol = { id: targetId, ...req.body };
+    db.holidays.push(hol);
+  } else {
+    Object.assign(hol, req.body, { id: hol.id });
+  }
+  await saveFirestoreDoc('holidays', hol.id, hol);
+  await saveDb();
+  recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'UPDATE', 'HOLIDAY', hol.id, `Updated Holiday ${hol.name} on ${hol.date}`, prev, hol);
+  res.json({ success: true, holiday: hol, data: hol });
+};
+
+const deleteHolidayHandler = async (req: any, res: any) => {
+  const ctx = getCallerContext(req);
+  const targetId = String(req.params.id);
+  const index = (db.holidays || []).findIndex((h: any) => String(h.id) === targetId || String(h.date) === targetId);
+  if (index !== -1) {
+    const removed = db.holidays.splice(index, 1)[0];
+    await deleteFirestoreDoc('holidays', removed.id);
+    await saveDb();
+    recordServerAuditLog(ctx.userId, ctx.user?.firstName || 'Admin', ctx.role, 'DELETE', 'HOLIDAY', removed.id, `Deleted Holiday ${removed.name}`, removed, null);
+    res.json({ success: true, message: 'Holiday deleted' });
+  } else {
+    res.status(404).json({ error: 'Holiday not found' });
+  }
+};
+
+app.get('/api/holidays', getHolidaysHandler);
+app.get('/api/calendar/holidays', getHolidaysHandler);
+app.post('/api/holidays', postHolidayHandler);
+app.post('/api/calendar/holidays', postHolidayHandler);
+app.put('/api/holidays/:id', putHolidayHandler);
+app.put('/api/calendar/holidays/:id', putHolidayHandler);
+app.delete('/api/holidays/:id', deleteHolidayHandler);
+app.delete('/api/calendar/holidays/:id', deleteHolidayHandler);
+
+// Audit Logs Endpoints
+app.get('/api/audit-logs', (req, res) => {
+  const { page, limit, entity, action, search } = req.query as Record<string, string>;
+  let logs = db.auditLogs || [];
+  if (entity && entity !== 'ALL') {
+    logs = logs.filter((l: any) => (l.entity || '').toUpperCase() === entity.toUpperCase());
+  }
+  if (action && action !== 'ALL') {
+    logs = logs.filter((l: any) => (l.action || '').toUpperCase() === action.toUpperCase());
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    logs = logs.filter((l: any) => 
+      (l.details && l.details.toLowerCase().includes(q)) ||
+      (l.userName && l.userName.toLowerCase().includes(q)) ||
+      (l.userId && l.userId.toLowerCase().includes(q)) ||
+      (l.entityId && l.entityId.toLowerCase().includes(q))
+    );
+  }
+  res.json(paginateResults(logs, page, limit));
+});
+
+app.post('/api/audit-logs', async (req, res) => {
+  const ctx = getCallerContext(req);
+  const body = req.body || {};
+  recordServerAuditLog(
+    body.userId || ctx.userId,
+    body.userName || ctx.user?.firstName || 'User',
+    body.userRole || ctx.role,
+    body.action || 'ACTION',
+    body.entity || 'SYSTEM',
+    body.entityId || 'N/A',
+    body.details || 'User action recorded',
+    body.previousValue,
+    body.newValue
+  );
+  res.status(201).json({ success: true });
+});
 
 // =============================================================================
 // BRANCH MANAGER MESSAGING & BANK MEMOS REST APIs
