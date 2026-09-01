@@ -183,6 +183,15 @@ export const api = {
       if ((rawId === 'ceo_001' || rawId === 'ceo') && u.role === 'CEO') {
         return true;
       }
+      if ((rawId === 'board_001' || rawId === 'board') && u.role === 'BOARD_OF_DIRECTORS') {
+        return true;
+      }
+      if (['digital', 'finance', 'strategy', 'corporate', 'human capital', 'humancapital', 'innovation', 'transformation', 'retail', 'risk'].includes(rawId) && u.userId.toLowerCase().includes(rawId) && u.role === 'CHIEF_OFFICER') {
+        return true;
+      }
+      if (['bahir dar', 'bahirdar', 'addis ababa north', 'addisababanorth', 'addis ababa south', 'addisababasouth', 'east a.a', 'eastaa', 'hawassa'].includes(rawId) && (u.userId.toLowerCase().includes(rawId) || u.districtName.toLowerCase().includes(rawId)) && u.role === 'DISTRICT_DIRECTOR') {
+        return true;
+      }
       if ((rawId === 'mgr_360' || rawId === '1323' || rawId === 'manager') && u.role === 'MANAGER') {
         return true;
       }
@@ -2395,6 +2404,121 @@ export const api = {
     globalSearch: async (q: string): Promise<any> => {
       const res = await fetchJsonOrFallback<any>(`/api/admin/search?q=${encodeURIComponent(q)}`);
       return res.data?.results || { users: [], districts: [], branches: [], kpis: [] };
+    }
+  },
+
+  mysql: {
+    getStatus: async (): Promise<{ success: boolean; message: string; config: any }> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/status');
+      return res.data || { success: false, message: 'Offline', config: {} };
+    },
+
+    installTables: async (): Promise<{ success: boolean; message: string; tables?: string[]; seededCounts?: Record<string, number> }> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/install');
+      return res.data || { success: false, message: 'Failed to initialize MySQL schema' };
+    },
+
+    seedData: async (): Promise<{ success: boolean; message: string; seededCounts?: Record<string, number> }> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/seed', { method: 'POST' });
+      return res.data || { success: false, message: 'Failed to seed MySQL database' };
+    },
+
+    getKpiMetrics: async (filters?: { category?: string; status?: string }): Promise<any[]> => {
+      const params = new URLSearchParams();
+      if (filters?.category) params.append('category', filters.category);
+      if (filters?.status) params.append('status', filters.status);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/kpi-metrics${qs}`);
+      return res.data?.data || [];
+    },
+
+    createKpiMetric: async (payload: {
+      kpiId?: string;
+      code: string;
+      name: string;
+      category: string;
+      unit: string;
+      weight?: number;
+      description?: string;
+      frequency?: string;
+    }): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/kpi-metrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return res.data?.data || res.data;
+    },
+
+    getDailyReports: async (filters?: { date?: string; employeeId?: string; branchId?: string; districtId?: string; status?: string }): Promise<any[]> => {
+      const params = new URLSearchParams();
+      if (filters?.date) params.append('date', filters.date);
+      if (filters?.employeeId) params.append('employeeId', filters.employeeId);
+      if (filters?.branchId) params.append('branchId', filters.branchId);
+      if (filters?.districtId) params.append('districtId', filters.districtId);
+      if (filters?.status) params.append('status', filters.status);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/daily-reports${qs}`);
+      return res.data?.data || [];
+    },
+
+    createDailyReport: async (payload: any): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/daily-reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return res.data?.data || res.data;
+    },
+
+    reviewDailyReport: async (id: string, payload: { status: 'Approved' | 'Rejected' | 'Returned'; reviewedBy?: string; managerComment?: string }): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/daily-reports/${encodeURIComponent(id)}/review`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return res.data?.data || res.data;
+    },
+
+    getPerformanceTargets: async (filters?: { employeeId?: string; branchId?: string; districtId?: string; kpiId?: string; year?: number }): Promise<any[]> => {
+      const params = new URLSearchParams();
+      if (filters?.employeeId) params.append('employeeId', filters.employeeId);
+      if (filters?.branchId) params.append('branchId', filters.branchId);
+      if (filters?.districtId) params.append('districtId', filters.districtId);
+      if (filters?.kpiId) params.append('kpiId', filters.kpiId);
+      if (filters?.year) params.append('year', String(filters.year));
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/performance-targets${qs}`);
+      return res.data?.data || [];
+    },
+
+    getBranches: async (filters?: { districtId?: string; status?: string }): Promise<any[]> => {
+      const params = new URLSearchParams();
+      if (filters?.districtId) params.append('districtId', filters.districtId);
+      if (filters?.status) params.append('status', filters.status);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/branches${qs}`);
+      return res.data?.data || [];
+    },
+
+    getDistricts: async (): Promise<any[]> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/districts');
+      return res.data?.data || [];
+    },
+
+    getUsers: async (filters?: { role?: string; branchId?: string; districtId?: string }): Promise<any[]> => {
+      const params = new URLSearchParams();
+      if (filters?.role) params.append('role', filters.role);
+      if (filters?.branchId) params.append('branchId', filters.branchId);
+      if (filters?.districtId) params.append('districtId', filters.districtId);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetchJsonOrFallback<any>(`/api/mysql/users${qs}`);
+      return res.data?.data || [];
+    },
+
+    getDashboardStats: async (): Promise<any> => {
+      const res = await fetchJsonOrFallback<any>('/api/mysql/analytics/dashboard-stats');
+      return res.data?.data || null;
     }
   }
 };

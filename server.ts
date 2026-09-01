@@ -48,6 +48,8 @@ const _appDirname = typeof __dirname !== 'undefined' ? __dirname : process.cwd()
 
 import { checkDatabaseConnection, getPrismaClient } from './Backend/src/config/db';
 import installRoutes from './Backend/src/routes/installRoutes';
+import mysqlRoutes from './Backend/src/routes/mysqlRoutes';
+import { checkMySqlConnection } from './Backend/src/config/mysqlDb';
 import { createAdminRoutes } from './Backend/src/routes/adminRoutes';
 import {
   calculateDistrictRankings,
@@ -59,6 +61,8 @@ import { evaluateEpmsCoachQuery } from './src/services/epmsCoachEngine';
 
 app.use('/install', installRoutes);
 app.use('/api', installRoutes);
+app.use('/api/mysql', mysqlRoutes);
+app.use('/', mysqlRoutes);
 
 async function initSupabase() {
   try {
@@ -1074,6 +1078,12 @@ app.post('/api/auth/login', async (req, res) => {
       return true;
     }
     if ((rawId === 'board_001' || rawId === 'board' || rawId === 'board01' || cleanRawId === 'board001') && u.role === 'BOARD_OF_DIRECTORS') {
+      return true;
+    }
+    if (['digital', 'finance', 'strategy', 'corporate', 'human capital', 'humancapital', 'innovation', 'transformation', 'retail', 'risk'].includes(rawId) && (u.userId || '').toLowerCase().includes(rawId) && u.role === 'CHIEF_OFFICER') {
+      return true;
+    }
+    if (['bahir dar', 'bahirdar', 'addis ababa north', 'addisababanorth', 'addis ababa south', 'addisababasouth', 'east a.a', 'eastaa', 'hawassa'].includes(rawId) && ((u.userId || '').toLowerCase().includes(rawId) || (u.districtName || '').toLowerCase().includes(rawId)) && u.role === 'DISTRICT_DIRECTOR') {
       return true;
     }
     if ((rawId === 'mgr_360' || rawId === 'mgr_001' || rawId === '1323' || rawId === 'manager' || cleanRawId === 'mgr360') && u.role === 'MANAGER') {
