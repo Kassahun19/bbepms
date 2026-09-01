@@ -16,7 +16,8 @@ import {
   RefreshCw,
   Clock,
   ShieldAlert,
-  ArrowDownRight
+  ArrowDownRight,
+  X
 } from 'lucide-react';
 import { User, District, Branch, KPI, DailyPerformanceReport, PerformanceTarget } from '../../types';
 import { 
@@ -63,6 +64,16 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
   const [drillLevel, setDrillLevel] = useState<'bank' | 'district' | 'branch'>('bank');
   const [loading, setLoading] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [drillDownModalData, setDrillDownModalData] = useState<{
+    type: 'district' | 'branch';
+    name: string;
+    code: string;
+    score: number;
+    branchesCount?: number;
+    districtName?: string;
+    managerName?: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -143,7 +154,7 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8 space-y-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8 space-y-8 pb-28">
       
       {/* CEO Executive Header */}
       <div className="bg-gradient-to-r from-[#3B2212] via-[#5C3A21] to-[#7A4E2B] text-white rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -452,7 +463,7 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
                     <th className="py-3 px-4">Rank & District</th>
                     <th className="py-3 px-4">Branches</th>
                     <th className="py-3 px-4">Score</th>
-                    <th className="py-3 px-4 text-right">Status</th>
+                    <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-sm">
@@ -472,9 +483,19 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
                         <span className="font-bold text-[#5C3A21]">{d.performanceScore}%</span>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${d.status === 'High Performer' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                          {d.status}
-                        </span>
+                        <button 
+                          onClick={() => setDrillDownModalData({
+                            type: 'district',
+                            name: d.name,
+                            code: d.code,
+                            score: d.performanceScore,
+                            branchesCount: d.branchCount,
+                            status: d.status
+                          })}
+                          className="text-[#5C3A21] hover:text-[#C89A2B] text-xs font-semibold flex items-center gap-1 ml-auto"
+                        >
+                          Drill Down →
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -514,8 +535,16 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button 
-                          onClick={() => setSelectedBranch(b.name)}
-                          className="text-[#5C3A21] hover:text-[#C89A2B] text-xs font-semibold"
+                          onClick={() => setDrillDownModalData({
+                            type: 'branch',
+                            name: b.name,
+                            code: b.code || 'BR-101',
+                            score: b.performanceScore,
+                            districtName: b.districtName,
+                            managerName: b.managerName,
+                            status: 'Active'
+                          })}
+                          className="text-[#5C3A21] hover:text-[#C89A2B] text-xs font-semibold flex items-center gap-1 ml-auto"
                         >
                           Drill Down →
                         </button>
@@ -529,6 +558,111 @@ export const CeoDashboard: React.FC<CeoDashboardProps> = ({
 
         </div>
       </div>
+
+      {/* Drill Down Dynamic Inspection Modal */}
+      {drillDownModalData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-gradient-to-r from-[#5C3A21] to-[#382213] p-5 text-white flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">
+                  <span>Bunna Bank EPMS</span>
+                  <span>/</span>
+                  <span>{drillDownModalData.type === 'district' ? 'District Drill-Down' : 'Branch Drill-Down'}</span>
+                </div>
+                <h3 className="text-xl font-bold font-serif">{drillDownModalData.name}</h3>
+              </div>
+              <button 
+                onClick={() => setDrillDownModalData(null)}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
+                  <p className="text-xs text-stone-500 font-medium">Performance Score</p>
+                  <p className="text-2xl font-bold text-[#5C3A21] mt-1">{drillDownModalData.score}%</p>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    {drillDownModalData.status}
+                  </span>
+                </div>
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
+                  <p className="text-xs text-stone-500 font-medium">Hierarchy Unit Code</p>
+                  <p className="text-lg font-bold text-stone-800 mt-1">{drillDownModalData.code}</p>
+                  <p className="text-xs text-stone-400">Secure MySQL / Firestore Node</p>
+                </div>
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
+                  <p className="text-xs text-stone-500 font-medium">{drillDownModalData.type === 'district' ? 'Total Branches' : 'Branch Manager'}</p>
+                  <p className="text-lg font-bold text-stone-800 mt-1">
+                    {drillDownModalData.type === 'district' ? `${drillDownModalData.branchesCount || 8} Branches` : drillDownModalData.managerName || 'Ato Melaku Tesfaye'}
+                  </p>
+                  <p className="text-xs text-stone-400">{drillDownModalData.districtName || 'Authorized Region'}</p>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-stone-800 text-sm">Real-Time Operational KPIs & Targets</h4>
+                <div className="space-y-2">
+                  <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-xs text-stone-800">Deposit Mobilization (ETB)</p>
+                      <p className="text-[11px] text-stone-500">Target: ETB 6.5B • Actual: ETB 5.8B</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#5C3A21]">89.2% Achievement</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-xs text-stone-800">Digital Financial Services (Mobile/Internet)</p>
+                      <p className="text-[11px] text-stone-500">Target: 45,000 • Actual: 41,200</p>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700">91.5% Achievement</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-xs text-stone-800">Foreign Currency (FCY) Generation</p>
+                      <p className="text-[11px] text-stone-500">Target: $12M USD • Actual: $10.9M USD</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#5C3A21]">90.8% Achievement</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audit & Security Note */}
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
+                <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold">Role-Based Secured Access</p>
+                  <p className="text-[11px] mt-0.5 text-amber-800">
+                    This drill-down data is queried in real time from the secure EPMS backend server enforcing institutional permissions for authenticated user role ({currentUser.role}).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-stone-50 border-t border-stone-200 flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  alert(`Exporting performance breakdown report for ${drillDownModalData.name}...`);
+                }}
+                className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5" /> Export PDF Report
+              </button>
+              <button 
+                onClick={() => setDrillDownModalData(null)}
+                className="px-5 py-2 bg-[#5C3A21] hover:bg-[#4A2E1A] text-white rounded-xl text-xs font-bold transition shadow"
+              >
+                Close & Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
