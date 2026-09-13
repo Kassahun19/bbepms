@@ -1,0 +1,126 @@
+import { Shield, Briefcase, UserCheck } from "lucide-react";
+import { BunnaBankLogo } from "./BunnaBankLogo";
+import { ModalCloseButton } from "./ModalCloseButton";
+import { useModalDismiss } from "../../hooks/useModalDismiss";
+export const GetStartedModal = ({
+  isOpen,
+  onClose,
+  onSelectRole,
+  onOpenRegister
+}) => {
+  const { contentRef, handleBackdropClick } = useModalDismiss({
+    isOpen,
+    onClose
+  });
+  if (!isOpen) return null;
+  return <div
+    onClick={handleBackdropClick}
+    className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-start justify-center pt-6 sm:pt-12 md:pt-16 pb-8 px-4"
+  >
+      <div
+    ref={contentRef}
+    className="w-full max-w-lg bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl shadow-2xl text-white overflow-hidden p-6 sm:p-8 relative"
+  >
+        <div className="absolute top-5 right-5 z-10">
+          <ModalCloseButton onClose={onClose} ariaLabel="Close role selection modal" />
+        </div>
+
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C89A2B] via-[#D8B45C] to-[#4A2C17] p-0.5 shadow-xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-full h-full bg-[#4A2C17] rounded-[14px] p-2 flex items-center justify-center">
+              <BunnaBankLogo className="w-10 h-10" variant="gold" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold text-white">Choose Login Role</h3>
+          <p className="text-xs text-[#C89A2B] mt-1">Select your access portal for Bunna Bank S.C. EPMS</p>
+        </div>
+
+        <div className="space-y-3">
+          {
+    /* Bank Super Admin Option */
+  }
+          <button
+    onClick={() => onSelectRole("BANK_SUPER_ADMIN")}
+    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-amber-900/60 to-[#3B2312] hover:to-[#2E1B0E] border border-amber-500/50 hover:border-amber-400 transition-all flex items-center space-x-4 text-left group shadow-lg"
+  >
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 group-hover:bg-amber-500 text-amber-300 group-hover:text-slate-950 flex items-center justify-center transition-colors shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-white">Bank Super Admin</h4>
+                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full">
+                  ENTERPRISE
+                </span>
+              </div>
+              <p className="text-xs text-amber-200/70">Master bank setup, executive structure, RBAC permissions, and security vault</p>
+            </div>
+          </button>
+
+          {
+    /* Administrator Role Option */
+  }
+          <button
+    onClick={() => onSelectRole("ADMINISTRATOR")}
+    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#4A2C17] to-[#3B2312] hover:to-[#2E1B0E] border border-[#C89A2B]/30 hover:border-[#C89A2B] transition-all flex items-center space-x-4 text-left group"
+  >
+            <div className="w-11 h-11 rounded-xl bg-[#C89A2B]/20 group-hover:bg-[#C89A2B] text-[#C89A2B] group-hover:text-[#6B3F1D] flex items-center justify-center transition-colors shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Administrator Portal</h4>
+              <p className="text-xs text-gray-300">District management, KPI governance, system audit logs & analytics</p>
+            </div>
+          </button>
+
+          {
+    /* Manager Role Option */
+  }
+          <button
+    onClick={() => onSelectRole("MANAGER")}
+    className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#4A2C17] to-[#3B2312] hover:to-[#2E1B0E] border border-[#C89A2B]/30 hover:border-[#C89A2B] transition-all flex items-center space-x-4 text-left group"
+  >
+            <div className="w-12 h-12 rounded-xl bg-[#C89A2B]/20 group-hover:bg-[#C89A2B] text-[#C89A2B] group-hover:text-[#6B3F1D] flex items-center justify-center transition-colors">
+              <Briefcase className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-bold text-base text-white">Branch Manager Portal</h4>
+              <p className="text-xs text-gray-300">Daily report approvals, target assignments, performance reviews & comments</p>
+            </div>
+          </button>
+
+          {
+    /* Employee Role Option */
+  }
+          <button
+    onClick={() => onSelectRole("EMPLOYEE")}
+    className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#4A2C17] to-[#3B2312] hover:to-[#2E1B0E] border border-[#C89A2B]/30 hover:border-[#C89A2B] transition-all flex items-center space-x-4 text-left group"
+  >
+            <div className="w-12 h-12 rounded-xl bg-[#C89A2B]/20 group-hover:bg-[#C89A2B] text-[#C89A2B] group-hover:text-[#6B3F1D] flex items-center justify-center transition-colors">
+              <UserCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-bold text-base text-white">Employee Self-Service</h4>
+              <p className="text-xs text-gray-300">Daily performance entry, digital activations tracker, achievements & AI guidance</p>
+            </div>
+          </button>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-white/10 text-center">
+          <p className="text-xs text-gray-300">
+            Don't have an EPMS account yet?{" "}
+            <button
+    onClick={() => {
+      onClose();
+      onOpenRegister();
+    }}
+    className="font-bold text-[#C89A2B] hover:underline"
+  >
+              Create Account Now
+            </button>
+          </p>
+        </div>
+
+      </div>
+    </div>;
+};

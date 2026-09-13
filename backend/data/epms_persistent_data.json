@@ -335,7 +335,7 @@
     },
     {
       "district_id": "DIST-central-addis-district",
-      "code": "DST-702",
+      "code": "DST-865",
       "name": "Central Addis District",
       "region": "Addis Ababa",
       "manager_name": null,
@@ -11670,7 +11670,7 @@
     {
       "user_id": "USR-SUPERADMIN",
       "system_username": "kassahun.m",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Kassahun",
       "middle_name": "Mulatu",
       "last_name": "Tech",
@@ -11694,7 +11694,7 @@
     {
       "user_id": "USR-ADMIN",
       "system_username": "admin.user",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Eleni",
       "middle_name": "Gebre",
       "last_name": "Wolde",
@@ -11718,7 +11718,7 @@
     {
       "user_id": "USR-BOARD",
       "system_username": "board.chair",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Dr. Berhanu",
       "middle_name": "Tsegaye",
       "last_name": "Board",
@@ -11742,7 +11742,7 @@
     {
       "user_id": "USR-CEO",
       "system_username": "ceo.bunna",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Mulugeta",
       "middle_name": "Alemayehu",
       "last_name": "Executive",
@@ -11766,7 +11766,7 @@
     {
       "user_id": "USR-CHIEF-RETAIL",
       "system_username": "chief.retail",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Hiwot",
       "middle_name": "Tesfaye",
       "last_name": "Kassa",
@@ -11790,7 +11790,7 @@
     {
       "user_id": "USR-DIR-BAHIR-DAR",
       "system_username": "director.bahirdar",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Dawit",
       "middle_name": "Mekonnen",
       "last_name": "Haile",
@@ -11814,7 +11814,7 @@
     {
       "user_id": "USR-MGR-BOLE",
       "system_username": "manager.bole",
-      "password_hash": "$2b$10$xT80a4L6KrO5bCn/2kqUmeNgXY2DsJo2WpGpl.DX/RVyv1Z5ZPuMS",
+      "password_hash": "$2b$10$jN/LWgtiaQQdrQdVXORusuY3A9.JI0gX5EIDnD7VcZYPKWIxscHpG",
       "first_name": "Yared",
       "middle_name": "Bekele",
       "last_name": "Tilahun",
@@ -11838,7 +11838,7 @@
     {
       "user_id": "USR-EMP-TELLER1",
       "system_username": "employee.kassahun",
-      "password_hash": "$2b$10$GTv0gxjX1koV5Y0pGO2Fz.foTNeVUC3DO1qVDHyXZVMNl8nR.wyUy",
+      "password_hash": "$2b$10$Nz5.XreTgjGr9iqc7KQhquN7eI5W4kpKhW8oFlDwGYF.s1Lwf/j9C",
       "first_name": "Kassahun",
       "middle_name": "M.",
       "last_name": "CSO",
@@ -13651,7 +13651,7 @@
       "foreign_currency_etb": 1500,
       "digital_financial_services_etb": 22000,
       "manager_comment": "Approved against Finacle batch totals.",
-      "submitted_at": "2026-09-13T20:49:15.322Z",
+      "submitted_at": "2026-09-13T20:37:20.278Z",
       "reviewed_by": null,
       "reviewed_at": null
     }
@@ -16289,17 +16289,6 @@
   ],
   "announcements": [],
   "auditLogs": [
-    {
-      "log_id": "LOG-MU0AEMF8-481",
-      "user_id": "USR-SUPERADMIN",
-      "user_name": "Kassahun Tech",
-      "action": "USER_LOGIN",
-      "entity_type": "User",
-      "entity_id": "USR-SUPERADMIN",
-      "details": null,
-      "ip_address": "127.0.0.1",
-      "created_at": "2026-09-13T20:49:18.596Z"
-    },
     {
       "userId": "USR-ADM-001",
       "module": "Authentication",
