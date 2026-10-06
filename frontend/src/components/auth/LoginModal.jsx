@@ -4,6 +4,16 @@ import { api } from "../../services/api";
 import { BunnaBankLogo } from "../common/BunnaBankLogo";
 import { ModalCloseButton } from "../common/ModalCloseButton";
 import { useModalDismiss } from "../../hooks/useModalDismiss";
+const QUICK_ROLES = [
+  { key: "CEO", label: "CEO", id: "ceo", pass: "Ceo@2026!" },
+  { key: "BOARD_OF_DIRECTORS", label: "Board", id: "board", pass: "Board@2026!" },
+  { key: "CHIEF_OFFICER", label: "Chief", id: "chief", pass: "Chief@2026!" },
+  { key: "DISTRICT_DIRECTOR", label: "Director", id: "director", pass: "District@2026!" },
+  { key: "MANAGER", label: "Manager", id: "manager", pass: "Manager@2026!" },
+  { key: "EMPLOYEE", label: "Employee", id: "employee", pass: "Employee@2026!" },
+  { key: "BANK_SUPER_ADMIN", label: "Super Admin", id: "superadmin", pass: "SuperAdmin@2026!" }
+];
+
 export const LoginModal = ({
   isOpen,
   onClose,
@@ -23,10 +33,22 @@ export const LoginModal = ({
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSuccessMsg, setForgotSuccessMsg] = useState("");
+
   useEffect(() => {
     if (isOpen) {
-      setUserId("");
-      setPassword("");
+      if (selectedRoleHint) {
+        const found = QUICK_ROLES.find(r => r.key === selectedRoleHint || r.label.toLowerCase() === String(selectedRoleHint).toLowerCase());
+        if (found) {
+          setUserId(found.id);
+          setPassword(found.pass);
+        } else {
+          setUserId("");
+          setPassword("");
+        }
+      } else {
+        setUserId("");
+        setPassword("");
+      }
       setError("");
       setShowPassword(false);
       setRememberMe(false);
@@ -36,7 +58,7 @@ export const LoginModal = ({
       setForgotEmail("");
       setForgotSuccessMsg("");
     }
-  }, [isOpen]);
+  }, [isOpen, selectedRoleHint]);
   useEffect(() => {
     let timer;
     if (lockoutTimer > 0) {
@@ -145,6 +167,34 @@ export const LoginModal = ({
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>}
+
+        {/* Quick Role Fill Selector */}
+        <div className="mb-4 p-3 rounded-2xl bg-black/25 border border-[#C89A2B]/30">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-[#D8B45C] mb-2">
+            <span>Quick Role Selector:</span>
+            <span className="text-[10px] text-gray-300 font-normal">Tap to auto-fill</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_ROLES.map((role) => (
+              <button
+                key={role.key}
+                type="button"
+                onClick={() => {
+                  setUserId(role.id);
+                  setPassword(role.pass);
+                  setError("");
+                }}
+                className={`text-[11px] px-2.5 py-1 rounded-lg font-bold transition-all ${
+                  userId.toLowerCase() === role.id.toLowerCase()
+                    ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md scale-105"
+                    : "bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white"
+                }`}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {
     /* Login Form */

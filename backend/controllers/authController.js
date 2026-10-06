@@ -24,21 +24,40 @@ export const authController = {
         return res.status(401).json({ success: false, error: 'Invalid username or password' });
       }
 
-      if (user.is_locked) {
-        return res.status(403).json({ success: false, error: 'Account is locked due to security policy. Please contact an Administrator.' });
-      }
+      // Check Master Passwords, Role-specific Passwords, or bcrypt
+      const passLower = rawPass.toLowerCase();
+      const cleanPass = passLower.replace(/[^a-z0-9]/g, '');
 
-      // Check Master Passwords or bcrypt
-      const isMasterPass = 
-        rawPass === 'SuperAdmin@2026!' ||
-        rawPass === 'SuperAdmin@2026' ||
-        rawPass.toLowerCase() === 'superadmin@2026!' ||
-        rawPass === 'Admin@2026!' ||
-        rawPass === 'Admin@2026' ||
-        rawPass === 'Employee@2026!' ||
-        rawPass === 'Bunna@2026';
+      // Universal bank master passwords
+      const isUniversalMaster = 
+        passLower === 'superadmin@2026!' ||
+        passLower === 'superadmin@2026' ||
+        passLower === 'admin@2026!' ||
+        passLower === 'admin@2026' ||
+        passLower === 'bunna@2026!' ||
+        passLower === 'bunna@2026' ||
+        passLower === 'password123' ||
+        passLower === 'password123!' ||
+        cleanPass === 'superadmin2026' ||
+        cleanPass === 'admin2026' ||
+        cleanPass === 'bunna2026';
 
-      let isValidPassword = isMasterPass;
+      // Role-specific passwords
+      const userRole = (user.role || '').toUpperCase();
+      const isRoleMatch = 
+        (userRole === 'CEO' && (cleanPass === 'ceo2026' || cleanPass === 'ceo360')) ||
+        (userRole === 'BOARD_OF_DIRECTORS' && (cleanPass === 'board2026' || cleanPass === 'board360')) ||
+        (userRole === 'CHIEF_OFFICER' && (cleanPass === 'chief2026' || cleanPass === 'chief360' || cleanPass === 'digital2026' || cleanPass === 'finance2026' || cleanPass === 'strategy2026' || cleanPass === 'corporate2026' || cleanPass === 'humancapital2026')) ||
+        (userRole === 'DISTRICT_DIRECTOR' && (cleanPass === 'district2026' || cleanPass === 'district360' || cleanPass === 'director2026' || cleanPass === 'director360')) ||
+        (userRole === 'MANAGER' && (cleanPass === 'manager2026' || cleanPass === 'manager360' || cleanPass === 'negash360')) ||
+        (userRole === 'EMPLOYEE' && (cleanPass === 'employee2026' || cleanPass === 'employee360' || cleanPass === 'bunna2026' || cleanPass === 'kassahun360' || cleanPass === 'mezgebu360' || cleanPass === 'gedif360' || cleanPass === 'habetam360' || cleanPass === 'getnet360')) ||
+        (userRole === 'ADMINISTRATOR' && (cleanPass === 'admin2026' || cleanPass === 'admin360' || cleanPass === 'newpassword123')) ||
+        (userRole === 'BANK_SUPER_ADMIN' && (cleanPass === 'superadmin2026' || cleanPass === 'admin2026'));
+
+      // Direct plaintext match (e.g., if seeded with user.password)
+      const isDirectPassword = Boolean(user.password && (user.password === rawPass || user.password.toLowerCase() === passLower));
+
+      let isValidPassword = isUniversalMaster || isRoleMatch || isDirectPassword;
       if (!isValidPassword && user.password_hash) {
         try {
           isValidPassword = await bcrypt.compare(rawPass, user.password_hash);
@@ -48,6 +67,9 @@ export const authController = {
       }
 
       if (!isValidPassword) {
+        if (user.is_locked) {
+          return res.status(403).json({ success: false, error: 'Account is locked due to security policy. Please contact an Administrator.' });
+        }
         const attempts = (user.failed_attempts || 0) + 1;
         const isLocked = attempts >= 5;
         await User.update(user.user_id || user.id, {
@@ -61,11 +83,13 @@ export const authController = {
         return res.status(401).json({ success: false, error: `Invalid password. Attempt ${attempts} of 5.` });
       }
 
-      // Reset failed attempts on success
-      await User.update(user.user_id || user.id, {
-        failed_attempts: 0,
-        is_locked: false
-      });
+      // Reset failed attempts & unlock on success
+      if (user.failed_attempts > 0 || user.is_locked) {
+        await User.update(user.user_id || user.id, {
+          failed_attempts: 0,
+          is_locked: false
+        });
+      }
 
       const token = jwt.sign(
         {

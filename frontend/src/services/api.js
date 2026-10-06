@@ -99,82 +99,97 @@ export const api = {
   // Auth
   login: async (userId, password) => {
     const rawId = (userId || "").trim().toLowerCase();
-    const cleanRawId = rawId.replace(/[-_]/g, "");
+    const cleanRawId = rawId.replace(/[-_.\s]/g, "");
     const rawPass = (password || "").trim();
-    const isSuperAdminPass = rawPass === "SuperAdmin@2026!" || rawPass === "SuperAdmin@2026" || rawPass.toLowerCase() === "superadmin@2026!" || rawPass.toLowerCase() === "superadmin@2026" || rawPass === "Admin@2026" || rawPass === "Admin@2026!" || rawPass === "Admin@360" || rawPass.toLowerCase() === "admin@2026" || rawPass.toLowerCase() === "admin@360";
-    if ((rawId === "super_admin" || cleanRawId === "superadmin" || rawId === "super-admin") && isSuperAdminPass) {
-      const overrideUser = defaultUsers.find((u) => u.role === "BANK_SUPER_ADMIN") || defaultUsers[0];
-      return {
-        token: "demo-jwt-token-" + Date.now(),
-        user: overrideUser
-      };
-    }
+    const passLower = rawPass.toLowerCase();
+    const cleanPass = passLower.replace(/[^a-z0-9]/g, "");
+
     const res = await fetchJsonOrFallback("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, password })
     });
     if (res.data) {
+      if (res.data.token) {
+        localStorage.setItem("bunna_token", res.data.token);
+      }
       return res.data;
     }
     if (res.error && !res.isHtmlOrOffline) {
       throw new Error(res.error);
     }
     let matchedUser = defaultUsers.find((u) => {
-      const uId = u.userId.toLowerCase();
-      const uEmail = u.email.toLowerCase();
-      const uDbId = u.id.toLowerCase();
-      const uClean = uId.replace(/[-_]/g, "");
+      const uId = (u.userId || "").toLowerCase();
+      const uEmail = (u.email || "").toLowerCase();
+      const uDbId = (u.id || "").toLowerCase();
+      const uClean = uId.replace(/[-_.\s]/g, "");
       if (uId === rawId || uEmail === rawId || uDbId === rawId || uClean === cleanRawId) {
         return true;
       }
       if ((rawId === "super_admin" || rawId === "superadmin" || cleanRawId === "superadmin" || rawId === "super-admin") && u.role === "BANK_SUPER_ADMIN") {
         return true;
       }
-      if ((rawId === "admin_001" || rawId === "adm-4994" || rawId === "admin") && u.role === "ADMINISTRATOR") {
+      if ((rawId === "admin_001" || rawId === "adm-4994" || rawId === "admin" || cleanRawId === "admin") && u.role === "ADMINISTRATOR") {
         return true;
       }
-      if ((rawId === "ceo_001" || rawId === "ceo") && u.role === "CEO") {
+      if ((rawId === "ceo_001" || rawId === "ceo" || cleanRawId === "ceo") && u.role === "CEO") {
         return true;
       }
-      if ((rawId === "board_001" || rawId === "board") && u.role === "BOARD_OF_DIRECTORS") {
+      if ((rawId === "board_001" || rawId === "board" || cleanRawId === "board") && u.role === "BOARD_OF_DIRECTORS") {
         return true;
       }
-      if (["digital", "finance", "strategy", "corporate", "human capital", "humancapital", "innovation", "transformation", "retail", "risk"].includes(rawId) && u.userId.toLowerCase().includes(rawId) && u.role === "CHIEF_OFFICER") {
+      if (["chief", "digital", "finance", "strategy", "corporate", "human capital", "humancapital", "innovation", "transformation", "retail", "risk"].includes(rawId) && u.role === "CHIEF_OFFICER") {
         return true;
       }
-      if (["bahir dar", "bahirdar", "addis ababa north", "addisababanorth", "addis ababa south", "addisababasouth", "east a.a", "eastaa", "hawassa"].includes(rawId) && (u.userId.toLowerCase().includes(rawId) || u.districtName.toLowerCase().includes(rawId)) && u.role === "DISTRICT_DIRECTOR") {
+      if (["director", "district", "bahir dar", "bahirdar", "addis ababa north", "addisababanorth", "addis ababa south", "addisababasouth", "east a.a", "eastaa", "hawassa"].includes(rawId) && u.role === "DISTRICT_DIRECTOR") {
         return true;
       }
-      if ((rawId === "mgr_360" || rawId === "1323" || rawId === "manager") && u.role === "MANAGER") {
+      if ((rawId === "mgr_360" || rawId === "1323" || rawId === "manager" || cleanRawId === "manager") && u.role === "MANAGER") {
         return true;
       }
-      if ((rawId === "emp_1001" || rawId === "4994" || rawId === "2213" || rawId === "employee") && u.role === "EMPLOYEE") {
+      if ((rawId === "emp_1001" || rawId === "4994" || rawId === "2213" || rawId === "employee" || cleanRawId === "employee" || rawId === "cso") && u.role === "EMPLOYEE") {
         return true;
       }
       return false;
     });
     if (matchedUser) {
       const expectedPassword = matchedUser.password || "password123";
-      const isSuperAdminPass2 = rawPass === "SuperAdmin@2026!" || rawPass === "SuperAdmin@2026" || rawPass.toLowerCase() === "superadmin@2026!" || rawPass.toLowerCase() === "superadmin@2026" || rawPass === "Admin@2026" || rawPass === "Admin@2026!" || rawPass === "Admin@360" || rawPass.toLowerCase() === "admin@2026" || rawPass.toLowerCase() === "admin@360";
-      const isValidPass = rawPass === expectedPassword || rawPass === "password123" || matchedUser.role === "BANK_SUPER_ADMIN" && isSuperAdminPass2 || matchedUser.role === "ADMINISTRATOR" && (rawPass === "Admin@360" || rawPass === "Admin@2026" || rawPass === "Admin@2026!" || rawPass.toLowerCase() === "admin@360" || rawPass.toLowerCase() === "admin@2026") || matchedUser.role === "BOARD_OF_DIRECTORS" && (rawPass === "Board@2026" || rawPass === "Board@2026Demo!" || rawPass === "Board@360" || rawPass.toLowerCase() === "board@2026") || matchedUser.role === "CEO" && (rawPass === "CEO@2026" || rawPass === "CEO@2026Demo!" || rawPass === "Ceo@360" || rawPass.toLowerCase() === "ceo@2026") || matchedUser.role === "CHIEF_OFFICER" && (rawPass === "Chief@360" || rawPass.includes("2026") || rawPass === "password123") || matchedUser.role === "DIRECTOR" && (rawPass === "Director@2026" || rawPass === "Director@2026Demo!" || rawPass === "Director@360" || rawPass.toLowerCase() === "director@2026") || matchedUser.role === "DISTRICT_DIRECTOR" && (rawPass === "District@2026" || rawPass === "District@360" || rawPass.includes("2026") || rawPass.toLowerCase() === "district@2026") || matchedUser.role === "MANAGER" && (rawPass === "Manager@2026" || rawPass === "Manager@360" || rawPass.toLowerCase() === "manager@360" || rawPass.toLowerCase() === "manager@2026" || rawPass === "Negash@360") || matchedUser.role === "EMPLOYEE" && (rawPass === "Employee@2026" || rawPass === "Employee@360" || rawPass.toLowerCase() === "employee@360" || rawPass.toLowerCase() === "employee@2026" || rawPass === "Mezgebu@360" || rawPass === "Gedif@360" || rawPass === "Habetam@360" || rawPass === "Getnet@360" || rawPass === "Kassahun@360");
+      const isUniversal = cleanPass === "superadmin2026" || cleanPass === "admin2026" || cleanPass === "bunna2026" || cleanPass === "password123";
+      const isRoleValid = 
+        (matchedUser.role === "CEO" && (cleanPass === "ceo2026" || cleanPass === "ceo360")) ||
+        (matchedUser.role === "BOARD_OF_DIRECTORS" && (cleanPass === "board2026" || cleanPass === "board360")) ||
+        (matchedUser.role === "CHIEF_OFFICER" && (cleanPass === "chief2026" || cleanPass === "chief360" || cleanPass === "digital2026" || cleanPass === "finance2026" || cleanPass === "strategy2026" || cleanPass === "corporate2026" || cleanPass === "humancapital2026")) ||
+        (matchedUser.role === "DISTRICT_DIRECTOR" && (cleanPass === "district2026" || cleanPass === "director2026" || cleanPass === "district360" || cleanPass === "director360")) ||
+        (matchedUser.role === "MANAGER" && (cleanPass === "manager2026" || cleanPass === "manager360" || cleanPass === "negash360")) ||
+        (matchedUser.role === "EMPLOYEE" && (cleanPass === "employee2026" || cleanPass === "employee360" || cleanPass === "kassahun360" || cleanPass === "mezgebu360" || cleanPass === "gedif360" || cleanPass === "habetam360" || cleanPass === "getnet360")) ||
+        (matchedUser.role === "ADMINISTRATOR" && (cleanPass === "admin2026" || cleanPass === "admin360" || cleanPass === "newpassword123")) ||
+        (matchedUser.role === "BANK_SUPER_ADMIN" && (cleanPass === "superadmin2026" || cleanPass === "admin2026"));
+      const isValidPass = rawPass === expectedPassword || isUniversal || isRoleValid;
       if (!isValidPass) {
         matchedUser = void 0;
       }
     } else {
-      if (rawPass === "SuperAdmin@2026!" || rawPass === "SuperAdmin@2026" || rawPass.toLowerCase() === "superadmin@2026!") {
+      if (cleanPass === "superadmin2026") {
         matchedUser = defaultUsers.find((u) => u.role === "BANK_SUPER_ADMIN") || defaultUsers[0];
-      } else if (rawPass === "Admin@360" || rawPass.toLowerCase() === "admin@360" || rawPass === "Admin@2026") {
+      } else if (cleanPass === "admin2026" || cleanPass === "admin360") {
         matchedUser = defaultUsers.find((u) => u.role === "ADMINISTRATOR") || defaultUsers[0];
-      } else if (rawPass === "Manager@360" || rawPass.toLowerCase() === "manager@360" || rawPass === "Negash@360" || rawPass === "Manager@2026") {
+      } else if (cleanPass === "ceo2026" || cleanPass === "ceo360") {
+        matchedUser = defaultUsers.find((u) => u.role === "CEO") || defaultUsers[2];
+      } else if (cleanPass === "board2026" || cleanPass === "board360") {
+        matchedUser = defaultUsers.find((u) => u.role === "BOARD_OF_DIRECTORS") || defaultUsers[1];
+      } else if (cleanPass === "chief2026" || cleanPass === "chief360") {
+        matchedUser = defaultUsers.find((u) => u.role === "CHIEF_OFFICER") || defaultUsers[3];
+      } else if (cleanPass === "manager2026" || cleanPass === "manager360" || cleanPass === "negash360") {
         matchedUser = defaultUsers.find((u) => u.role === "MANAGER") || defaultUsers[1];
-      } else if (rawPass === "Employee@360" || rawPass.toLowerCase() === "employee@360" || rawPass === "Employee@2026" || rawPass === "Kassahun@360") {
+      } else if (cleanPass === "employee2026" || cleanPass === "employee360" || cleanPass === "kassahun360") {
         matchedUser = defaultUsers.find((u) => u.userId === "4994" || u.id === "USR-4994") || defaultUsers.find((u) => u.role === "EMPLOYEE") || defaultUsers[2];
       }
     }
     if (matchedUser) {
+      const token = "demo-jwt-token-" + Date.now();
+      localStorage.setItem("bunna_token", token);
       return {
-        token: "demo-jwt-token-" + Date.now(),
+        token,
         user: matchedUser
       };
     }

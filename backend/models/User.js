@@ -47,25 +47,76 @@ export const User = {
 
   async findByUsernameOrEmail(identifier) {
     if (!identifier) return null;
-    const id = identifier.trim().toLowerCase();
+    const raw = String(identifier).trim();
+    const id = raw.toLowerCase();
+    const cleanId = id.replace(/[-_.\s]/g, '');
+
+    const roleAliases = {
+      ceo: 'CEO',
+      board: 'BOARD_OF_DIRECTORS',
+      chief: 'CHIEF_OFFICER',
+      director: 'DISTRICT_DIRECTOR',
+      district: 'DISTRICT_DIRECTOR',
+      districtdirector: 'DISTRICT_DIRECTOR',
+      manager: 'MANAGER',
+      branchmanager: 'MANAGER',
+      employee: 'EMPLOYEE',
+      cso: 'EMPLOYEE',
+      teller: 'EMPLOYEE',
+      officer: 'EMPLOYEE',
+      admin: 'ADMINISTRATOR',
+      administrator: 'ADMINISTRATOR',
+      superadmin: 'BANK_SUPER_ADMIN',
+      super_admin: 'BANK_SUPER_ADMIN',
+      banksuperadmin: 'BANK_SUPER_ADMIN'
+    };
+
+    const targetRole = roleAliases[id] || roleAliases[cleanId] || null;
+
     const pool = getMySqlPool();
     if (pool) {
       try {
         const [rows] = await pool.execute(`
           SELECT * FROM users 
-          WHERE LOWER(system_username) = ? OR LOWER(email) = ? OR user_id = ? LIMIT 1
-        `, [id, id, identifier]);
+          WHERE LOWER(system_username) = ? 
+             OR LOWER(email) = ? 
+             OR user_id = ? 
+             OR LOWER(REPLACE(REPLACE(system_username, '.', ''), '_', '')) = ?
+             OR (? IS NOT NULL AND role = ?)
+          LIMIT 1
+        `, [id, id, raw, cleanId, targetRole, targetRole || '']);
         if (rows && rows.length > 0) return rows[0];
       } catch (err) {
         // Fallback
       }
     }
     const store = loadPersistentData();
-    return (store.users || []).find(u => {
-      const uId = (u.system_username || u.userId || u.user_id || '').toLowerCase();
+    const users = store.users || [];
+
+    // 1. Direct match on username, email, user_id, or stripped clean ID
+    let user = users.find(u => {
+      const uSys = (u.system_username || u.userId || '').toLowerCase();
       const uEmail = (u.email || '').toLowerCase();
-      return uId === id || uEmail === id || (u.user_id && u.user_id.toLowerCase() === id);
-    }) || null;
+      const uUid = (u.user_id || u.id || '').toLowerCase();
+      const uClean = uSys.replace(/[-_.\s]/g, '');
+      return uSys === id || uEmail === id || uUid === id || (cleanId && uClean === cleanId);
+    });
+
+    // 2. Role alias match (e.g. 'ceo' -> CEO, 'board' -> BOARD_OF_DIRECTORS)
+    if (!user && targetRole) {
+      user = users.find(u => u.role === targetRole);
+    }
+
+    // 3. Prefix match (e.g. "ceo" matching "ceo.bunna", "board" matching "board.chair")
+    if (!user) {
+      user = users.find(u => {
+        const uSys = (u.system_username || u.userId || '').toLowerCase();
+        const uEmail = (u.email || '').toLowerCase();
+        return uSys.startsWith(id + '.') || uSys.startsWith(id + '_') || uEmail.startsWith(id + '@');
+      });
+    }
+
+    return user || null;
   },
 
   async create(userData) {

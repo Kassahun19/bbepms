@@ -24,11 +24,9 @@
     "noEmit": true
   },
   "include": [
-    "src/**/*",
-    "Backend/**/*",
-    "Frontend/**/*",
-    "server.ts",
-    "vite.config.ts"
+    "frontend/src/**/*",
+    "backend/**/*",
+    "server.ts"
   ],
   "exclude": [
     "node_modules",
