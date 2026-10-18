@@ -244,14 +244,14 @@ export const EmployeeDailyKpiHistoryTable = ({
       {
     /* 1. FILTER CONTROLS & DATE PRESETS */
   }
-      <div className="p-5 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl text-white space-y-4">
+      <div className="p-5 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl text-white space-y-4">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           
           {
     /* Quick Date Presets */
   }
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-[#C89A2B] flex items-center gap-1.5 mr-1">
+            <span className="text-xs font-bold text-[#D4A017] flex items-center gap-1.5 mr-1">
               <Filter className="w-3.5 h-3.5" />
               Date Filter:
             </span>
@@ -266,7 +266,7 @@ export const EmployeeDailyKpiHistoryTable = ({
   ].map((preset) => <button
     key={preset.id}
     onClick={() => setDatePreset(preset.id)}
-    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${datePreset === preset.id ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md font-black" : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"}`}
+    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${datePreset === preset.id ? "bg-[#D4A017] text-[#541718] shadow-md font-black" : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"}`}
   >
                 {preset.label}
               </button>)}
@@ -280,21 +280,21 @@ export const EmployeeDailyKpiHistoryTable = ({
     onClick={() => setShowMilestones(!showMilestones)}
     className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs text-gray-300 hover:text-white font-bold flex items-center space-x-1.5 transition-all"
   >
-              <TrendingUp className="w-3.5 h-3.5 text-[#C89A2B]" />
+              <TrendingUp className="w-3.5 h-3.5 text-[#D4A017]" />
               <span>{showMilestones ? "Hide Summary Stats" : "Show Summary Stats"}</span>
             </button>
 
             <div className="relative" ref={exportMenuRef}>
               <button
     onClick={() => setShowExportMenu(!showExportMenu)}
-    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] border border-[#C89A2B]/50 text-white font-extrabold text-xs shadow-md hover:brightness-110 flex items-center space-x-2 transition-all"
+    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#541718] to-[#1d2b32] border border-[#D4A017]/50 text-white font-extrabold text-xs shadow-md hover:brightness-110 flex items-center space-x-2 transition-all"
   >
-                <Download className="w-4 h-4 text-[#C89A2B]" />
+                <Download className="w-4 h-4 text-[#D4A017]" />
                 <span>Export ({filteredReports.length})</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#C89A2B]" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#D4A017]" />
               </button>
 
-              {showExportMenu && <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-2xl z-30 p-2 space-y-1">
+              {showExportMenu && <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-2xl z-30 p-2 space-y-1">
                   <button
     onClick={() => {
       downloadReportExcel(filteredReports, getUserFullName(user), user);
@@ -346,7 +346,7 @@ export const EmployeeDailyKpiHistoryTable = ({
     type="date"
     value={startDate}
     onChange={(e) => setStartDate(e.target.value)}
-    className="w-full px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
               </div>
               <div>
@@ -355,7 +355,7 @@ export const EmployeeDailyKpiHistoryTable = ({
     type="date"
     value={endDate}
     onChange={(e) => setEndDate(e.target.value)}
-    className="w-full px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
               </div>
             </>}
@@ -368,7 +368,7 @@ export const EmployeeDailyKpiHistoryTable = ({
             <select
     value={selectedDayOfWeek}
     onChange={(e) => setSelectedDayOfWeek(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs font-bold text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs font-bold text-white focus:outline-none focus:border-[#D4A017]"
   >
               <option value="all">All Days (Mon - Sat)</option>
               <option value="Monday">Monday</option>
@@ -393,7 +393,7 @@ export const EmployeeDailyKpiHistoryTable = ({
     placeholder="Filter by date, notes..."
     value={searchTerm}
     onChange={(e) => setSearchTerm(e.target.value)}
-    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A017]"
   />
             </div>
           </div>
@@ -404,15 +404,15 @@ export const EmployeeDailyKpiHistoryTable = ({
       {
     /* 2. OPTIONAL/COLLAPSIBLE SUMMARY MILESTONES */
   }
-      {showMilestones && <div className="p-5 rounded-3xl bg-[#4A2C17]/80 border border-[#C89A2B]/30 space-y-3">
+      {showMilestones && <div className="p-5 rounded-3xl bg-[#1d2b32]/80 border border-[#D4A017]/30 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-[#C89A2B]" />
+              <TrendingUp className="w-5 h-5 text-[#D4A017]" />
               <h3 className="text-sm font-extrabold text-white">
                 KPI Performance Summary Milestones
               </h3>
             </div>
-            <span className="text-xs text-[#C89A2B] font-semibold bg-[#C89A2B]/10 px-3 py-1 rounded-full border border-[#C89A2B]/30">
+            <span className="text-xs text-[#D4A017] font-semibold bg-[#D4A017]/10 px-3 py-1 rounded-full border border-[#D4A017]/30">
               {myReports.length} Total Records
             </span>
           </div>
@@ -422,7 +422,7 @@ export const EmployeeDailyKpiHistoryTable = ({
             {
     /* Card 1: Today */
   }
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1d2b32] to-[#2E1B0E] border border-[#D4A017]/30 text-white shadow-lg space-y-2">
               <div className="flex items-center justify-between text-[11px] text-gray-300 font-bold uppercase tracking-wider">
                 <span>Today's Total</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -449,12 +449,12 @@ export const EmployeeDailyKpiHistoryTable = ({
             {
     /* Card 2: This Week */
   }
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
-              <div className="flex items-center justify-between text-[11px] text-[#C89A2B] font-bold uppercase tracking-wider">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1d2b32] to-[#2E1B0E] border border-[#D4A017]/30 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-[#D4A017] font-bold uppercase tracking-wider">
                 <span>This Week</span>
-                <span className="text-[10px] bg-[#C89A2B]/20 px-2 py-0.5 rounded-full text-[#C89A2B]">{summaryMetrics.thisWeek.count} Days</span>
+                <span className="text-[10px] bg-[#D4A017]/20 px-2 py-0.5 rounded-full text-[#D4A017]">{summaryMetrics.thisWeek.count} Days</span>
               </div>
-              <div className="text-2xl font-black text-[#C89A2B]">
+              <div className="text-2xl font-black text-[#D4A017]">
                 <AnimatedCounter value={summaryMetrics.thisWeek.mobile + summaryMetrics.thisWeek.onboarding + summaryMetrics.thisWeek.internet + summaryMetrics.thisWeek.atm + summaryMetrics.thisWeek.merchant} suffix=" KPIs" />
               </div>
               <div className="text-[11px] text-gray-300 space-y-0.5 pt-1 border-t border-white/10">
@@ -476,7 +476,7 @@ export const EmployeeDailyKpiHistoryTable = ({
             {
     /* Card 3: This Month */
   }
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1d2b32] to-[#2E1B0E] border border-[#D4A017]/30 text-white shadow-lg space-y-2">
               <div className="flex items-center justify-between text-[11px] text-cyan-400 font-bold uppercase tracking-wider">
                 <span>This Month</span>
                 <span className="text-[10px] bg-cyan-500/20 px-2 py-0.5 rounded-full text-cyan-300">{summaryMetrics.thisMonth.count} Days</span>
@@ -503,7 +503,7 @@ export const EmployeeDailyKpiHistoryTable = ({
             {
     /* Card 4: This Year */
   }
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/30 text-white shadow-lg space-y-2">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1d2b32] to-[#2E1B0E] border border-[#D4A017]/30 text-white shadow-lg space-y-2">
               <div className="flex items-center justify-between text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
                 <span>This Year</span>
                 <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300">{summaryMetrics.thisYear.count} Days</span>
@@ -530,13 +530,13 @@ export const EmployeeDailyKpiHistoryTable = ({
             {
     /* Card 5: All Time */
   }
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#6B3F1D] via-[#4A2C17] to-[#362011] border-2 border-[#C89A2B]/60 text-white shadow-xl space-y-2">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#541718] via-[#1d2b32] to-[#362011] border-2 border-[#D4A017]/60 text-white shadow-xl space-y-2">
               <div className="flex items-center justify-between text-[11px] text-amber-300 font-bold uppercase tracking-wider">
                 <span className="flex items-center gap-1">
-                  <Award className="w-3.5 h-3.5 text-[#C89A2B]" />
+                  <Award className="w-3.5 h-3.5 text-[#D4A017]" />
                   All Time Record
                 </span>
-                <span className="text-[10px] bg-[#C89A2B] text-[#6B3F1D] font-extrabold px-2 py-0.5 rounded-full">Permanent</span>
+                <span className="text-[10px] bg-[#D4A017] text-[#541718] font-extrabold px-2 py-0.5 rounded-full">Permanent</span>
               </div>
               <div className="text-2xl font-black text-[#D8B45C]">
                 <AnimatedCounter value={summaryMetrics.allTime.mobile + summaryMetrics.allTime.onboarding + summaryMetrics.allTime.internet + summaryMetrics.allTime.atm + summaryMetrics.allTime.merchant} suffix=" Total" />
@@ -552,7 +552,7 @@ export const EmployeeDailyKpiHistoryTable = ({
                 </div>
                 <div className="flex justify-between">
                   <span>Total Deposits:</span>
-                  <strong className="text-[#C89A2B] font-mono">ETB <AnimatedCounter value={summaryMetrics.allTime.deposits} /></strong>
+                  <strong className="text-[#D4A017] font-mono">ETB <AnimatedCounter value={summaryMetrics.allTime.deposits} /></strong>
                 </div>
               </div>
             </div>
@@ -563,12 +563,12 @@ export const EmployeeDailyKpiHistoryTable = ({
       {
     /* 3. HISTORICAL PERFORMANCE TABLE WITH FILTERED SUMS FOOTER */
   }
-      <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl text-white space-y-4">
+      <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl text-white space-y-4">
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#C89A2B]" />
+              <Calendar className="w-5 h-5 text-[#D4A017]" />
               Daily KPI Performance
             </h3>
             <p className="text-xs text-gray-300">
@@ -589,7 +589,7 @@ export const EmployeeDailyKpiHistoryTable = ({
       const val = e.target.value;
       setRowsPerPage(val === "all" ? "all" : Number(val));
     }}
-    className="bg-black/40 border border-white/20 text-white font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#C89A2B] cursor-pointer"
+    className="bg-black/40 border border-white/20 text-white font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4A017] cursor-pointer"
   >
                 <option value={5}>5 rows</option>
                 <option value={10}>10 rows</option>
@@ -613,7 +613,7 @@ export const EmployeeDailyKpiHistoryTable = ({
         </div>
 
         {filteredReports.length === 0 ? <div className="p-10 text-center rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300 space-y-2">
-            <Calendar className="w-8 h-8 text-[#C89A2B] mx-auto opacity-60" />
+            <Calendar className="w-8 h-8 text-[#D4A017] mx-auto opacity-60" />
             <p className="font-bold text-white text-sm">No Daily KPI Records Found for Selected Filter</p>
             <p className="text-gray-400 text-[11px]">
               Adjust your date filter presets or submit your daily performance using the form above.
@@ -625,7 +625,7 @@ export const EmployeeDailyKpiHistoryTable = ({
                 {
     /* Sticky Header */
   }
-                <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase text-[11px] sticky top-0 z-10">
+                <thead className="bg-[#541718] text-[#D4A017] font-bold uppercase text-[11px] sticky top-0 z-10">
                 <tr>
                   <th className="p-3.5">Date</th>
                   <th className="p-3.5">Day of Week</th>
@@ -655,7 +655,7 @@ export const EmployeeDailyKpiHistoryTable = ({
                       {
       /* Date */
     }
-                      <td className="p-3.5 font-mono font-bold text-[#C89A2B] whitespace-nowrap">
+                      <td className="p-3.5 font-mono font-bold text-[#D4A017] whitespace-nowrap">
                         {reportDateStr}
                       </td>
 
@@ -762,7 +762,7 @@ export const EmployeeDailyKpiHistoryTable = ({
       type="button"
       onClick={() => setEditingReport(report)}
       title="Edit KPI Values"
-      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#C89A2B] transition-colors"
+      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-[#D4A017] transition-colors"
     >
                               <Edit className="w-3.5 h-3.5" />
                             </button>}
@@ -785,7 +785,7 @@ export const EmployeeDailyKpiHistoryTable = ({
               {
     /* 4. STICKY FILTERED SUMS ROW AT BOTTOM */
   }
-              <tfoot className="bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#362011] text-white font-extrabold border-t-2 border-[#C89A2B]">
+              <tfoot className="bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#362011] text-white font-extrabold border-t-2 border-[#D4A017]">
                 <tr>
                   <td colSpan={3} className="p-4 text-xs font-black text-[#D8B45C] uppercase tracking-wider">
                     FILTERED SUMS ({filteredReports.length} records)
@@ -825,7 +825,7 @@ export const EmployeeDailyKpiHistoryTable = ({
   }
           {!isAll && totalPages > 1 && <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10 text-xs text-gray-300">
               <div>
-                Showing <strong className="text-white">{startRecordIndex}–{endRecordIndex}</strong> of <strong className="text-[#C89A2B]">{totalRecords}</strong> records
+                Showing <strong className="text-white">{startRecordIndex}–{endRecordIndex}</strong> of <strong className="text-[#D4A017]">{totalRecords}</strong> records
               </div>
 
               <div className="flex items-center space-x-1">
@@ -854,7 +854,7 @@ export const EmployeeDailyKpiHistoryTable = ({
       key={`page-${pageNum}`}
       type="button"
       onClick={() => setCurrentPage(Number(pageNum))}
-      className={`min-w-[32px] h-8 flex items-center justify-center rounded-xl font-bold transition-all ${currentPage === pageNum ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md font-extrabold" : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"}`}
+      className={`min-w-[32px] h-8 flex items-center justify-center rounded-xl font-bold transition-all ${currentPage === pageNum ? "bg-[#D4A017] text-[#541718] shadow-md font-extrabold" : "bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10"}`}
     >
                       {pageNum}
                     </button>;
@@ -899,11 +899,11 @@ export const EmployeeDailyKpiHistoryTable = ({
   >
           <div
     ref={viewingReportRef}
-    className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl"
+    className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl"
   >
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 text-[#C89A2B] uppercase">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4A017]/20 text-[#D4A017] uppercase">
                   Daily Performance Entry Details
                 </span>
                 <h3 className="font-extrabold text-lg text-white mt-1">
@@ -958,8 +958,8 @@ export const EmployeeDailyKpiHistoryTable = ({
               </div>
             </div>
 
-            {viewingReport.managerComment && <div className="p-3 bg-black/30 border border-[#C89A2B]/30 rounded-xl text-xs">
-                <span className="text-[#C89A2B] font-bold block mb-0.5">Manager Feedback & Notes:</span>
+            {viewingReport.managerComment && <div className="p-3 bg-black/30 border border-[#D4A017]/30 rounded-xl text-xs">
+                <span className="text-[#D4A017] font-bold block mb-0.5">Manager Feedback & Notes:</span>
                 <p className="text-gray-200">{viewingReport.managerComment}</p>
               </div>}
 
@@ -969,7 +969,7 @@ export const EmployeeDailyKpiHistoryTable = ({
       setEditingReport(viewingReport);
       setViewingReport(null);
     }}
-    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#C89A2B] font-bold text-xs flex items-center gap-1.5"
+    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#D4A017] font-bold text-xs flex items-center gap-1.5"
   >
                   <Edit className="w-3.5 h-3.5" />
                   <span>Edit This Report</span>
@@ -980,7 +980,7 @@ export const EmployeeDailyKpiHistoryTable = ({
 
               <button
     onClick={() => setViewingReport(null)}
-    className="px-5 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs hover:bg-[#D8B45C]"
+    className="px-5 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs hover:bg-[#D8B45C]"
   >
                 Close
               </button>

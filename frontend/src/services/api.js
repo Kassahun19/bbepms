@@ -78,6 +78,7 @@ function extractArray(data, fallback) {
   return fallback;
 }
 function generateClientSideAiResponse(prompt, userRole, userId, contextData) {
+  const isFirstManual = Boolean(contextData?.isFirstManual);
   const coachResult = evaluateEpmsCoachQuery(prompt, {
     districts: initialDistricts,
     branches: initialBranches,
@@ -85,13 +86,18 @@ function generateClientSideAiResponse(prompt, userRole, userId, contextData) {
     reports: initialDailyReports,
     targets: initialTargets,
     lastContext: contextData?.lastContext,
+    isFirstManual,
     userRole
   });
+  let resText = coachResult.text;
+  if (isFirstManual && !resText.toLowerCase().includes("welcome to ask bunna ai")) {
+    resText = `👋 **Welcome to Ask Bunna AI!** I'm your dedicated Banking Intelligence and Daily KPI Performance Coach for Bunna Bank S.C. Whether you need real-time performance insights, branch comparisons, or personalized operational guidance, I'm here to support you.\n\n${resText}`;
+  }
   return {
-    response: coachResult.text,
-    reply: coachResult.text,
-    answer: coachResult.text,
-    text: coachResult.text,
+    response: resText,
+    reply: resText,
+    answer: resText,
+    text: resText,
     context: coachResult.context
   };
 }
@@ -386,6 +392,42 @@ export const api = {
     if (userId) headers["x-user-id"] = userId;
     const res = await fetchJsonOrFallback(`/api/branches/${branchId}/employees`, { headers });
     return res.data || [];
+  },
+  getPublicStats: async () => {
+    const res = await fetchJsonOrFallback("/api/system/public-stats");
+    if (res.data && res.data.success && res.data.data) {
+      return res.data.data;
+    }
+    const [districts, branches, employees, reports] = await Promise.all([
+      api.getDistricts(),
+      api.getBranches(),
+      api.getEmployees(),
+      api.getDailyReports()
+    ]);
+    const dCount = Array.isArray(districts) ? districts.length : 0;
+    const bCount = Array.isArray(branches) ? branches.length : 0;
+    const branchStaff = Array.isArray(branches)
+      ? branches.reduce((sum, b) => sum + (Number(b.employee_count || b.employeeCount) || 0), 0)
+      : 0;
+    const districtStaff = Array.isArray(districts)
+      ? districts.reduce((sum, d) => sum + (Number(d.total_employees || d.totalEmployees) || 0), 0)
+      : 0;
+    const userCount = Array.isArray(employees) ? employees.length : 0;
+    const eCount = branchStaff > 0 ? branchStaff : (districtStaff > 0 ? districtStaff : userCount);
+
+    const reportList = Array.isArray(reports) ? reports : [];
+    const totalReports = reportList.length;
+    const approvedReports = reportList.filter((r) => (r.status || "").toLowerCase() === "approved").length;
+    const eff = totalReports > 0 ? Number(((approvedReports / totalReports) * 100).toFixed(1)) : 0;
+
+    return {
+      districtsCount: dCount,
+      branchesCount: bCount,
+      employeesCount: eCount,
+      totalReports,
+      approvedReports,
+      approvalEfficiency: eff
+    };
   },
   getDistricts: async (userRole, userId, districtId) => {
     const headers = {};
@@ -1057,22 +1099,26 @@ export const api = {
   },
   // AI Assistant
   askAiAssistant: async (prompt, userRole, userId, contextData) => {
-    const res = await fetchJsonOrFallback("/api/ai/assistant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, userId: userId || "admin", userRole: userRole || "EMPLOYEE", contextData })
-    });
-    if (res.data) {
-      const textVal = res.data.response || res.data.reply || res.data.answer || res.data.text;
-      if (textVal) {
-        return {
-          response: textVal,
-          reply: textVal,
-          answer: textVal,
-          text: textVal
-        };
+    try {
+      const res = await fetchJsonOrFallback("/api/ai/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, userId: userId || "admin", userRole: userRole || "EMPLOYEE", contextData })
+      });
+      if (res && res.data) {
+        const textVal = res.data.response || res.data.reply || res.data.answer || res.data.text || res.data.data?.reply;
+        if (textVal && typeof textVal === "string" && textVal.trim() !== "" && textVal.trim() !== "undefined") {
+          return {
+            response: textVal.trim(),
+            reply: textVal.trim(),
+            answer: textVal.trim(),
+            text: textVal.trim(),
+            context: res.data.context || contextData
+          };
+        }
       }
-      return res.data;
+    } catch (err) {
+      console.warn("Backend AI assistant fetch error, using data engine fallback:", err);
     }
     return generateClientSideAiResponse(prompt, userRole, userId, contextData);
   },

@@ -178,115 +178,108 @@ export const UserProfileModal = ({
   >
       <div
     ref={contentRef}
-    className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl shadow-2xl text-white overflow-hidden mb-8 transform transition-all"
+    className="bg-white border border-gray-200 rounded-3xl w-full max-w-4xl shadow-2xl text-gray-900 overflow-hidden mb-8 transform transition-all"
   >
-        
-        {
-    /* Banner & Header */
-  }
-        <div className="relative p-6 bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#6B3F1D] border-b border-white/10">
+        {/* Banner & Header */}
+        <div className="relative p-6 bg-white border-b border-gray-200">
           <div className="absolute top-5 right-5 z-10">
             <ModalCloseButton onClose={onClose} ariaLabel="Close user profile dialog" />
           </div>
 
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C89A2B] to-[#6B3F1D] p-1 shadow-xl flex items-center justify-center">
-              <div className="w-full h-full bg-[#6B3F1D] rounded-[14px] flex items-center justify-center text-2xl font-black text-[#C89A2B]">
+            <div className="w-20 h-20 rounded-2xl bg-[#541718] p-1 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-[#541718] rounded-[14px] flex items-center justify-center text-2xl font-extrabold text-white">
                 {activeEmployee.firstName[0]}{(activeEmployee.middleName || activeEmployee.lastName || "")[0]}
               </div>
             </div>
 
             <div className="text-center sm:text-left space-y-1 flex-1">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h2 className="text-2xl font-black text-white">{getUserFullName(activeEmployee)}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{getUserFullName(activeEmployee)}</h2>
                 <span className={`px-3 py-0.5 rounded-full text-xs font-bold border flex items-center gap-1 ${badgeInfo.bg}`}>
                   <RoleIcon className="w-3.5 h-3.5" />
                   {badgeInfo.label}
                 </span>
               </div>
 
-              <p className="text-xs text-[#C89A2B] font-semibold">{activeEmployee.jobTitle || "Banking Professional"} • Bunna Bank S.C.</p>
+              <p className="text-xs text-[#541718] font-semibold">{activeEmployee.jobTitle || "Banking Professional"} • Bunna Bank S.C.</p>
               
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[11px] text-gray-300 pt-1">
-                <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-[#C89A2B]" /> {activeEmployee.branchName || "Head Office"}</span>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[11px] text-gray-500 pt-1">
+                <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5 text-[#541718]" /> {activeEmployee.branchName || "Head Office"}</span>
                 <span>•</span>
-                <span>Staff ID: <strong className="text-white">{activeEmployee.id}</strong></span>
+                <span>Staff ID: <strong className="text-gray-800">{activeEmployee.id}</strong></span>
                 <span>•</span>
-                <span>Status: <strong className="text-emerald-400">Active</strong></span>
+                <span>Status: <strong className="text-[#425727]">Active</strong></span>
               </div>
 
-              {
-    /* AI Natural Language Performance Summary Trigger */
-  }
+              {/* AI Natural Language Performance Summary Trigger */}
               <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 <button
-    type="button"
-    onClick={() => {
-      if (onOpenAiSummary) {
-        onOpenAiSummary(activeEmployee);
-      }
-    }}
-    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] font-extrabold text-xs flex items-center space-x-1.5 shadow-lg hover:brightness-110 transition-all cursor-pointer"
-  >
-                  <Sparkles className="w-4 h-4 text-[#6B3F1D]" />
+                  type="button"
+                  onClick={() => {
+                    if (onOpenAiSummary) {
+                      onOpenAiSummary(activeEmployee);
+                    }
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#541718] hover:bg-[#3d1011] text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-white" />
                   <span>AI Performance Summary in Drawer</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {
-    /* Navigation Tabs */
-  }
-          <div className="flex items-center space-x-2 overflow-x-auto mt-6 pt-4 border-t border-white/10 text-xs font-bold">
+          {/* Navigation Tabs */}
+          <div className="flex items-center space-x-2 overflow-x-auto mt-6 pt-4 border-t border-gray-100 text-xs font-bold">
             <button
-    onClick={() => setActiveTab("profile")}
-    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "profile" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("profile")}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "profile" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               {t.personalProfile || "Personal Profile"}
             </button>
 
             <button
-    onClick={() => setActiveTab("createReport")}
-    className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-lg border ${activeTab === "createReport" ? "bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] text-[#6B3F1D] border-[#C89A2B] font-black" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"}`}
-  >
-              <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+              onClick={() => setActiveTab("createReport")}
+              className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-xs border cursor-pointer ${activeTab === "createReport" ? "bg-[#541718] text-white border-[#541718] font-bold" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+            >
+              <Sparkles className="w-4 h-4 text-[#541718]" />
               <span>{t.createReportMenu || "Create Daily Report"}</span>
             </button>
 
             <button
-    onClick={() => setActiveTab("navigation")}
-    className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 ${activeTab === "navigation" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("navigation")}
+              className={`px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${activeTab === "navigation" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>{t.roleNavigation || "Role Navigation Menus"}</span>
             </button>
 
             <button
-    onClick={() => setActiveTab("targets")}
-    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "targets" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("targets")}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "targets" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               Target & KPI Assignments
             </button>
 
             <button
-    onClick={() => setActiveTab("badges")}
-    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "badges" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("badges")}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "badges" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               Badges & Recognition
             </button>
 
             <button
-    onClick={() => setActiveTab("security")}
-    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "security" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("security")}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "security" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               Security & Permissions
             </button>
 
             <button
-    onClick={() => setActiveTab("activity")}
-    className={`px-4 py-2 rounded-xl transition-all ${activeTab === "activity" ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-300 hover:bg-white/5"}`}
-  >
+              onClick={() => setActiveTab("activity")}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${activeTab === "activity" ? "bg-[#541718] text-white shadow-xs" : "text-gray-600 hover:bg-gray-100"}`}
+            >
               Audit Trail
             </button>
           </div>
@@ -438,103 +431,103 @@ export const UserProfileModal = ({
     /* TAB 1: PERSONAL PROFILE */
   }
           {activeTab === "profile" && <form onSubmit={handleSaveProfile} className="space-y-6">
-              {isSaved && <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4" />
+              {isSaved && <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>Profile contact details updated successfully!</span>
                 </div>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">First Name</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">First Name</label>
                   <input
-    type="text"
-    value={firstName}
-    onChange={(e) => setFirstName(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Middle Name</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Middle Name</label>
                   <input
-    type="text"
-    value={middleName}
-    onChange={(e) => setMiddleName(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="text"
+                    value={middleName}
+                    onChange={(e) => setMiddleName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Last Name</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Last Name</label>
                   <input
-    type="text"
-    value={lastName}
-    onChange={(e) => setLastName(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">User ID</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">User ID</label>
                   <input
-    type="text"
-    value={userIdInput}
-    onChange={(e) => setUserIdInput(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="text"
+                    value={userIdInput}
+                    onChange={(e) => setUserIdInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Email Address</label>
                   <input
-    type="email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Phone Number</label>
-                  <input
-    type="text"
-    value={phone}
-    onChange={(e) => setPhone(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Emergency Contact Phone</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
                   <input
-    type="text"
-    value={emergencyContact}
-    onChange={(e) => setEmergencyContact(e.target.value)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
-  />
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-300 mb-1">Assigned Branch</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Emergency Contact Phone</label>
                   <input
-    type="text"
-    readOnly
-    value={user.branchName || "Addis Ababa Main Branch"}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-black/30 border border-white/10 text-xs text-gray-300 cursor-not-allowed"
-  />
+                    type="text"
+                    value={emergencyContact}
+                    onChange={(e) => setEmergencyContact(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 text-xs text-gray-900 focus:outline-none focus:border-[#541818] font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Assigned Branch</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={user.branchName || "Addis Ababa Main Branch"}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-xs text-gray-700 cursor-not-allowed font-medium"
+                  />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+              <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
                 <button
-    type="button"
-    onClick={() => alert(`Official EPMS Performance Certificate generated for ${getUserFullName(user)}`)}
-    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-gray-200 flex items-center space-x-2"
-  >
-                  <Download className="w-4 h-4 text-[#C89A2B]" />
+                  type="button"
+                  onClick={() => alert(`Official EPMS Performance Certificate generated for ${getUserFullName(user)}`)}
+                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 border border-gray-300 text-xs font-bold text-gray-800 flex items-center space-x-2 cursor-pointer transition-all"
+                >
+                  <Download className="w-4 h-4 text-[#541818]" />
                   <span>Download Performance Record PDF</span>
                 </button>
 
                 <button
-    type="submit"
-    className="px-6 py-2.5 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-black text-xs shadow-md hover:bg-[#D8B45C] transition-all"
-  >
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-[#541818] hover:bg-[#3d1011] text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                >
                   Save Profile Updates
                 </button>
               </div>

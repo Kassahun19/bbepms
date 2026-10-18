@@ -123,10 +123,10 @@ export const BankMemoLibrary = ({ currentUser }) => {
       {
     /* Header Banner */
   }
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#3A1F0D] p-6 rounded-3xl border border-[#C89A2B]/40 shadow-xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1d2b32] p-6 rounded-3xl border border-[#D4A017]/40 shadow-xl">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="bg-[#C89A2B] text-[#4A2C17] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="bg-[#D4A017] text-[#1d2b32] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               Enterprise Digital Library
             </span>
             <span className="bg-emerald-500/20 text-emerald-300 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase border border-emerald-500/30">
@@ -134,7 +134,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
             </span>
           </div>
           <h2 className="text-xl font-black text-white mt-1 flex items-center space-x-2">
-            <FileText className="w-6 h-6 text-[#C89A2B]" />
+            <FileText className="w-6 h-6 text-[#D4A017]" />
             <span>Bank Memos, Policies & Circulars</span>
           </h2>
           <p className="text-xs text-gray-300 mt-1">
@@ -150,7 +150,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
     placeholder="Search library..."
     value={searchQuery}
     onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full pl-9 pr-4 py-2 bg-black/30 border border-white/15 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full pl-9 pr-4 py-2 bg-black/30 border border-white/15 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A017]"
   />
           </div>
         </div>
@@ -163,7 +163,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
         <div className="flex items-center space-x-2">
           <button
     onClick={() => setViewTab("ALL")}
-    className={`px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-2 transition-all ${viewTab === "ALL" ? "bg-[#C89A2B] text-[#4A2C17] shadow-lg font-black" : "bg-[#3A1F0D] text-gray-300 hover:bg-white/10 border border-white/10"}`}
+    className={`px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-2 transition-all ${viewTab === "ALL" ? "bg-[#D4A017] text-[#1d2b32] shadow-lg font-black" : "bg-[#1d2b32] text-gray-300 hover:bg-white/10 border border-white/10"}`}
   >
             <FileText className="w-4 h-4" />
             <span>All Published Documents ({documents.length})</span>
@@ -171,7 +171,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
 
           <button
     onClick={() => setViewTab("SAVED")}
-    className={`px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-2 transition-all ${viewTab === "SAVED" ? "bg-[#C89A2B] text-[#4A2C17] shadow-lg font-black" : "bg-[#3A1F0D] text-gray-300 hover:bg-white/10 border border-white/10"}`}
+    className={`px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-2 transition-all ${viewTab === "SAVED" ? "bg-[#D4A017] text-[#1d2b32] shadow-lg font-black" : "bg-[#1d2b32] text-gray-300 hover:bg-white/10 border border-white/10"}`}
   >
             <FolderArchive className="w-4 h-4" />
             <span>
@@ -183,7 +183,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
         </div>
 
         <div className="text-[11px] text-amber-200/80 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl flex items-center space-x-1.5">
-          <Info className="w-3.5 h-3.5 text-[#C89A2B]" />
+          <Info className="w-3.5 h-3.5 text-[#D4A017]" />
           <span>Staff mode: View, save personal copies, or download official attachments.</span>
         </div>
       </div>
@@ -195,7 +195,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
         {categories.map((cat) => <button
     key={cat}
     onClick={() => setCategoryFilter(cat)}
-    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${categoryFilter === cat ? "bg-[#C89A2B] text-[#4A2C17] shadow-md font-extrabold" : "bg-[#4A2C17] text-gray-300 hover:bg-white/5 border border-white/10"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${categoryFilter === cat ? "bg-[#D4A017] text-[#1d2b32] shadow-md font-extrabold" : "bg-[#1d2b32] text-gray-300 hover:bg-white/5 border border-white/10"}`}
   >
             {cat}
           </button>)}
@@ -205,7 +205,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
     /* Documents Grid */
   }
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {loading ? <div className="col-span-full py-12 text-center text-gray-400 text-xs">Loading Enterprise Digital Library...</div> : filteredDocs.length === 0 ? <div className="col-span-full py-12 text-center text-gray-400 text-xs bg-[#3A1F0D] rounded-3xl border border-white/10 p-8 space-y-2">
+        {loading ? <div className="col-span-full py-12 text-center text-gray-400 text-xs">Loading Enterprise Digital Library...</div> : filteredDocs.length === 0 ? <div className="col-span-full py-12 text-center text-gray-400 text-xs bg-[#1d2b32] rounded-3xl border border-white/10 p-8 space-y-2">
             <FileText className="w-8 h-8 text-gray-500 mx-auto" />
             <p className="font-bold text-gray-300">No bank documents found.</p>
             <p className="text-[11px] text-gray-400">
@@ -217,23 +217,23 @@ export const BankMemoLibrary = ({ currentUser }) => {
     return <div
       key={doc.id}
       onClick={() => handleOpenDoc(doc)}
-      className="bg-[#3A1F0D] rounded-3xl border border-[#C89A2B]/30 p-5 shadow-xl hover:border-[#C89A2B] transition-all cursor-pointer flex flex-col justify-between space-y-4 group relative"
+      className="bg-[#1d2b32] rounded-3xl border border-[#D4A017]/30 p-5 shadow-xl hover:border-[#D4A017] transition-all cursor-pointer flex flex-col justify-between space-y-4 group relative"
     >
                 <div className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <span className="px-2.5 py-1 rounded-full bg-[#C89A2B]/20 text-[#C89A2B] text-[10px] font-extrabold tracking-wider uppercase">
+                    <span className="px-2.5 py-1 rounded-full bg-[#D4A017]/20 text-[#D4A017] text-[10px] font-extrabold tracking-wider uppercase">
                       {doc.documentType || doc.category || "Memo"}
                     </span>
                     <div className="flex items-center space-x-1.5">
                       <button
       onClick={(e) => handleToggleSave(doc, e)}
       title={isSaved ? "Saved in Personal Archive" : "Save to Personal Archive"}
-      className={`p-1.5 rounded-lg border transition-all ${isSaved ? "bg-[#C89A2B] text-[#4A2C17] border-[#C89A2B]" : "bg-black/30 text-gray-400 border-white/10 hover:text-white hover:border-[#C89A2B]"}`}
+      className={`p-1.5 rounded-lg border transition-all ${isSaved ? "bg-[#D4A017] text-[#1d2b32] border-[#D4A017]" : "bg-black/30 text-gray-400 border-white/10 hover:text-white hover:border-[#D4A017]"}`}
     >
                         {isSaved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
                       </button>
 
-                      {!isRead ? <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-500 text-[#4A2C17] font-black text-[9px] animate-pulse">
+                      {!isRead ? <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-500 text-[#1d2b32] font-black text-[9px] animate-pulse">
                           <Clock className="w-3 h-3" />
                           <span>NEW</span>
                         </span> : <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">
@@ -245,7 +245,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
 
                   <div>
                     <span className="text-[11px] font-mono text-gray-400">{doc.memoNumber || doc.referenceNumber}</span>
-                    <h3 className="text-base font-bold text-white group-hover:text-[#C89A2B] transition-colors mt-0.5 line-clamp-2">
+                    <h3 className="text-base font-bold text-white group-hover:text-[#D4A017] transition-colors mt-0.5 line-clamp-2">
                       {doc.title}
                     </h3>
                   </div>
@@ -257,7 +257,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
 
                 <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
                   <span className="flex items-center space-x-1">
-                    <Calendar className="w-3.5 h-3.5 text-[#C89A2B]" />
+                    <Calendar className="w-3.5 h-3.5 text-[#D4A017]" />
                     <span>Effective: {doc.effectiveDate}</span>
                   </span>
                   
@@ -272,7 +272,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-[#C89A2B] font-bold group-hover:underline flex items-center space-x-1">
+                    <span className="text-[#D4A017] font-bold group-hover:underline flex items-center space-x-1">
                       <span>Read</span>
                       <Eye className="w-3.5 h-3.5" />
                     </span>
@@ -286,7 +286,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
     /* CONFIRMATION MODAL FOR REMOVE FROM PERSONAL LIST */
   }
       {confirmRemoveDoc && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#3A1F0D] border border-amber-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-[#1d2b32] border border-amber-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center space-x-3 text-amber-400">
               <AlertCircle className="w-6 h-6 shrink-0" />
               <h3 className="text-lg font-black text-white">Remove Document from Personal View?</h3>
@@ -325,14 +325,14 @@ export const BankMemoLibrary = ({ currentUser }) => {
             <div className="flex justify-between items-start border-b border-gray-200 pb-4">
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#C89A2B]/20 text-[#6B3F1D] px-3 py-1 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#D4A017]/20 text-[#541718] px-3 py-1 rounded-full">
                     {selectedDoc.documentType || selectedDoc.category} • Ref: {selectedDoc.memoNumber || selectedDoc.referenceNumber}
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
                     Target: {selectedDoc.targetAudience || "Entire Bank (All Staff)"}
                   </span>
                 </div>
-                <h3 className="text-2xl font-black text-[#6B3F1D] mt-2">{selectedDoc.title}</h3>
+                <h3 className="text-2xl font-black text-[#541718] mt-2">{selectedDoc.title}</h3>
                 <p className="text-xs text-gray-500 mt-1">
                   Effective: {selectedDoc.effectiveDate} | Directorate: {selectedDoc.issuingDepartment || "Executive"} | Authorized Issuer: {selectedDoc.authorizedIssuer || selectedDoc.publisher}
                 </p>
@@ -351,7 +351,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
 
             {selectedDoc.fileName && <div className="flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs">
                 <div className="flex items-center space-x-2 text-amber-900">
-                  <FileText className="w-5 h-5 text-[#C89A2B]" />
+                  <FileText className="w-5 h-5 text-[#D4A017]" />
                   <span className="font-bold">{selectedDoc.fileName}</span>
                   <span className="text-gray-500">({selectedDoc.fileSize})</span>
                 </div>
@@ -359,7 +359,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
     href={selectedDoc.fileUrl || "#"}
     target="_blank"
     rel="noreferrer"
-    className="px-4 py-2 bg-[#C89A2B] text-[#6B3F1D] font-bold rounded-xl shadow-sm hover:bg-amber-500 flex items-center space-x-1.5"
+    className="px-4 py-2 bg-[#D4A017] text-[#541718] font-bold rounded-xl shadow-sm hover:bg-amber-500 flex items-center space-x-1.5"
   >
                   <Download className="w-4 h-4" />
                   <span>Download Attachment</span>
@@ -373,7 +373,7 @@ export const BankMemoLibrary = ({ currentUser }) => {
               <div className="flex items-center space-x-2">
                 <button
     onClick={(e) => handleToggleSave(selectedDoc, e)}
-    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${selectedDoc.savedBy && currentUser?.id && selectedDoc.savedBy.includes(currentUser.id) ? "bg-[#C89A2B] text-[#4A2C17]" : "bg-amber-100 text-[#6B3F1D] hover:bg-amber-200"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${selectedDoc.savedBy && currentUser?.id && selectedDoc.savedBy.includes(currentUser.id) ? "bg-[#D4A017] text-[#1d2b32]" : "bg-amber-100 text-[#541718] hover:bg-amber-200"}`}
   >
                   <Bookmark className="w-4 h-4" />
                   <span>

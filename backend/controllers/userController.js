@@ -41,6 +41,10 @@ export const userController = {
 
   async updateUser(req, res) {
     try {
+      if (!req.user) return res.status(401).json({ success: false, error: 'Authentication required' });
+      if (req.user.role !== 'BANK_SUPER_ADMIN' && req.user.role !== 'ADMINISTRATOR' && req.user.userId !== req.params.id) {
+        return res.status(403).json({ success: false, error: 'Unauthorized to update this user profile' });
+      }
       const updated = await User.update(req.params.id, req.body);
       if (!updated) return res.status(404).json({ success: false, error: 'User not found' });
       return res.status(200).json({ success: true, data: updated });

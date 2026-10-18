@@ -213,8 +213,8 @@ export const BranchManagementPanel = ({
     onChange={(e) => setFilterBankId(e.target.value)}
     className="w-full bg-[#6B3F1D] border border-white/15 text-white text-xs rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#C89A2B]"
   >
-            <option value="ALL">All Commercial Banks</option>
-            {banks.map((b) => <option key={b.id} value={b.id}>{b.name} ({b.code})</option>)}
+            <option key="all-banks" value="ALL">All Commercial Banks</option>
+            {banks.map((b, index) => <option key={b.id || `b-opt-${index}`} value={b.id}>{b.name} ({b.code})</option>)}
           </select>
         </div>
 
@@ -224,8 +224,8 @@ export const BranchManagementPanel = ({
     onChange={(e) => setFilterCity(e.target.value)}
     className="w-full bg-[#6B3F1D] border border-white/15 text-white text-xs rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#C89A2B]"
   >
-            <option value="ALL">All Hub Cities</option>
-            {citiesList.map((c) => <option key={c} value={c}>{c}</option>)}
+            <option key="all-cities" value="ALL">All Hub Cities</option>
+            {citiesList.map((c, index) => <option key={c || `c-opt-${index}`} value={c}>{c}</option>)}
           </select>
         </div>
       </div>

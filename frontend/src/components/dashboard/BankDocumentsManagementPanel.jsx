@@ -290,13 +290,13 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     return matchesSearch;
   });
   return <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#3A1F0D] p-6 rounded-3xl border border-[#C89A2B]/40 shadow-xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1d2b32] p-6 rounded-3xl border border-[#D4A017]/40 shadow-xl">
         <div>
-          <span className="bg-[#C89A2B] text-[#4A2C17] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="bg-[#D4A017] text-[#1d2b32] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             Admin Management Console
           </span>
           <h2 className="text-xl font-black text-white mt-1 flex items-center space-x-2">
-            <FileText className="w-6 h-6 text-[#C89A2B]" />
+            <FileText className="w-6 h-6 text-[#D4A017]" />
             <span>Bank Documents Management (Memos, Policies & Circulars)</span>
           </h2>
           <p className="text-xs text-gray-300 mt-1">
@@ -306,7 +306,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
 
         <button
     onClick={handleOpenCreate}
-    className="px-5 py-2.5 rounded-xl bg-[#C89A2B] hover:bg-amber-500 text-[#4A2C17] text-xs font-black shadow-lg flex items-center space-x-2 cursor-pointer transition-all"
+    className="px-5 py-2.5 rounded-xl bg-[#D4A017] hover:bg-amber-500 text-[#1d2b32] text-xs font-black shadow-lg flex items-center space-x-2 cursor-pointer transition-all"
   >
           <Plus className="w-4 h-4" />
           <span>Create New Document</span>
@@ -323,7 +323,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
       {
     /* Search and Filters */
   }
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#4A2C17]/90 p-4 rounded-2xl border border-white/10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#1d2b32]/90 p-4 rounded-2xl border border-white/10">
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
           <input
@@ -331,16 +331,16 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     placeholder="Search by title, ref no, or subject..."
     value={searchQuery}
     onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full pl-9 pr-4 py-2 bg-black/30 border border-white/15 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full pl-9 pr-4 py-2 bg-black/30 border border-white/15 rounded-xl text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A017]"
   />
         </div>
 
         <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-[#C89A2B]" />
+          <Filter className="w-4 h-4 text-[#D4A017]" />
           <select
     value={typeFilter}
     onChange={(e) => setTypeFilter(e.target.value)}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   >
             <option value="ALL">All Document Types</option>
             <option value="Memo">Bank Memo</option>
@@ -352,11 +352,11 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Layers className="w-4 h-4 text-[#C89A2B]" />
+          <Layers className="w-4 h-4 text-[#D4A017]" />
           <select
     value={statusFilter}
     onChange={(e) => setStatusFilter(e.target.value)}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   >
             <option value="ALL">All Statuses</option>
             <option value="DRAFT">Draft</option>
@@ -370,10 +370,10 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
       {
     /* Documents Table / Cards */
   }
-      <div className="bg-[#3A1F0D] rounded-3xl border border-[#C89A2B]/30 overflow-hidden shadow-xl">
+      <div className="bg-[#1d2b32] rounded-3xl border border-[#D4A017]/30 overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-300">
-            <thead className="bg-[#4A2C17] text-[#C89A2B] uppercase text-[10px] tracking-wider border-b border-white/10">
+            <thead className="bg-[#1d2b32] text-[#D4A017] uppercase text-[10px] tracking-wider border-b border-white/10">
               <tr>
                 <th className="py-3 px-4">Ref / Type</th>
                 <th className="py-3 px-4">Title & Subject</th>
@@ -393,7 +393,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     return <tr key={doc.id} className="hover:bg-white/5 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-mono font-bold text-white">{doc.memoNumber || doc.referenceNumber}</div>
-                      <div className="text-[10px] text-[#C89A2B] mt-0.5">{doc.documentType || doc.category}</div>
+                      <div className="text-[10px] text-[#D4A017] mt-0.5">{doc.documentType || doc.category}</div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-bold text-white text-sm">{doc.title}</div>
@@ -429,7 +429,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
       onClick={() => handleViewHistory(doc)}
       disabled={isProcessing}
       title="Audit & Version History"
-      className={`p-1.5 rounded-lg bg-[#C89A2B]/20 hover:bg-[#C89A2B]/30 text-[#C89A2B] transition-colors cursor-pointer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`p-1.5 rounded-lg bg-[#D4A017]/20 hover:bg-[#D4A017]/30 text-[#D4A017] transition-colors cursor-pointer ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
     >
                           <History className="w-3.5 h-3.5" />
                         </button>
@@ -485,10 +485,10 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     /* CREATE / EDIT DOCUMENT MODAL */
   }
       {isModalOpen && <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-5 text-white my-8">
+          <div className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-5 text-white my-8">
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <h3 className="text-lg font-bold text-white flex items-center space-x-2">
-                <FileText className="w-5 h-5 text-[#C89A2B]" />
+                <FileText className="w-5 h-5 text-[#D4A017]" />
                 <span>{editingDoc ? `Edit Document: ${editingDoc.title}` : "Create / Upload Official Bank Document"}</span>
               </h3>
               <button
@@ -506,7 +506,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
                   <select
     value={formState.documentType}
     onChange={(e) => setFormState({ ...formState, documentType: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   >
                     <option value="Memo">Bank Memo</option>
                     <option value="Policy">Policy</option>
@@ -523,7 +523,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     required
     value={formState.referenceNumber}
     onChange={(e) => setFormState({ ...formState, referenceNumber: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4A017]"
     placeholder="e.g. BN/DIR/012/2026"
   />
                 </div>
@@ -534,7 +534,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     type="text"
     value={formState.version}
     onChange={(e) => setFormState({ ...formState, version: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
     placeholder="1.0"
   />
                 </div>
@@ -547,7 +547,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     required
     value={formState.title}
     onChange={(e) => setFormState({ ...formState, title: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4A017]"
     placeholder="e.g. Directive on Foreign Currency Mobilization & Retention"
   />
               </div>
@@ -558,7 +558,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     type="text"
     value={formState.subject}
     onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4A017]"
     placeholder="Short summary of the directive or circular"
   />
               </div>
@@ -571,7 +571,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     required
     value={formState.effectiveDate}
     onChange={(e) => setFormState({ ...formState, effectiveDate: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   />
                 </div>
                 <div>
@@ -580,7 +580,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     type="date"
     value={formState.issueDate}
     onChange={(e) => setFormState({ ...formState, issueDate: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   />
                 </div>
                 <div>
@@ -588,7 +588,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
                   <select
     value={formState.priority}
     onChange={(e) => setFormState({ ...formState, priority: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   >
                     <option value="Normal">Normal</option>
                     <option value="High">High</option>
@@ -604,7 +604,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     type="text"
     value={formState.issuingDepartment}
     onChange={(e) => setFormState({ ...formState, issuingDepartment: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   />
                 </div>
                 <div>
@@ -612,7 +612,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
                   <select
     value={formState.targetAudience}
     onChange={(e) => setFormState({ ...formState, targetAudience: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#D4A017]"
   >
                     <option value="ALL">Entire Bank (All Staff)</option>
                     <option value="Branch Managers">Branch Managers</option>
@@ -631,7 +631,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     rows={6}
     value={formState.content}
     onChange={(e) => setFormState({ ...formState, content: e.target.value })}
-    className="w-full bg-black/30 border border-white/15 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full bg-black/30 border border-white/15 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4A017]"
     placeholder="Enter full text, instructions, and policy terms here..."
   />
               </div>
@@ -640,7 +640,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     /* File Attachment Upload */
   }
               <div className="bg-black/20 p-4 rounded-2xl border border-white/10 space-y-2">
-                <label className="block text-[#C89A2B] font-extrabold flex items-center space-x-2">
+                <label className="block text-[#D4A017] font-extrabold flex items-center space-x-2">
                   <Upload className="w-4 h-4" />
                   <span>Attach Official Document File (PDF, DOCX, XLSX, PPTX)</span>
                 </label>
@@ -648,7 +648,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     type="file"
     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
     onChange={handleFileUploadSimulation}
-    className="w-full text-xs text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#C89A2B] file:text-[#4A2C17] hover:file:bg-amber-500 cursor-pointer"
+    className="w-full text-xs text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#D4A017] file:text-[#1d2b32] hover:file:bg-amber-500 cursor-pointer"
   />
                 {formState.fileName && <p className="text-emerald-300 text-[11px] font-mono">
                     Attached: {formState.fileName} ({formState.fileSize} - {formState.fileType})
@@ -678,7 +678,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
                 <button
     type="submit"
     disabled={isPosting}
-    className="px-5 py-2 rounded-xl bg-[#C89A2B] hover:bg-amber-500 text-[#4A2C17] font-black shadow-md disabled:opacity-50"
+    className="px-5 py-2 rounded-xl bg-[#D4A017] hover:bg-amber-500 text-[#1d2b32] font-black shadow-md disabled:opacity-50"
   >
                   Save as Draft / Update
                 </button>
@@ -691,14 +691,14 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     /* POST CONFIRMATION MODAL */
   }
       {postConfirmationOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 text-white text-center">
-            <div className="w-16 h-16 bg-[#C89A2B]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Send className="w-8 h-8 text-[#C89A2B]" />
+          <div className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 text-white text-center">
+            <div className="w-16 h-16 bg-[#D4A017]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Send className="w-8 h-8 text-[#D4A017]" />
             </div>
             <h3 className="text-xl font-bold">Are you sure you want to post this document?</h3>
             <div className="bg-black/20 p-4 rounded-2xl border border-white/10">
               <p className="text-sm text-gray-300 mb-1">Target Audience:</p>
-              <p className="text-lg font-black text-[#C89A2B]">{formState.targetAudience}</p>
+              <p className="text-lg font-black text-[#D4A017]">{formState.targetAudience}</p>
             </div>
             <p className="text-xs text-gray-400">
               The document will be immediately published and available to the selected staff. Notifications will be dispatched.
@@ -729,10 +729,10 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
           <div className="bg-white text-gray-900 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6 my-8">
             <div className="flex justify-between items-start border-b border-gray-200 pb-4">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#C89A2B]/20 text-[#6B3F1D] px-2.5 py-1 rounded-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#D4A017]/20 text-[#541718] px-2.5 py-1 rounded-full">
                   {previewDoc.documentType || previewDoc.category} • Ref: {previewDoc.memoNumber || previewDoc.referenceNumber}
                 </span>
-                <h3 className="text-2xl font-black text-[#6B3F1D] mt-2">{previewDoc.title}</h3>
+                <h3 className="text-2xl font-black text-[#541718] mt-2">{previewDoc.title}</h3>
                 <p className="text-xs text-gray-500 mt-1">Effective: {previewDoc.effectiveDate} | Issuer: {previewDoc.authorizedIssuer || previewDoc.publisher}</p>
               </div>
               <button
@@ -749,7 +749,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
 
             {previewDoc.fileName && <div className="flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs">
                 <div className="flex items-center space-x-2 text-amber-900">
-                  <FileText className="w-5 h-5 text-[#C89A2B]" />
+                  <FileText className="w-5 h-5 text-[#D4A017]" />
                   <span className="font-bold">{previewDoc.fileName}</span>
                   <span className="text-gray-500">({previewDoc.fileSize})</span>
                 </div>
@@ -757,7 +757,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     href={previewDoc.fileUrl || "#"}
     target="_blank"
     rel="noreferrer"
-    className="px-3 py-1.5 bg-[#C89A2B] text-[#6B3F1D] font-bold rounded-xl shadow-sm hover:bg-amber-500"
+    className="px-3 py-1.5 bg-[#D4A017] text-[#541718] font-bold rounded-xl shadow-sm hover:bg-amber-500"
   >
                   Download / Open Attachment
                 </a>
@@ -778,10 +778,10 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
     /* VERSION HISTORY & AUDIT TRAIL MODAL */
   }
       {historyDoc && <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 text-white my-8">
+          <div className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 text-white my-8">
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <h3 className="text-lg font-bold text-white flex items-center space-x-2">
-                <History className="w-5 h-5 text-[#C89A2B]" />
+                <History className="w-5 h-5 text-[#D4A017]" />
                 <span>Version Control & Audit Trail</span>
               </h3>
               <button
@@ -794,7 +794,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
 
             <div className="space-y-4 text-xs">
               <div className="bg-black/30 p-4 rounded-2xl border border-white/10">
-                <p className="font-bold text-[#C89A2B]">Document: {historyDoc.title}</p>
+                <p className="font-bold text-[#D4A017]">Document: {historyDoc.title}</p>
                 <p className="text-gray-300 mt-1">Current Version: v{historyDoc.version || "1.0"} | Status: {historyDoc.status}</p>
               </div>
 
@@ -803,7 +803,7 @@ export const BankDocumentsManagementPanel = ({ currentUser }) => {
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {versionsData.auditTrail && versionsData.auditTrail.length > 0 ? versionsData.auditTrail.map((audit, idx) => <div key={idx} className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex justify-between items-center">
                         <div>
-                          <span className="font-bold text-[#C89A2B]">{audit.action}</span> by {audit.by}
+                          <span className="font-bold text-[#D4A017]">{audit.action}</span> by {audit.by}
                         </div>
                         <span className="text-[10px] text-gray-400 font-mono">{new Date(audit.timestamp).toLocaleString()}</span>
                       </div>) : <p className="text-gray-400">No audit events recorded yet.</p>}

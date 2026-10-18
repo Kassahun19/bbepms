@@ -95,49 +95,49 @@ export const CeoDashboard = ({
     { type: "success", message: "Finance KPI group achieved 87.6% overall mobilization, outperforming Q3 baseline." },
     { type: "info", message: `${pendingReports.length} daily performance reports are pending final review and approval.` }
   ];
-  return <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8 space-y-8 pb-28">
+  return <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-8 space-y-8 pb-28">
       
       {
     /* CEO Executive Header */
   }
-      <div className="bg-gradient-to-r from-[#3B2212] via-[#5C3A21] to-[#7A4E2B] text-white rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+      <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="bg-[#C89A2B] text-[#3B2212] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+            <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               CEO Executive Command Portal
             </span>
-            <span className="text-amber-200 text-sm font-medium">Bunna Bank S.C. • Head Office</span>
-            <span className="text-xs bg-white/10 text-amber-100 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#C89A2B]" /> Last updated: {lastUpdated}
+            <span className="text-gray-600 text-sm font-medium">Bunna Bank S.C. • Head Office</span>
+            <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full flex items-center gap-1.5 border border-gray-200">
+              <Clock className="w-3.5 h-3.5 text-[#541818]" /> Last updated: {lastUpdated}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-gray-900">
             Executive Performance & Bank-Wide Intelligence
           </h1>
-          <p className="text-amber-100/90 text-sm max-w-2xl">
+          <p className="text-gray-600 text-sm max-w-2xl">
             Welcome, {currentUser.firstName} {currentUser.lastName}. Full operational visibility across all districts, branches, and KPI groups for Fiscal Year {selectedFiscalYear}.
           </p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center bg-black/20 rounded-xl p-1 border border-white/10">
+          <div className="flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200">
             <button
-    onClick={() => setSelectedFiscalYear("2025/26")}
-    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedFiscalYear === "2025/26" ? "bg-[#C89A2B] text-[#3B2212]" : "text-amber-100 hover:text-white"}`}
-  >
+              onClick={() => setSelectedFiscalYear("2025/26")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${selectedFiscalYear === "2025/26" ? "bg-[#541818] text-white font-bold" : "text-gray-600 hover:text-gray-900"}`}
+            >
               FY 2025/26
             </button>
             <button
-    onClick={() => setSelectedFiscalYear("2026/27")}
-    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedFiscalYear === "2026/27" ? "bg-[#C89A2B] text-[#3B2212]" : "text-amber-100 hover:text-white"}`}
-  >
+              onClick={() => setSelectedFiscalYear("2026/27")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${selectedFiscalYear === "2026/27" ? "bg-[#541818] text-white font-bold" : "text-gray-600 hover:text-gray-900"}`}
+            >
               FY 2026/27 (Current)
             </button>
           </div>
           <button
-    onClick={() => window.print()}
-    className="bg-[#C89A2B] hover:bg-[#b08522] text-[#3B2212] font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-lg flex items-center gap-2"
-  >
+            onClick={() => window.print()}
+            className="bg-[#541818] hover:bg-[#3d1011] text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+          >
             <Printer className="w-4 h-4" /> Export Executive PDF
           </button>
         </div>
@@ -173,7 +173,7 @@ export const CeoDashboard = ({
             </>}
           {selectedBranch !== "ALL" && <>
               <ChevronRight className="w-4 h-4 text-stone-400" />
-              <span className="px-3.5 py-2 rounded-xl font-semibold bg-[#C89A2B] text-[#3B2212]">
+              <span className="px-3.5 py-2 rounded-xl font-semibold bg-[#D4A017] text-[#3B2212]">
                 {selectedBranch}
               </span>
             </>}
@@ -187,16 +187,16 @@ export const CeoDashboard = ({
       setSelectedBranch("ALL");
       setDrillLevel(e.target.value === "ALL" ? "bank" : "district");
     }}
-    className="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#C89A2B]"
+    className="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
   >
-            <option value="ALL">All Districts ({districts.length || 12})</option>
-            {districts.map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+            <option key="ALL" value="ALL">All Districts ({districts.length || 12})</option>
+            {districts.map((d, index) => <option key={d.id || d.districtId || `dist-${d.name || index}`} value={d.name}>{d.name}</option>)}
           </select>
 
           <select
     value={selectedPeriod}
     onChange={(e) => setSelectedPeriod(e.target.value)}
-    className="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#C89A2B]"
+    className="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
   >
             <option value="annual">Fiscal Year ({selectedFiscalYear})</option>
             <option value="quarterly">Q3 2026 Review</option>
@@ -210,7 +210,7 @@ export const CeoDashboard = ({
   }
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 relative overflow-hidden group hover:shadow-md transition">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#C89A2B]/10 rounded-bl-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4A017]/10 rounded-bl-full pointer-events-none" />
           <p className="text-xs font-semibold uppercase text-stone-500 tracking-wider">Overall Bank Performance</p>
           <div className="flex items-baseline gap-2 mt-2">
             <h3 className="text-3xl font-serif font-bold text-[#5C3A21]">{overallAchievement}%</h3>
@@ -219,7 +219,7 @@ export const CeoDashboard = ({
             </span>
           </div>
           <div className="w-full bg-stone-100 h-2 rounded-full mt-4 overflow-hidden">
-            <div className="bg-[#C89A2B] h-full rounded-full" style={{ width: `${overallAchievement}%` }} />
+            <div className="bg-[#D4A017] h-full rounded-full" style={{ width: `${overallAchievement}%` }} />
           </div>
           <p className="text-xs text-stone-500 mt-2">Weighted average of approved daily reports</p>
         </div>
@@ -330,7 +330,7 @@ export const CeoDashboard = ({
               <h3 className="text-xl font-serif font-bold text-[#5C3A21]">Executive Performance Trend</h3>
               <p className="text-stone-500 text-sm">Monthly comparison between current FY and previous FY.</p>
             </div>
-            <span className="text-xs bg-[#C89A2B]/10 text-[#5C3A21] px-3 py-1.5 rounded-lg font-semibold">
+            <span className="text-xs bg-[#D4A017]/10 text-[#5C3A21] px-3 py-1.5 rounded-lg font-semibold">
               FY {selectedFiscalYear}
             </span>
           </div>
@@ -352,7 +352,7 @@ export const CeoDashboard = ({
   />
                 <Legend />
                 <Area type="monotone" dataKey="performance" name="Current FY (%)" stroke="#5C3A21" strokeWidth={3} fillOpacity={1} fill="url(#colorPerf)" />
-                <Area type="monotone" dataKey="previousFY" name="Previous FY (%)" stroke="#C89A2B" strokeWidth={2} strokeDasharray="4 4" fill="transparent" />
+                <Area type="monotone" dataKey="previousFY" name="Previous FY (%)" stroke="#D4A017" strokeWidth={2} strokeDasharray="4 4" fill="transparent" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -391,7 +391,7 @@ export const CeoDashboard = ({
               <select
     value={rankingLimit}
     onChange={(e) => setRankingLimit(e.target.value === "all" ? "all" : Number(e.target.value))}
-    className="bg-stone-50 border border-stone-300 text-stone-800 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C89A2B]"
+    className="bg-stone-50 border border-stone-300 text-stone-800 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
   >
                 <option value={5}>Top 5</option>
                 <option value={10}>Top 10</option>
@@ -423,9 +423,9 @@ export const CeoDashboard = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-sm">
-                  {limitedDistricts.map((d, index) => <tr key={d.id} className="hover:bg-stone-50 transition">
+                  {limitedDistricts.map((d, index) => <tr key={d.id || d.districtId || `dist-row-${d.name || index}`} className="hover:bg-stone-50 transition">
                       <td className="py-3 px-4 flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-[#C89A2B] text-[#3B2212]" : "bg-stone-100 text-stone-700"}`}>
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-[#D4A017] text-[#3B2212]" : "bg-stone-100 text-stone-700"}`}>
                           {index + 1}
                         </span>
                         <div>
@@ -447,7 +447,7 @@ export const CeoDashboard = ({
       branchesCount: d.branchCount,
       status: d.status
     })}
-    className="text-[#5C3A21] hover:text-[#C89A2B] text-xs font-semibold flex items-center gap-1 ml-auto"
+    className="text-[#5C3A21] hover:text-[#D4A017] text-xs font-semibold flex items-center gap-1 ml-auto"
   >
                           Drill Down →
                         </button>
@@ -474,9 +474,9 @@ export const CeoDashboard = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-sm">
-                  {limitedBranches.map((b, index) => <tr key={b.id} className="hover:bg-stone-50 transition">
+                  {limitedBranches.map((b, index) => <tr key={b.id || b.branchId || `branch-row-${b.name || index}`} className="hover:bg-stone-50 transition">
                       <td className="py-3 px-4 flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-[#C89A2B] text-[#3B2212]" : "bg-stone-100 text-stone-700"}`}>
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-[#D4A017] text-[#3B2212]" : "bg-stone-100 text-stone-700"}`}>
                           {index + 1}
                         </span>
                         <div>
@@ -499,7 +499,7 @@ export const CeoDashboard = ({
       managerName: b.managerName,
       status: "Active"
     })}
-    className="text-[#5C3A21] hover:text-[#C89A2B] text-xs font-semibold flex items-center gap-1 ml-auto"
+    className="text-[#5C3A21] hover:text-[#D4A017] text-xs font-semibold flex items-center gap-1 ml-auto"
   >
                           Drill Down →
                         </button>
@@ -518,19 +518,19 @@ export const CeoDashboard = ({
   }
       {drillDownModalData && <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-gradient-to-r from-[#5C3A21] to-[#382213] p-5 text-white flex items-center justify-between">
+            <div className="bg-white border-b border-gray-200 p-5 text-gray-900 flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#541818] uppercase tracking-widest mb-1">
                   <span>Bunna Bank EPMS</span>
                   <span>/</span>
                   <span>{drillDownModalData.type === "district" ? "District Drill-Down" : "Branch Drill-Down"}</span>
                 </div>
-                <h3 className="text-xl font-bold font-serif">{drillDownModalData.name}</h3>
+                <h3 className="text-xl font-bold font-serif text-gray-900">{drillDownModalData.name}</h3>
               </div>
               <button
-    onClick={() => setDrillDownModalData(null)}
-    className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition"
-  >
+                onClick={() => setDrillDownModalData(null)}
+                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-700 transition cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>

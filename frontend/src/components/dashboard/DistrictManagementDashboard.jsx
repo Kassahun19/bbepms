@@ -20,32 +20,32 @@ export const DistrictManagementDashboard = ({
   const districtBranches = branches.filter(
     (b) => b.districtId === userDistrictId || b.districtName?.toLowerCase() === userDistrictName.toLowerCase()
   );
-  return <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8">
+  return <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {
     /* District Director Header */
   }
-        <div className="bg-gradient-to-r from-[#4A2E18] to-[#6B3F1D] text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="bg-[#C89A2B] text-[#4A2E18] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 District Management Portal
               </span>
-              <span className="text-amber-200 text-sm">{userDistrictName}</span>
+              <span className="text-gray-600 text-sm font-medium">{userDistrictName}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
               District Operational & Branch Performance
             </h1>
-            <p className="text-amber-100/90 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               Welcome, {currentUser.firstName} {currentUser.lastName} ({currentUser.jobTitle}). Monitoring all branches under {userDistrictName}.
             </p>
           </div>
           <div>
             <button
-    onClick={() => window.print()}
-    className="bg-[#C89A2B] hover:bg-[#b08522] text-[#4A2E18] font-semibold px-4 py-2 rounded-xl text-sm transition shadow flex items-center gap-2 cursor-pointer"
-  >
+              onClick={() => window.print()}
+              className="bg-[#541818] hover:bg-[#3d1011] text-white font-semibold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+            >
               <Printer className="w-4 h-4" /> Print District Report
             </button>
           </div>
@@ -75,7 +75,7 @@ export const DistrictManagementDashboard = ({
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200">
             <p className="text-xs font-semibold uppercase text-stone-500 tracking-wider">District Ranking</p>
-            <h3 className="text-3xl font-serif font-bold text-[#C89A2B] mt-2">#2 Nationwide</h3>
+            <h3 className="text-3xl font-serif font-bold text-[#D4A017] mt-2">#2 Nationwide</h3>
             <p className="text-xs text-stone-500 mt-3">Among all bank districts</p>
           </div>
         </div>
@@ -122,14 +122,14 @@ export const DistrictManagementDashboard = ({
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-[#5C3A21]">{score}%</span>
                           <div className="w-20 bg-stone-200 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-[#C89A2B] h-full" style={{ width: `${score}%` }} />
+                            <div className="bg-[#D4A017] h-full" style={{ width: `${score}%` }} />
                           </div>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button
       onClick={() => setSelectedBranch(b)}
-      className="text-[#5C3A21] hover:text-[#C89A2B] font-semibold text-xs flex items-center gap-1 ml-auto cursor-pointer"
+      className="text-[#5C3A21] hover:text-[#D4A017] font-semibold text-xs flex items-center gap-1 ml-auto cursor-pointer"
     >
                           View Details <ChevronRight className="w-3.5 h-3.5" />
                         </button>

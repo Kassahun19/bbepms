@@ -1,540 +1,356 @@
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
-  Building2,
-  Bell,
-  Search,
-  UserCheck,
-  LogOut,
-  Shield,
-  Briefcase,
-  ChevronDown,
   Menu,
   X,
-  FileCode2,
-  LayoutDashboard,
-  MapPin,
-  Users,
-  Target,
-  Megaphone,
-  BarChart3,
-  UserCog,
-  ShieldCheck,
-  Settings,
-  TrendingUp,
-  FileText,
-  MessageSquare,
-  Award,
-  ChevronRight,
-  Bot,
-  User as UserIcon
+  User as UserIcon,
+  LogOut,
+  ChevronDown,
+  Globe
 } from "lucide-react";
-import { getUserFullName } from "../../types";
-import { BunnaBankLogo } from "./BunnaBankLogo";
 import { translations } from "../../i18n/translations";
-import { useDropdownDismiss } from "../../hooks/useDropdownDismiss";
-import { ModalCloseButton } from "./ModalCloseButton";
-export const Header = (props) => {
-  const {
-    user,
-    currentUser,
-    language,
-    onLanguageChange,
-    onOpenLogin,
-    onLogout,
-    onOpenNotifications,
-    onOpenAiAssistant,
-    onOpenSearch,
-    onOpenApiDocs,
-    onOpenTelegramBot,
-    activeRoleView,
-    onSelectRoleView,
-    onRoleSwitch,
-    unreadCount,
-    unreadNotifications,
-    currentNavView = "home",
-    onNavigate
-  } = props;
-  const activeUser = user !== void 0 ? user : currentUser !== void 0 ? currentUser : null;
-  const currentRole = activeRoleView || activeUser?.role || null;
-  const handleRoleSelect = onSelectRoleView || onRoleSwitch || (() => {
-  });
-  const notificationsCount = unreadCount ?? unreadNotifications ?? 0;
-  const t = translations[language] || translations["en"];
+import { BunnaBankLogo } from "./BunnaBankLogo";
+
+export const Header = ({
+  language = "en",
+  onLanguageChange,
+  currentUser,
+  onOpenLogin,
+  onLogout,
+  onOpenProfile,
+  currentNavView = "home",
+  onNavigate
+}) => {
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
-  const [selectedNavRole, setSelectedNavRole] = useState(activeUser?.role || "EMPLOYEE");
-  const { containerRef: roleDropdownRef } = useDropdownDismiss({
-    isOpen: roleMenuOpen,
-    onClose: () => setRoleMenuOpen(false)
-  });
-  const { containerRef: mobileMenuRef } = useDropdownDismiss({
-    isOpen: mobileMenuOpen,
-    onClose: () => setMobileMenuOpen(false)
-  });
-  const handleMenuItemClick = (itemId, roleGroup) => {
-    setRoleMenuOpen(false);
-    if (onRoleSwitch) {
-      onRoleSwitch(roleGroup);
-    } else if (onSelectRoleView) {
-      onSelectRoleView(roleGroup);
-    }
-    if (roleGroup === "MANAGER") {
-      if (props.onSelectTab) {
-        props.onSelectTab(itemId, roleGroup);
+  const dropdownRef = useRef(null);
+  const mobileRef = useRef(null);
+
+  const t = translations[language] || translations["en"];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
       }
-      if (onNavigate) {
-        onNavigate("home");
+      if (mobileRef.current && !mobileRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
       }
-      return;
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const getUserInitials = (user) => {
+    if (!user) return "U";
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
     }
-    if (itemId === "my_profile" || itemId === "my_profile_badges") {
-      props.onOpenProfile && props.onOpenProfile();
-      return;
+    if (user.name) {
+      const parts = user.name.split(" ");
+      if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      return user.name.slice(0, 2).toUpperCase();
     }
-    if (itemId === "settings") {
-      props.onOpenProfile && props.onOpenProfile();
-      return;
-    }
-    if (itemId === "notifications") {
-      onOpenNotifications();
-      return;
-    }
-    if (props.onSelectTab) {
-      props.onSelectTab(itemId, roleGroup);
-    }
-    if (onNavigate) {
-      onNavigate("home");
+    return (user.firstName?.[0] || user.username?.[0] || "U").toUpperCase();
+  };
+
+  const getUserFullName = (user) => {
+    if (!user) return "User";
+    if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
+    return user.name || user.username || "Bunna Employee";
+  };
+
+  const getRoleBadgeLabel = (role) => {
+    switch (role) {
+      case "BANK_SUPER_ADMIN":
+        return "Bank Super Admin";
+      case "ADMINISTRATOR":
+        return "HQ Administrator";
+      case "CEO":
+        return "Chief Executive Officer";
+      case "BOARD_OF_DIRECTORS":
+        return "Board of Directors";
+      case "CHIEF_OFFICER":
+        return "Chief Officer";
+      case "DIRECTOR":
+        return "Director";
+      case "DISTRICT_DIRECTOR":
+        return "District Director";
+      case "MANAGER":
+        return "Branch Manager";
+      case "EMPLOYEE":
+        return "Staff Member";
+      default:
+        return role ? role.replace(/_/g, " ") : "Member";
     }
   };
-  return <header className="sticky top-0 z-40 bg-[#4A2815] backdrop-blur-md border-b border-[#D9A514]/30 text-white shadow-xl">
+
+  const navLinks = [
+    { id: "home", label: t.home || "Home" },
+    { id: "about", label: t.about || "About" },
+    { id: "howItWorks", label: t.howItWorks || "How It Works" }
+  ];
+
+  return (
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-200 text-gray-900 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {
-    /* Left Brand Identity & Left Navigation Links */
-  }
-          <div className="flex items-center space-x-6">
+          {/* Left Side: Brand Logo & 3 Public Nav Links */}
+          <div className="flex items-center space-x-8">
             <button
-    onClick={() => onNavigate && onNavigate("home")}
-    className="flex items-center space-x-3 text-left focus:outline-none group"
-  >
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D9A514] via-[#F2C230] to-[#6B3E1E] p-0.5 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-[#4A2815] rounded-[10px] p-1.5 flex items-center justify-center">
-                  <BunnaBankLogo className="w-8 h-8" variant="gold" />
-                </div>
+              onClick={() => onNavigate && onNavigate("home")}
+              className="flex items-center space-x-3 text-left focus:outline-none group cursor-pointer"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[#541818] p-1.5 shadow-sm flex items-center justify-center group-hover:opacity-95 transition-all">
+                <BunnaBankLogo className="w-7 h-7" variant="gold" />
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-xl tracking-tight text-white">{t.bankName}</span>
-                  <span className="bg-[#D9A514]/20 text-[#F2C230] border border-[#D9A514]/40 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center space-x-1">
-                    <Target className="w-3 h-3" />
-                    <span>KPI</span>
+                  <span className="font-bold text-lg tracking-tight text-[#541818]">
+                    {t.bankName || "Bunna Bank"}
+                  </span>
+                  <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    EPMS
                   </span>
                 </div>
-                <p className="text-xs text-[#D9A514] font-medium hidden sm:block">
-                  {t.tagline}
+                <p className="text-xs text-gray-500 font-medium hidden sm:block">
+                  {t.tagline || "Performance Management System"}
                 </p>
               </div>
             </button>
 
-            {
-    /* Navigation Bar Link Names: Home, About, & Contact on Left Side */
-  }
-            <nav className="hidden lg:flex items-center space-x-1.5 bg-[#6B3E1E] p-1.5 rounded-2xl border border-[#D9A514]/20">
-              <button
-    onClick={() => onNavigate && onNavigate("home")}
-    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${currentNavView === "home" ? "bg-[#D9A514] text-[#4A2815] shadow-md" : "text-gray-200 hover:text-white hover:bg-white/10"}`}
-  >
-                {t.home || "Home"}
-              </button>
-
-              <button
-    onClick={() => onNavigate && onNavigate("about")}
-    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${currentNavView === "about" ? "bg-[#D9A514] text-[#4A2815] shadow-md" : "text-gray-200 hover:text-white hover:bg-white/10"}`}
-  >
-                {t.about || "About"}
-              </button>
-
-              <button
-    onClick={() => onNavigate && onNavigate("howItWorks")}
-    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${currentNavView === "howItWorks" || currentNavView === "contact" ? "bg-[#D9A514] text-[#4A2815] shadow-md" : "text-gray-200 hover:text-white hover:bg-white/10"}`}
-  >
-                {t.howItWorks || "How It Works"}
-              </button>
+            {/* Exactly 3 Public Navigation Links on Left */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navLinks.map((link) => {
+                const isActive = currentNavView === link.id || (link.id === "howItWorks" && currentNavView === "contact");
+                return (
+                  <button
+                    key={link.id}
+                    onClick={() => onNavigate && onNavigate(link.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? "text-[#541818] bg-[#541818]/10 font-bold"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
-          {
-    /* Center Space / Active User Role Indicator */
-  }
-          {activeUser && <div className="hidden lg:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#6B3E1E] border border-[#D9A514]/40 text-xs text-[#F2C230] font-semibold shadow-inner">
-              <span className="w-2 h-2 rounded-full bg-[#D9A514] animate-pulse mr-1" />
-              <span>
-                {activeUser.role === "BANK_SUPER_ADMIN" ? "Bank Super Admin (System Control Center)" : activeUser.role === "ADMINISTRATOR" ? "HQ Admin Workspace" : activeUser.role === "CEO" ? "CEO Executive Suite" : activeUser.role === "BOARD_OF_DIRECTORS" ? "Board Governance Portal" : activeUser.role === "CHIEF_OFFICER" ? "Chief Officer Executive Workspace" : activeUser.role === "DIRECTOR" ? "Director Performance Portal" : activeUser.role === "DISTRICT_DIRECTOR" ? `${activeUser.districtName || "District"} Area Office` : activeUser.role === "MANAGER" ? `${activeUser.branchName || "Branch"} Manager Portal` : `${activeUser.branchName || "Branch"} Staff Portal`}
-              </span>
-            </div>}
-
-          {
-    /* Right Action Icons & Controls */
-  }
-          <div className="hidden md:flex items-center space-x-3">
-            {
-    /* Global Search Button */
-  }
-            <button
-    onClick={onOpenSearch}
-    className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 transition-colors"
-    title="Global Search"
-  >
-              <Search className="w-4 h-4 text-[#D9A514]" />
-            </button>
-
-            {
-    /* API Docs & Schema */
-  }
-            <button
-    onClick={onOpenApiDocs}
-    className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 transition-colors"
-    title="Developer API & MySQL Schema"
-  >
-              <FileCode2 className="w-4 h-4 text-[#D9A514]" />
-            </button>
-
-            {
-    /* Telegram Bot */
-  }
-            {onOpenTelegramBot && <button
-    onClick={onOpenTelegramBot}
-    className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 transition-colors"
-    title="BBEPMS Telegram Bot Integration"
-  >
-                <Bot className="w-4 h-4 text-[#D9A514]" />
-              </button>}
-
-            {
-    /* Notifications */
-  }
-            {activeUser && <button
-    onClick={onOpenNotifications}
-    className="relative p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 transition-colors"
-  >
-                <Bell className="w-4 h-4 text-[#D9A514]" />
-                {notificationsCount > 0 && <span className="absolute -top-1 -right-1 bg-[#D9A514] text-[#4A2815] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
-                    {notificationsCount}
-                  </span>}
-              </button>}
-
-            {
-    /* Language Switcher */
-  }
-            <div className="flex items-center bg-[#6B3E1E] rounded-xl p-1 border border-[#D9A514]/30 text-xs font-semibold">
-              <button
-    onClick={() => onLanguageChange("en")}
-    className={`px-2.5 py-1 rounded-lg transition-colors ${language === "en" || language === "EN" ? "bg-[#D9A514] text-[#4A2815]" : "text-gray-300 hover:text-white"}`}
-  >
-                EN
-              </button>
-              <button
-    onClick={() => onLanguageChange("am")}
-    className={`px-2.5 py-1 rounded-lg transition-colors ${language === "am" || language === "AM" ? "bg-[#D9A514] text-[#4A2815]" : "text-gray-300 hover:text-white"}`}
-  >
-                አማ
-              </button>
-            </div>
-
-            {
-    /* User Account / Login Button */
-  }
-            {activeUser ? <div className="relative">
+          {/* Right Side: Language Switcher + Login Button or Profile Avatar */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Clean Language Switcher */}
+            {onLanguageChange && (
+              <div className="flex items-center border border-gray-200 rounded-lg p-0.5 text-xs font-semibold text-gray-600">
                 <button
-    onClick={() => {
-      const nextState = !roleMenuOpen;
-      setRoleMenuOpen(nextState);
-      if (nextState && activeUser) {
-        setSelectedNavRole(activeUser.role);
-      }
-    }}
-    className="flex items-center space-x-2 pl-3 pr-2 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-medium"
-  >
-                  <div className="w-7 h-7 rounded-full bg-[#D9A514] text-[#4A2815] font-bold flex items-center justify-center text-xs">
-                    {activeUser.firstName[0]}
+                  onClick={() => onLanguageChange("en")}
+                  className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                    language === "en" || language === "EN"
+                      ? "bg-[#541818] text-white"
+                      : "hover:text-gray-900"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => onLanguageChange("am")}
+                  className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                    language === "am" || language === "AM"
+                      ? "bg-[#541818] text-white"
+                      : "hover:text-gray-900"
+                  }`}
+                >
+                  አማ
+                </button>
+              </div>
+            )}
+
+            {/* Unauthenticated: Show Brand Colored Login Button */}
+            {!currentUser ? (
+              <button
+                onClick={onOpenLogin}
+                className="px-5 py-2.5 rounded-xl bg-[#541818] hover:bg-[#3d1011] text-white font-semibold text-sm shadow-sm transition-all transform active:scale-95 cursor-pointer"
+              >
+                {t.login || "Login"}
+              </button>
+            ) : (
+              /* Authenticated: Show Profile Avatar with Initial Fallback & Small Dropdown */
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none cursor-pointer"
+                  title={getUserFullName(currentUser)}
+                  aria-expanded={profileDropdownOpen}
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#541818] text-white font-bold flex items-center justify-center text-sm shadow-sm border border-gray-200 ring-2 ring-[#541818]/20">
+                    {getUserInitials(currentUser)}
                   </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-white leading-none">{getUserFullName(activeUser)}</p>
-                    <p className="text-[10px] text-[#F2C230]">{activeUser.jobTitle}</p>
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-gray-300 ml-1" />
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
                 </button>
 
-                {roleMenuOpen && <div
-    ref={roleDropdownRef}
-    className="absolute right-0 mt-2 w-72 bg-[#4A2815] border border-[#D9A514]/40 rounded-2xl shadow-2xl z-50 text-xs overflow-hidden max-h-[82vh] flex flex-col"
-  >
-                    {
-    /* Header / User Profile summary */
-  }
-                    <div className="px-4 py-3 bg-[#6B3E1E] border-b border-white/10 shrink-0 relative">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 truncate">
-                          <div className="w-9 h-9 rounded-full bg-[#D9A514] text-[#4A2815] font-black flex items-center justify-center text-sm shadow shrink-0">
-                            {activeUser.firstName[0]}
-                          </div>
-                          <div className="truncate">
-                            <p className="font-bold text-white text-sm truncate">{getUserFullName(activeUser)}</p>
-                            <p className="text-[#F2C230] text-xs font-medium truncate">{activeUser.email}</p>
-                            <p className="text-gray-300 text-[10px] truncate">{activeUser.branchName || "Bunna Bank S.C."}</p>
-                          </div>
+                {/* Small Profile Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 text-xs overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-[#541818] text-white font-bold flex items-center justify-center text-sm shadow shrink-0">
+                          {getUserInitials(currentUser)}
                         </div>
-                        <ModalCloseButton
-    onClose={() => setRoleMenuOpen(false)}
-    ariaLabel="Close menu"
-    size="sm"
-    variant="ghost"
-    className="ml-1"
-  />
-                      </div>
-
-                      {
-    /* Role Navigation Selector Tabs */
-  }
-                      <div className="mt-3 grid grid-cols-3 gap-1 p-1 bg-black/40 rounded-xl border border-white/10 text-[10px] font-bold">
-                        <button
-    onClick={() => setSelectedNavRole("ADMINISTRATOR")}
-    className={`py-1 rounded-lg transition-all ${selectedNavRole === "ADMINISTRATOR" || selectedNavRole === "BANK_SUPER_ADMIN" ? "bg-[#D9A514] text-[#4A2815] shadow font-bold" : "text-gray-300 hover:text-white"}`}
-  >
-                          Admin
-                        </button>
-                        <button
-    onClick={() => setSelectedNavRole("MANAGER")}
-    className={`py-1 rounded-lg transition-all ${selectedNavRole === "MANAGER" ? "bg-[#D9A514] text-[#4A2815] shadow font-bold" : "text-gray-300 hover:text-white"}`}
-  >
-                          Manager
-                        </button>
-                        <button
-    onClick={() => setSelectedNavRole("EMPLOYEE")}
-    className={`py-1 rounded-lg transition-all ${selectedNavRole === "EMPLOYEE" ? "bg-[#D9A514] text-[#4A2815] shadow font-bold" : "text-gray-300 hover:text-white"}`}
-  >
-                          Employee
-                        </button>
+                        <div className="truncate">
+                          <p className="font-bold text-gray-900 text-sm truncate">
+                            {getUserFullName(currentUser)}
+                          </p>
+                          <p className="text-gray-500 text-xs truncate">
+                            {currentUser.email || currentUser.username}
+                          </p>
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#541818]/10 text-[#541818]">
+                            {getRoleBadgeLabel(currentUser.role)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {
-    /* Scrollable Navigation List */
-  }
-                    <div className="overflow-y-auto py-2 divide-y divide-white/5 space-y-2 flex-1">
-                      
-                      {
-    /* 1. ADMIN NAVIGATION */
-  }
-                      {(selectedNavRole === "ADMINISTRATOR" || selectedNavRole === "BANK_SUPER_ADMIN") && <div className="px-2 space-y-0.5">
-                          <div className="px-3 py-1 text-[10px] uppercase tracking-wider font-extrabold text-[#F2C230] flex items-center space-x-1.5">
-                            <Shield className="w-3.5 h-3.5" />
-                            <span>Admin Navigation</span>
-                          </div>
-                          {[
-    { id: "admin_dashboard", label: "Admin Dashboard", icon: LayoutDashboard },
-    { id: "competitor_intelligence", label: "Competitor Intelligence", icon: BarChart3 },
-    { id: "districts", label: "Districts/Area Offices", icon: MapPin },
-    { id: "branches", label: "Branches", icon: Building2 },
-    { id: "employees", label: "Employees", icon: Users },
-    { id: "kpi_management", label: "KPI Management", icon: Target },
-    { id: "campaign_management", label: "Campaign Management", icon: Megaphone },
-    { id: "reports_analytics", label: "Reports & Analytics", icon: BarChart3 },
-    { id: "user_management", label: "User Management", icon: UserCog },
-    { id: "roles_permissions", label: "Roles & Permissions", icon: ShieldCheck },
-    { id: "my_profile", label: "My Profile", icon: UserCheck },
-    { id: "settings", label: "Settings", icon: Settings }
-  ].map((item) => {
-    const IconComp = item.icon;
-    return <button
-      key={item.id}
-      onClick={() => handleMenuItemClick(item.id, activeUser.role === "BANK_SUPER_ADMIN" ? "BANK_SUPER_ADMIN" : "ADMINISTRATOR")}
-      className="w-full text-left px-3 py-2 rounded-xl text-gray-200 hover:text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors font-medium group"
-    >
-                                <IconComp className="w-4 h-4 text-[#D9A514] group-hover:scale-110 transition-transform" />
-                                <span className="flex-1">{item.label}</span>
-                                <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </button>;
-  })}
-                        </div>}
+                    <div className="p-2 space-y-1">
+                      {onOpenProfile && (
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            onOpenProfile();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-gray-100 flex items-center space-x-2.5 transition-colors font-medium cursor-pointer"
+                        >
+                          <UserIcon className="w-4 h-4 text-[#541818]" />
+                          <span>My Profile</span>
+                        </button>
+                      )}
 
-                      {
-    /* 2. MANAGER NAVIGATION */
-  }
-                      {selectedNavRole === "MANAGER" && <div className="px-2 space-y-0.5">
-                          <div className="px-3 py-1 text-[10px] uppercase tracking-wider font-extrabold text-[#F2C230] flex items-center space-x-1.5">
-                            <Briefcase className="w-3.5 h-3.5" />
-                            <span>Manager Navigation</span>
-                          </div>
-                          {[
-    { id: "manager_dashboard", label: "Manager Dashboard", icon: LayoutDashboard },
-    { id: "messages_notifications", label: "Messages & Notifications", icon: MessageSquare },
-    { id: "employee_management", label: "Employee Management", icon: Users },
-    { id: "kpi_management", label: "KPI Management", icon: Target },
-    { id: "profiles", label: "Profiles", icon: UserCheck },
-    { id: "settings", label: "Settings", icon: Settings }
-  ].map((item) => {
-    const IconComp = item.icon;
-    return <button
-      key={item.id}
-      onClick={() => handleMenuItemClick(item.id, "MANAGER")}
-      className="w-full text-left px-3 py-2 rounded-xl text-gray-200 hover:text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors font-medium group"
-    >
-                                <IconComp className="w-4 h-4 text-[#D9A514] group-hover:scale-110 transition-transform" />
-                                <span className="flex-1">{item.label}</span>
-                                <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </button>;
-  })}
-                        </div>}
-
-                      {
-    /* 3. EMPLOYEE NAVIGATION */
-  }
-                      {selectedNavRole === "EMPLOYEE" && <div className="px-2 space-y-0.5">
-                          <div className="px-3 py-1 text-[10px] uppercase tracking-wider font-extrabold text-[#F2C230] flex items-center space-x-1.5">
-                            <UserIcon className="w-3.5 h-3.5" />
-                            <span>Employee Navigation</span>
-                          </div>
-                          {[
-    { id: "employee_dashboard", label: "Employee Dashboard", icon: LayoutDashboard },
-    { id: "my_performance", label: "My Performance", icon: TrendingUp },
-    { id: "my_kpis", label: "MY KPIs", icon: Target },
-    { id: "my_reports", label: "My Reports", icon: FileText },
-    { id: "achievements", label: "Achievements", icon: Award },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "my_profile", label: "My Profile", icon: UserCheck },
-    { id: "settings", label: "Settings", icon: Settings }
-  ].map((item) => {
-    const IconComp = item.icon;
-    return <button
-      key={item.id}
-      onClick={() => handleMenuItemClick(item.id, "EMPLOYEE")}
-      className="w-full text-left px-3 py-2 rounded-xl text-gray-200 hover:text-white hover:bg-white/10 flex items-center space-x-2.5 transition-colors font-medium group"
-    >
-                                <IconComp className="w-4 h-4 text-[#D9A514] group-hover:scale-110 transition-transform" />
-                                <span className="flex-1">{item.label}</span>
-                                <ChevronRight className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </button>;
-  })}
-                        </div>}
-
-                    </div>
-
-                    {
-    /* Logout footer button */
-  }
-                    <div className="p-2 border-t border-white/10 bg-[#6B3E1E] shrink-0">
                       <button
-    onClick={() => {
-      setRoleMenuOpen(false);
-      onLogout();
-    }}
-    className="w-full text-left px-3 py-2 rounded-xl text-rose-300 hover:bg-rose-500/20 hover:text-rose-200 flex items-center space-x-2 font-bold transition-colors"
-  >
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          if (onLogout) onLogout();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center space-x-2.5 transition-colors font-semibold cursor-pointer border-t border-gray-100 mt-1"
+                      >
                         <LogOut className="w-4 h-4" />
-                        <span>{t.logout}</span>
+                        <span>{t.logout || "Logout"}</span>
                       </button>
                     </div>
-                  </div>}
-              </div> : <button
-    onClick={onOpenLogin}
-    className="px-5 py-2 rounded-xl bg-[#D9A514] text-[#4A2815] font-bold text-xs shadow-md hover:bg-[#F2C230] transition-all transform active:scale-95"
-  >
-                {t.login}
-              </button>}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {
-    /* Mobile Menu Button */
-  }
+          {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center space-x-2">
+            {onLanguageChange && (
+              <button
+                onClick={() => onLanguageChange(language === "en" ? "am" : "en")}
+                className="px-2.5 py-1 rounded-lg bg-gray-100 text-[#541818] text-xs font-bold"
+              >
+                {language === "en" ? "አማርኛ" : "English"}
+              </button>
+            )}
             <button
-    onClick={() => onLanguageChange(language === "en" ? "am" : "en")}
-    className="px-2.5 py-1 rounded-lg bg-[#D9A514] text-[#4A2815] text-xs font-bold"
-  >
-              {language === "en" ? "\u12A0\u121B\u122D\u129B" : "English"}
-            </button>
-            <button
-    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-    className="p-2 rounded-lg bg-white/10 text-white"
-  >
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg text-gray-700 hover:bg-gray-100"
+              aria-label="Toggle Navigation Menu"
+            >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {
-    /* Mobile Menu Dropdown */
-  }
-      {mobileMenuOpen && <div
-    ref={mobileMenuRef}
-    className="md:hidden bg-[#4A2815] border-b border-[#D9A514]/30 px-4 py-4 space-y-3"
-  >
-          
-          {
-    /* Main Navigation Links */
-  }
-          <div className="grid grid-cols-3 gap-2 pb-2 border-b border-white/10">
-            <button
-    onClick={() => {
-      onNavigate && onNavigate("home");
-      setMobileMenuOpen(false);
-    }}
-    className={`py-2 rounded-lg text-xs font-bold text-center ${currentNavView === "home" ? "bg-[#D9A514] text-[#4A2815]" : "bg-white/5 text-gray-200"}`}
-  >
-              {t.home || "Home"}
-            </button>
-            <button
-    onClick={() => {
-      onNavigate && onNavigate("about");
-      setMobileMenuOpen(false);
-    }}
-    className={`py-2 rounded-lg text-xs font-bold text-center ${currentNavView === "about" ? "bg-[#D9A514] text-[#4A2815]" : "bg-white/5 text-gray-200"}`}
-  >
-              {t.about || "About"}
-            </button>
-            <button
-    onClick={() => {
-      onNavigate && onNavigate("howItWorks");
-      setMobileMenuOpen(false);
-    }}
-    className={`py-2 rounded-lg text-xs font-bold text-center ${currentNavView === "howItWorks" || currentNavView === "contact" ? "bg-[#D9A514] text-[#4A2815]" : "bg-white/5 text-gray-200"}`}
-  >
-              {t.howItWorks || "How It Works"}
-            </button>
+      {/* Mobile Responsive Menu */}
+      {mobileMenuOpen && (
+        <div
+          ref={mobileRef}
+          className="md:hidden bg-white border-b border-gray-200 px-4 py-4 space-y-3 shadow-lg"
+        >
+          {/* Exactly 3 Navigation Links: Home, About, How It Works */}
+          <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+            {navLinks.map((link) => {
+              const isActive = currentNavView === link.id || (link.id === "howItWorks" && currentNavView === "contact");
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => {
+                    if (onNavigate) onNavigate(link.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`py-2 rounded-lg text-xs font-bold text-center transition-colors ${
+                    isActive
+                      ? "bg-[#541818] text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
           </div>
 
-          {
-    /* Active User Badge in Mobile Menu */
-  }
-          {activeUser && <div className="p-2.5 rounded-xl bg-white/5 border border-[#D9A514]/20 text-xs text-center text-[#F2C230] font-bold">
-              <span>
-                Logged in as: {getUserFullName(activeUser)} ({activeUser.role})
-              </span>
-            </div>}
+          {/* User Account / Login on Mobile */}
+          <div className="pt-1">
+            {currentUser ? (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3 p-2 bg-gray-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-full bg-[#541818] text-white font-bold flex items-center justify-center text-xs shrink-0">
+                    {getUserInitials(currentUser)}
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-gray-900 truncate">
+                      {getUserFullName(currentUser)}
+                    </p>
+                    <p className="text-[11px] text-gray-500 truncate">
+                      {getRoleBadgeLabel(currentUser.role)}
+                    </p>
+                  </div>
+                </div>
 
-          <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
-            {activeUser ? <button
-    onClick={() => {
-      onLogout();
-      setMobileMenuOpen(false);
-    }}
-    className="w-full py-2.5 bg-red-600/80 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2"
-  >
-                <LogOut className="w-4 h-4" />
-                <span>{t.logout}</span>
-              </button> : <button
-    onClick={() => {
-      onOpenLogin();
-      setMobileMenuOpen(false);
-    }}
-    className="w-full py-2.5 bg-[#D9A514] text-[#4A2815] font-bold rounded-xl text-xs"
-  >
-                {t.login}
-              </button>}
+                {onOpenProfile && (
+                  <button
+                    onClick={() => {
+                      onOpenProfile();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl text-xs flex items-center justify-center space-x-2"
+                  >
+                    <UserIcon className="w-4 h-4 text-[#541818]" />
+                    <span>My Profile</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    if (onLogout) onLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2 bg-red-50 text-red-600 font-semibold rounded-xl text-xs flex items-center justify-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>{t.logout || "Logout"}</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  if (onOpenLogin) onOpenLogin();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2.5 bg-[#541818] text-white font-bold rounded-xl text-xs shadow-sm hover:bg-[#3d1011]"
+              >
+                {t.login || "Login"}
+              </button>
+            )}
           </div>
-        </div>}
-    </header>;
+        </div>
+      )}
+    </header>
+  );
 };

@@ -182,17 +182,17 @@ export const AllProductsOverview = ({
       {
     /* Title & Section Banner */
   }
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#362011] border border-[#C89A2B]/30 shadow-xl">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#362011] border border-[#D4A017]/30 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <span className="bg-[#C89A2B] text-[#6B3F1D] font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase">
+              <span className="bg-[#D4A017] text-[#541718] font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase">
                 Bunna Bank EPMS Metrics
               </span>
               <span className="text-xs text-gray-300">All 8 Core Products</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-[#C89A2B]" />
+              <BarChart3 className="w-6 h-6 text-[#D4A017]" />
               {title}
             </h3>
             <p className="text-xs text-gray-300 mt-0.5">{subtitle}</p>
@@ -201,7 +201,7 @@ export const AllProductsOverview = ({
           <div className="flex items-center space-x-3 bg-black/20 p-2.5 rounded-2xl border border-white/10 text-xs">
             <div className="text-right">
               <p className="text-[10px] text-gray-400 uppercase font-bold">Total Reports Submitted</p>
-              <p className="text-base font-extrabold text-[#C89A2B]">{reports.length}</p>
+              <p className="text-base font-extrabold text-[#D4A017]">{reports.length}</p>
             </div>
             <div className="h-8 w-px bg-white/10" />
             <div className="text-right">
@@ -234,7 +234,7 @@ export const AllProductsOverview = ({
     return <div
       key={prod.key}
       onClick={() => setSelectedProductKey(prod.key)}
-      className={`p-5 rounded-2xl bg-[#4A2C17]/95 border ${prod.border} shadow-xl hover:-translate-y-2.5 hover:shadow-[0_25px_50px_rgba(200,154,43,0.22)] hover:border-[#C89A2B] transition-all duration-300 transform-gpu cursor-pointer relative overflow-hidden group ${selectedProductKey === prod.key ? "ring-2 ring-[#C89A2B] scale-[1.02]" : ""}`}
+      className={`p-5 rounded-2xl bg-[#1d2b32]/95 border ${prod.border} shadow-xl hover:-translate-y-2.5 hover:shadow-[0_25px_50px_rgba(200,154,43,0.22)] hover:border-[#D4A017] transition-all duration-300 transform-gpu cursor-pointer relative overflow-hidden group ${selectedProductKey === prod.key ? "ring-2 ring-[#D4A017] scale-[1.02]" : ""}`}
     >
               <div className={`absolute top-0 right-0 w-24 h-24 rounded-full bg-gradient-to-br ${prod.gradient} blur-xl opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`} />
 
@@ -249,7 +249,7 @@ export const AllProductsOverview = ({
                 </div>
               </div>
 
-              <h4 className="text-sm font-bold text-white group-hover:text-[#C89A2B] transition-colors">{prod.name}</h4>
+              <h4 className="text-sm font-bold text-white group-hover:text-[#D4A017] transition-colors">{prod.name}</h4>
               <p className="text-[10px] text-gray-400 uppercase font-semibold">{prod.category}</p>
 
               {

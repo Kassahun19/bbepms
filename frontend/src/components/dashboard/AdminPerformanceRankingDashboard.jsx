@@ -49,7 +49,7 @@ const RankingLimitDropdown = ({
     type="button"
     id={`${id}-trigger`}
     onClick={() => setIsOpen((prev) => !prev)}
-    className={`flex items-center justify-between space-x-2 px-3 py-1.5 rounded-lg border font-bold text-xs transition-all shadow-md focus:outline-none focus:ring-1 select-none min-w-[95px] cursor-pointer ${isGold ? "bg-black/40 border-[#C89A2B]/60 text-[#C89A2B] hover:border-[#C89A2B] hover:bg-black/60 focus:ring-[#C89A2B]" : "bg-black/40 border-rose-500/50 text-rose-300 hover:border-rose-400 hover:bg-black/60 focus:ring-rose-500"}`}
+    className={`flex items-center justify-between space-x-2 px-3 py-1.5 rounded-lg border font-bold text-xs transition-all shadow-md focus:outline-none focus:ring-1 select-none min-w-[95px] cursor-pointer ${isGold ? "bg-black/40 border-[#D4A017]/60 text-[#D4A017] hover:border-[#D4A017] hover:bg-black/60 focus:ring-[#D4A017]" : "bg-black/40 border-rose-500/50 text-rose-300 hover:border-rose-400 hover:bg-black/60 focus:ring-rose-500"}`}
     aria-haspopup="listbox"
     aria-expanded={isOpen}
   >
@@ -59,7 +59,7 @@ const RankingLimitDropdown = ({
 
       {isOpen && <div
     id={`${id}-menu`}
-    className={`absolute right-0 top-full mt-1.5 z-50 min-w-[130px] rounded-xl shadow-2xl border p-1 bg-[#241307] backdrop-blur-md flex flex-col space-y-0.5 ${isGold ? "border-[#C89A2B]/60" : "border-rose-500/60"}`}
+    className={`absolute right-0 top-full mt-1.5 z-50 min-w-[130px] rounded-xl shadow-2xl border p-1 bg-[#241307] backdrop-blur-md flex flex-col space-y-0.5 ${isGold ? "border-[#D4A017]/60" : "border-rose-500/60"}`}
     role="listbox"
   >
           <div className="max-h-60 overflow-y-auto space-y-0.5 pr-0.5 flex flex-col">
@@ -73,12 +73,12 @@ const RankingLimitDropdown = ({
         onChange(opt.value);
         setIsOpen(false);
       }}
-      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left cursor-pointer ${isSelected ? isGold ? "bg-[#C89A2B]/25 text-[#C89A2B] font-bold" : "bg-rose-500/25 text-rose-300 font-bold" : "text-gray-200 hover:bg-white/10 hover:text-white"}`}
+      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all text-left cursor-pointer ${isSelected ? isGold ? "bg-[#D4A017]/25 text-[#D4A017] font-bold" : "bg-rose-500/25 text-rose-300 font-bold" : "text-gray-200 hover:bg-white/10 hover:text-white"}`}
       role="option"
       aria-selected={isSelected}
     >
                   <span className="truncate">{opt.label}</span>
-                  {isSelected && <Check className={`w-3.5 h-3.5 ml-2 shrink-0 ${isGold ? "text-[#C89A2B]" : "text-rose-400"}`} />}
+                  {isSelected && <Check className={`w-3.5 h-3.5 ml-2 shrink-0 ${isGold ? "text-[#D4A017]" : "text-rose-400"}`} />}
                 </button>;
   })}
           </div>
@@ -359,7 +359,7 @@ export const AdminPerformanceRankingDashboard = ({
         #{rank}
       </div>;
   };
-  return <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-2xl text-white space-y-6">
+  return <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-2xl text-white space-y-6">
       
       {
     /* SECTION HEADER */
@@ -367,7 +367,7 @@ export const AdminPerformanceRankingDashboard = ({
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-5 border-b border-white/15">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="bg-[#C89A2B] text-[#4A2C17] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="bg-[#D4A017] text-[#1d2b32] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               Executive Analytics
             </span>
             <span className="text-xs text-amber-200/80 flex items-center space-x-1">
@@ -376,7 +376,7 @@ export const AdminPerformanceRankingDashboard = ({
             </span>
           </div>
           <h2 className="text-2xl font-black text-white mt-1.5 flex items-center space-x-2">
-            <Trophy className="w-7 h-7 text-[#C89A2B]" />
+            <Trophy className="w-7 h-7 text-[#D4A017]" />
             <span>Admin Performance Ranking Dashboard</span>
           </h2>
           <p className="text-xs text-gray-300 mt-0.5">
@@ -396,9 +396,9 @@ export const AdminPerformanceRankingDashboard = ({
 
           <button
     onClick={handleExportCSV}
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] hover:bg-[#D8B45C] text-[#4A2C17] font-extrabold text-xs flex items-center space-x-1.5 shadow-md transition-all cursor-pointer"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] hover:bg-[#D8B45C] text-[#1d2b32] font-extrabold text-xs flex items-center space-x-1.5 shadow-md transition-all cursor-pointer"
   >
-            <Download className="w-3.5 h-3.5 text-[#4A2C17]" />
+            <Download className="w-3.5 h-3.5 text-[#1d2b32]" />
             <span>Export {rankingTab.charAt(0).toUpperCase() + rankingTab.slice(1)} CSV</span>
           </button>
         </div>
@@ -407,7 +407,7 @@ export const AdminPerformanceRankingDashboard = ({
       {
     /* FILTER & PERIOD SELECTOR BAR */
   }
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 p-4 rounded-2xl bg-[#3A1F0D] border border-white/10 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 p-4 rounded-2xl bg-[#1d2b32] border border-white/10 text-xs">
         
         {
     /* Period Selector Buttons */
@@ -424,7 +424,7 @@ export const AdminPerformanceRankingDashboard = ({
   ].map((p) => <button
     key={p.id}
     onClick={() => handlePeriodChange(p.id)}
-    className={`px-3 py-1.5 rounded-lg font-bold transition-all text-xs ${period === p.id ? "bg-[#C89A2B] text-[#3A1F0D] shadow-sm" : "bg-[#4A2C17] text-gray-300 hover:text-white hover:bg-white/10"}`}
+    className={`px-3 py-1.5 rounded-lg font-bold transition-all text-xs ${period === p.id ? "bg-[#D4A017] text-[#1d2b32] shadow-sm" : "bg-[#1d2b32] text-gray-300 hover:text-white hover:bg-white/10"}`}
   >
               {p.label}
             </button>)}
@@ -434,15 +434,15 @@ export const AdminPerformanceRankingDashboard = ({
     /* District Filter Dropdown */
   }
         <div className="md:col-span-3">
-          <div className="flex items-center space-x-2 bg-[#4A2C17] px-3 py-1.5 rounded-xl border border-white/15">
-            <Filter className="w-3.5 h-3.5 text-[#C89A2B]" />
+          <div className="flex items-center space-x-2 bg-[#1d2b32] px-3 py-1.5 rounded-xl border border-white/15">
+            <Filter className="w-3.5 h-3.5 text-[#D4A017]" />
             <select
     value={districtFilter}
     onChange={(e) => setDistrictFilter(e.target.value)}
     className="bg-transparent text-xs text-white focus:outline-none w-full cursor-pointer"
   >
-              <option value="All" className="bg-[#4A2C17]">All Districts</option>
-              {propDistricts.map((d) => <option key={d.id} value={d.id} className="bg-[#4A2C17]">{d.name}</option>)}
+              <option value="All" className="bg-[#1d2b32]">All Districts</option>
+              {propDistricts.map((d) => <option key={d.id} value={d.id} className="bg-[#1d2b32]">{d.name}</option>)}
             </select>
           </div>
         </div>
@@ -458,7 +458,7 @@ export const AdminPerformanceRankingDashboard = ({
     placeholder={`Search ${rankingTab}...`}
     value={searchQuery}
     onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A017]"
   />
           </div>
         </div>
@@ -468,27 +468,27 @@ export const AdminPerformanceRankingDashboard = ({
     /* TOP AGGREGATE SUMMARY STRIP */
   }
       {dashboardMetrics && <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-2xl bg-[#3A1F0D]/80 border border-[#C89A2B]/30">
+          <div className="p-3.5 rounded-2xl bg-[#1d2b32]/80 border border-[#D4A017]/30">
             <p className="text-[11px] text-amber-200/70 font-medium">Approved Mobilized Deposits</p>
             <h4 className="text-lg font-black text-amber-300 mt-0.5">
               {formatETB(dashboardMetrics.mobilizedActuals?.totalDepositsETB)}
             </h4>
           </div>
-          <div className="p-3.5 rounded-2xl bg-[#3A1F0D]/80 border border-[#C89A2B]/30">
+          <div className="p-3.5 rounded-2xl bg-[#1d2b32]/80 border border-[#D4A017]/30">
             <p className="text-[11px] text-amber-200/70 font-medium">Approved Submissions</p>
             <h4 className="text-lg font-black text-emerald-400 mt-0.5">
               {dashboardMetrics.counts?.approvedReports || 0} Reports
             </h4>
           </div>
-          <div className="p-3.5 rounded-2xl bg-[#3A1F0D]/80 border border-[#C89A2B]/30">
+          <div className="p-3.5 rounded-2xl bg-[#1d2b32]/80 border border-[#D4A017]/30">
             <p className="text-[11px] text-amber-200/70 font-medium">Digital Banking Activations</p>
             <h4 className="text-lg font-black text-cyan-300 mt-0.5">
               {((dashboardMetrics.mobilizedActuals?.totalMobileBanking || 0) + (dashboardMetrics.mobilizedActuals?.totalAtmCards || 0)).toLocaleString()}
             </h4>
           </div>
-          <div className="p-3.5 rounded-2xl bg-[#3A1F0D]/80 border border-[#C89A2B]/30">
+          <div className="p-3.5 rounded-2xl bg-[#1d2b32]/80 border border-[#D4A017]/30">
             <p className="text-[11px] text-amber-200/70 font-medium">Enterprise Average Achievement</p>
-            <h4 className="text-lg font-black text-[#C89A2B] mt-0.5">
+            <h4 className="text-lg font-black text-[#D4A017] mt-0.5">
               {formatPerformancePercentage(dashboardMetrics.overallPerformanceScore || 94.2)}
             </h4>
           </div>
@@ -501,10 +501,10 @@ export const AdminPerformanceRankingDashboard = ({
         {
     /* Dynamic Top Branches */
   }
-        <div id="top-branches-card" className="bg-[#3A1F0D] rounded-3xl border border-[#C89A2B]/40 p-5 shadow-xl space-y-3 flex flex-col justify-between">
+        <div id="top-branches-card" className="bg-[#1d2b32] rounded-3xl border border-[#D4A017]/40 p-5 shadow-xl space-y-3 flex flex-col justify-between">
           <div className="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-white/10">
-            <h3 className="text-xs font-black text-[#C89A2B] uppercase tracking-wider flex items-center space-x-2">
-              <Trophy className="w-4 h-4 text-[#C89A2B]" />
+            <h3 className="text-xs font-black text-[#D4A017] uppercase tracking-wider flex items-center space-x-2">
+              <Trophy className="w-4 h-4 text-[#D4A017]" />
               <span>{getHeadingLabel(branchTopLimit, displayedTopBranches.length, allSortedDescBranches.length, "TOP")} BRANCHES (PERIOD AVG)</span>
             </h3>
             <RankingLimitDropdown
@@ -521,11 +521,11 @@ export const AdminPerformanceRankingDashboard = ({
             {displayedTopBranches.length === 0 ? <p className="text-xs text-gray-400 py-6 text-center">No branch rankings available.</p> : displayedTopBranches.map((b, idx) => <div
     key={b.id || idx}
     id={`top-branch-item-${idx + 1}`}
-    className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5 hover:border-[#C89A2B]/40 hover:bg-black/30 transition-all cursor-pointer"
+    className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5 hover:border-[#D4A017]/40 hover:bg-black/30 transition-all cursor-pointer"
     onClick={() => setSelectedEntity({ type: "Branch", ...b, rank: idx + 1 })}
   >
                   <div className="flex items-center space-x-3">
-                    <span className="w-6 h-6 rounded-lg bg-[#C89A2B]/20 text-[#C89A2B] font-black text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-lg bg-[#D4A017]/20 text-[#D4A017] font-black text-xs flex items-center justify-center">
                       {idx + 1}
                     </span>
                     <div>
@@ -549,7 +549,7 @@ export const AdminPerformanceRankingDashboard = ({
         {
     /* Dynamic Bottom Branches */
   }
-        <div id="bottom-branches-card" className="bg-[#3A1F0D] rounded-3xl border border-rose-500/30 p-5 shadow-xl space-y-3 flex flex-col justify-between">
+        <div id="bottom-branches-card" className="bg-[#1d2b32] rounded-3xl border border-rose-500/30 p-5 shadow-xl space-y-3 flex flex-col justify-between">
           <div className="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-white/10">
             <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 text-rose-400" />
@@ -597,10 +597,10 @@ export const AdminPerformanceRankingDashboard = ({
         {
     /* Dynamic Top Districts */
   }
-        <div id="top-districts-card" className="bg-[#3A1F0D] rounded-3xl border border-[#C89A2B]/40 p-5 shadow-xl space-y-3 flex flex-col justify-between">
+        <div id="top-districts-card" className="bg-[#1d2b32] rounded-3xl border border-[#D4A017]/40 p-5 shadow-xl space-y-3 flex flex-col justify-between">
           <div className="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-white/10">
-            <h3 className="text-xs font-black text-[#C89A2B] uppercase tracking-wider flex items-center space-x-2">
-              <Trophy className="w-4 h-4 text-[#C89A2B]" />
+            <h3 className="text-xs font-black text-[#D4A017] uppercase tracking-wider flex items-center space-x-2">
+              <Trophy className="w-4 h-4 text-[#D4A017]" />
               <span>{getHeadingLabel(districtTopLimit, displayedTopDistricts.length, allSortedDescDistricts.length, "TOP")} DISTRICTS (PERIOD AVG)</span>
             </h3>
             <RankingLimitDropdown
@@ -617,11 +617,11 @@ export const AdminPerformanceRankingDashboard = ({
             {displayedTopDistricts.length === 0 ? <p className="text-xs text-gray-400 py-6 text-center">No district rankings available.</p> : displayedTopDistricts.map((d, idx) => <div
     key={d.id || idx}
     id={`top-district-item-${idx + 1}`}
-    className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5 hover:border-[#C89A2B]/40 hover:bg-black/30 transition-all cursor-pointer"
+    className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5 hover:border-[#D4A017]/40 hover:bg-black/30 transition-all cursor-pointer"
     onClick={() => setSelectedEntity({ type: "District", ...d, rank: idx + 1 })}
   >
                   <div className="flex items-center space-x-3">
-                    <span className="w-6 h-6 rounded-lg bg-[#C89A2B]/20 text-[#C89A2B] font-black text-xs flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-lg bg-[#D4A017]/20 text-[#D4A017] font-black text-xs flex items-center justify-center">
                       {idx + 1}
                     </span>
                     <div>
@@ -645,7 +645,7 @@ export const AdminPerformanceRankingDashboard = ({
         {
     /* Dynamic Bottom Districts */
   }
-        <div id="bottom-districts-card" className="bg-[#3A1F0D] rounded-3xl border border-rose-500/30 p-5 shadow-xl space-y-3 flex flex-col justify-between">
+        <div id="bottom-districts-card" className="bg-[#1d2b32] rounded-3xl border border-rose-500/30 p-5 shadow-xl space-y-3 flex flex-col justify-between">
           <div className="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-white/10">
             <h3 className="text-xs font-black text-rose-400 uppercase tracking-wider flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 text-rose-400" />
@@ -706,7 +706,7 @@ export const AdminPerformanceRankingDashboard = ({
   >
           <div
     ref={breakdownModalRef}
-    className="relative w-full max-w-3xl rounded-3xl bg-[#3A1F0D] border border-[#C89A2B]/50 p-6 shadow-2xl text-white space-y-6"
+    className="relative w-full max-w-3xl rounded-3xl bg-[#1d2b32] border border-[#D4A017]/50 p-6 shadow-2xl text-white space-y-6"
   >
             
             {
@@ -714,7 +714,7 @@ export const AdminPerformanceRankingDashboard = ({
   }
             <div className="flex justify-between items-start border-b border-white/15 pb-4">
               <div>
-                <span className="bg-[#C89A2B] text-[#3A1F0D] font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase">
+                <span className="bg-[#D4A017] text-[#1d2b32] font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase">
                   {selectedEntity.type} Performance Breakdown
                 </span>
                 <h3 className="text-xl font-black text-white mt-1.5">
@@ -731,10 +731,10 @@ export const AdminPerformanceRankingDashboard = ({
             {
     /* Overall Score Badge */
   }
-            <div className="p-4 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/30 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/30 flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-300">Overall Weighted Score</p>
-                <h4 className="text-2xl font-black text-[#C89A2B] mt-0.5">
+                <h4 className="text-2xl font-black text-[#D4A017] mt-0.5">
                   {formatPerformancePercentage(selectedEntity.performanceScore)}
                 </h4>
               </div>
@@ -752,7 +752,7 @@ export const AdminPerformanceRankingDashboard = ({
               {
     /* 1. Deposit (20%) */
   }
-              <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
+              <div className="p-3.5 rounded-xl bg-[#1d2b32] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">1. Deposits (20%)</span>
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.deposit || 0)}</span>
@@ -767,7 +767,7 @@ export const AdminPerformanceRankingDashboard = ({
               {
     /* 2. FCY (15%) */
   }
-              <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
+              <div className="p-3.5 rounded-xl bg-[#1d2b32] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">2. FCY Inflow (15%)</span>
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.fcy || 0)}</span>
@@ -782,7 +782,7 @@ export const AdminPerformanceRankingDashboard = ({
               {
     /* 3. DFS (20%) */
   }
-              <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
+              <div className="p-3.5 rounded-xl bg-[#1d2b32] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">3. DFS (20%)</span>
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.dfs || 0)}</span>
@@ -797,7 +797,7 @@ export const AdminPerformanceRankingDashboard = ({
               {
     /* 4. Customer Base (20%) */
   }
-              <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10">
+              <div className="p-3.5 rounded-xl bg-[#1d2b32] border border-white/10">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">4. Customers (20%)</span>
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.customerBase || 0)}</span>
@@ -812,7 +812,7 @@ export const AdminPerformanceRankingDashboard = ({
               {
     /* 5. Digitals (25%) */
   }
-              <div className="p-3.5 rounded-xl bg-[#4A2C17] border border-white/10 sm:col-span-2">
+              <div className="p-3.5 rounded-xl bg-[#1d2b32] border border-white/10 sm:col-span-2">
                 <div className="flex justify-between items-center text-amber-200">
                   <span className="font-bold">5. Digital Products & Activations (25%)</span>
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded">Score: {formatPerformancePercentage(selectedEntity.weightedScores?.digitals || 0)}</span>
@@ -830,7 +830,7 @@ export const AdminPerformanceRankingDashboard = ({
             <div className="pt-2 text-right">
               <button
     onClick={() => setSelectedEntity(null)}
-    className="px-5 py-2.5 rounded-xl bg-[#C89A2B] text-[#3A1F0D] font-black text-xs hover:bg-[#D8B45C]"
+    className="px-5 py-2.5 rounded-xl bg-[#D4A017] text-[#1d2b32] font-black text-xs hover:bg-[#D8B45C]"
   >
                 Close Breakdown
               </button>

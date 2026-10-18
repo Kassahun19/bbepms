@@ -182,14 +182,14 @@ export const BranchEmployeeTargetManager = ({
       setIsSaving(false);
     }
   };
-  return <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 shadow-2xl text-white space-y-6">
+  return <div className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl p-6 shadow-2xl text-white space-y-6">
       {
     /* Header Banner */
   }
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 border border-[#C89A2B]/40 text-[#C89A2B] uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4A017]/20 border border-[#D4A017]/40 text-[#D4A017] uppercase tracking-wider">
               Branch Manager Control Center
             </span>
             <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
@@ -197,7 +197,7 @@ export const BranchEmployeeTargetManager = ({
             </span>
           </div>
           <h3 className="text-xl font-extrabold text-white mt-1 flex items-center gap-2">
-            <Target className="w-5 h-5 text-[#C89A2B]" />
+            <Target className="w-5 h-5 text-[#D4A017]" />
             Employee Target & KPI Assignments Manager
           </h3>
           <p className="text-xs text-gray-300">
@@ -213,7 +213,7 @@ export const BranchEmployeeTargetManager = ({
           {["Annual", "Quarterly", "Monthly"].map((p) => <button
     key={p}
     onClick={() => setTargetPeriod(p)}
-    className={`px-3 py-1.5 rounded-xl transition-all ${targetPeriod === p ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md" : "text-gray-400 hover:text-white"}`}
+    className={`px-3 py-1.5 rounded-xl transition-all ${targetPeriod === p ? "bg-[#D4A017] text-[#541718] shadow-md" : "text-gray-400 hover:text-white"}`}
   >
               {p}
             </button>)}
@@ -223,9 +223,9 @@ export const BranchEmployeeTargetManager = ({
       {
     /* Two-Party Agreement Protocol Notice Banner */
   }
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-black/40 via-[#6B3F1D]/40 to-black/40 border border-[#C89A2B]/30 text-gray-200 text-xs leading-relaxed space-y-1.5">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-black/40 via-[#541718]/40 to-black/40 border border-[#D4A017]/30 text-gray-200 text-xs leading-relaxed space-y-1.5">
         <div className="flex items-center justify-between">
-          <strong className="text-[#C89A2B] uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+          <strong className="text-[#D4A017] uppercase text-[10px] tracking-wider flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5" /> Two-Party KPI Agreement Protocol
           </strong>
           <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
@@ -244,9 +244,9 @@ export const BranchEmployeeTargetManager = ({
         {
     /* Employee Dropdown and Current Status Banner */
   }
-        <div className="lg:col-span-2 bg-[#6B3F1D]/80 border border-[#C89A2B]/30 rounded-2xl p-4 space-y-3">
+        <div className="lg:col-span-2 bg-[#541718]/80 border border-[#D4A017]/30 rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-[#C89A2B] flex items-center gap-1.5">
+            <label className="text-xs font-bold text-[#D4A017] flex items-center gap-1.5">
               <Users className="w-4 h-4" /> Select Branch Employee to Assign Targets:
             </label>
             {
@@ -271,7 +271,7 @@ export const BranchEmployeeTargetManager = ({
           <select
     value={selectedEmployeeId}
     onChange={(e) => setSelectedEmployeeId(e.target.value)}
-    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white font-bold focus:outline-none focus:border-[#C89A2B] cursor-pointer"
+    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white font-bold focus:outline-none focus:border-[#D4A017] cursor-pointer"
   >
             {branchEmployees.map((emp) => {
     const empTgts = targets.filter((t) => (t.employeeId || t.employee_id) === emp.id);
@@ -286,7 +286,7 @@ export const BranchEmployeeTargetManager = ({
               <div className="flex items-center space-x-3">
                 <span>Staff ID: <strong className="text-white">{selectedEmployee.id}</strong></span>
                 <span>•</span>
-                <span>Branch: <strong className="text-[#C89A2B]">{selectedEmployee.branchName || currentUser.branchName}</strong></span>
+                <span>Branch: <strong className="text-[#D4A017]">{selectedEmployee.branchName || currentUser.branchName}</strong></span>
                 <span>•</span>
                 <span>Role: <strong className="text-emerald-400">{selectedEmployee.role}</strong></span>
               </div>
@@ -296,7 +296,7 @@ export const BranchEmployeeTargetManager = ({
     onClick={() => setShowAuditModal(true)}
     className="px-2.5 py-1 rounded-lg bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 font-bold text-[11px] flex items-center space-x-1 transition-all cursor-pointer"
   >
-                    <History className="w-3.5 h-3.5 text-[#C89A2B]" />
+                    <History className="w-3.5 h-3.5 text-[#D4A017]" />
                     <span>Audit Trail</span>
                   </button>}
 
@@ -307,7 +307,7 @@ export const BranchEmployeeTargetManager = ({
         onOpenAiSummary(selectedEmployee);
       }
     }}
-    className="px-3 py-1 rounded-lg bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] font-bold text-[11px] flex items-center space-x-1 shadow transition-all cursor-pointer"
+    className="px-3 py-1 rounded-lg bg-[#D4A017] hover:bg-[#D8B45C] text-[#541718] font-bold text-[11px] flex items-center space-x-1 shadow transition-all cursor-pointer"
   >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>AI Performance Summary</span>
@@ -319,11 +319,11 @@ export const BranchEmployeeTargetManager = ({
         {
     /* Manager Authority & Branch Quick Summary */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/30 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/30 rounded-2xl p-4 flex flex-col justify-between space-y-3">
           <div>
             <span className="text-[10px] uppercase text-gray-400 font-bold block">Branch Agreement Status</span>
             <span className="text-sm font-black text-white flex items-center gap-1 mt-0.5">
-              <Building2 className="w-4 h-4 text-[#C89A2B]" /> {currentUser.branchName || "Hamusit Branch"}
+              <Building2 className="w-4 h-4 text-[#D4A017]" /> {currentUser.branchName || "Hamusit Branch"}
             </span>
           </div>
 
@@ -414,10 +414,10 @@ export const BranchEmployeeTargetManager = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-[#C89A2B]" /> Set Target Values for Bunna Bank Core KPIs ({targetPeriod} - {targetYear})
+            <Layers className="w-4 h-4 text-[#D4A017]" /> Set Target Values for Bunna Bank Core KPIs ({targetPeriod} - {targetYear})
           </h4>
           <span className="text-[11px] text-gray-400">
-            Total Weight: <strong className="text-[#C89A2B]">100%</strong>
+            Total Weight: <strong className="text-[#D4A017]">100%</strong>
           </span>
         </div>
 
@@ -426,11 +426,11 @@ export const BranchEmployeeTargetManager = ({
     const val = targetValues[kpi.kpiId] ?? kpi.defaultVal;
     return <div
       key={kpi.kpiId}
-      className="p-3.5 rounded-2xl bg-[#6B3F1D]/60 border border-white/10 hover:border-[#C89A2B]/40 transition-all space-y-2"
+      className="p-3.5 rounded-2xl bg-[#541718]/60 border border-white/10 hover:border-[#D4A017]/40 transition-all space-y-2"
     >
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#C89A2B]" />
+                    <span className="w-2 h-2 rounded-full bg-[#D4A017]" />
                     {kpi.kpiName}
                   </span>
                   <div className="flex items-center space-x-1.5">
@@ -444,7 +444,7 @@ export const BranchEmployeeTargetManager = ({
                 </div>
 
                 <div className="relative">
-                  {kpi.isCurrency && <span className="absolute left-3 top-2.5 text-xs font-bold text-[#C89A2B]">
+                  {kpi.isCurrency && <span className="absolute left-3 top-2.5 text-xs font-bold text-[#D4A017]">
                       ETB
                     </span>}
                   <input
@@ -453,7 +453,7 @@ export const BranchEmployeeTargetManager = ({
       step={kpi.isCurrency ? "10000" : "1"}
       value={val}
       onChange={(e) => handleInputChange(kpi.kpiId, e.target.value)}
-      className={`w-full py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white font-extrabold focus:outline-none focus:border-[#C89A2B] ${kpi.isCurrency ? "pl-12 pr-3" : "px-3"}`}
+      className={`w-full py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white font-extrabold focus:outline-none focus:border-[#D4A017] ${kpi.isCurrency ? "pl-12 pr-3" : "px-3"}`}
     />
                 </div>
 
@@ -466,7 +466,7 @@ export const BranchEmployeeTargetManager = ({
       /* Live Automatic Period Allocation Breakdown */
     }
                 {val > 0 && <div className="mt-2 pt-2 border-t border-white/10 bg-black/30 p-2 rounded-xl text-[10px] space-y-1">
-                    <div className="text-[10px] text-[#C89A2B] font-bold uppercase tracking-wider flex items-center justify-between">
+                    <div className="text-[10px] text-[#D4A017] font-bold uppercase tracking-wider flex items-center justify-between">
                       <span>Automatic Period Allocations:</span>
                       <span className="text-gray-400 font-normal">Based on 300-day calendar</span>
                     </div>
@@ -503,7 +503,7 @@ export const BranchEmployeeTargetManager = ({
                       </div>
                       <div className="bg-white/5 p-1 rounded">
                         <span className="text-gray-400 block">Annual:</span>
-                        <strong className="text-[#C89A2B]">
+                        <strong className="text-[#D4A017]">
                           {kpi.isCurrency ? "ETB " : ""}{val.toLocaleString()}
                         </strong>
                       </div>
@@ -526,7 +526,7 @@ export const BranchEmployeeTargetManager = ({
     value={submissionNotes}
     onChange={(e) => setSubmissionNotes(e.target.value)}
     placeholder="e.g. Adjusted targets to align with Q3 branch campaign focus on Mobile Banking and Merchant QR onboarding."
-    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#D4A017]"
   />
       </div>
 
@@ -535,7 +535,7 @@ export const BranchEmployeeTargetManager = ({
   }
       <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-[11px] text-gray-400 flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5 text-[#C89A2B]" />
+          <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
           Submitting targets triggers an instant notification for the employee to review and agree.
         </p>
 
@@ -560,13 +560,13 @@ export const BranchEmployeeTargetManager = ({
     type="button"
     onClick={handleSendTargetsToEmployee}
     disabled={isSaving || isSending}
-    className="flex-1 sm:flex-initial px-6 py-3 rounded-2xl bg-[#C89A2B] text-[#6B3F1D] font-black text-xs shadow-xl hover:bg-[#D8B45C] active:scale-95 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+    className="flex-1 sm:flex-initial px-6 py-3 rounded-2xl bg-[#D4A017] text-[#541718] font-black text-xs shadow-xl hover:bg-[#D8B45C] active:scale-95 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
   >
             {isSending ? <span>Submitting to Employee...</span> : hasRejected ? <>
-                <RotateCcw className="w-4 h-4 text-[#6B3F1D]" />
+                <RotateCcw className="w-4 h-4 text-[#541718]" />
                 <span>Revise & Resubmit to Employee</span>
               </> : <>
-                <Send className="w-4 h-4 text-[#6B3F1D]" />
+                <Send className="w-4 h-4 text-[#541718]" />
                 <span>Send KPI Targets to Employee</span>
               </>}
           </button>
@@ -582,11 +582,11 @@ export const BranchEmployeeTargetManager = ({
   >
           <div
     ref={auditModalRef}
-    className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl p-6 max-w-xl w-full text-white space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col"
+    className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl p-6 max-w-xl w-full text-white space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col"
   >
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center space-x-2">
-                <History className="w-5 h-5 text-[#C89A2B]" />
+                <History className="w-5 h-5 text-[#D4A017]" />
                 <h3 className="text-base font-black text-white">
                   Target Agreement History for {getUserFullName(selectedEmployee)}
                 </h3>
@@ -604,7 +604,7 @@ export const BranchEmployeeTargetManager = ({
                     </div>
 
                     {(tgt.auditHistory || []).map((entry, idx) => <div key={idx} className="p-2 rounded-xl bg-white/5 text-[11px] space-y-1">
-                        <div className="flex justify-between text-[#C89A2B] font-bold">
+                        <div className="flex justify-between text-[#D4A017] font-bold">
                           <span>Action: {entry.action}</span>
                           <span className="text-gray-400">{new Date(entry.performedAt).toLocaleString()}</span>
                         </div>
@@ -618,7 +618,7 @@ export const BranchEmployeeTargetManager = ({
             <div className="pt-3 border-t border-white/10 flex justify-end">
               <button
     onClick={() => setShowAuditModal(false)}
-    className="px-5 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs"
+    className="px-5 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs"
   >
                 Close Audit History
               </button>

@@ -99,14 +99,14 @@ export const BranchCampaignWidget = ({
       setIsRefreshing(false);
     }
   };
-  return <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 shadow-xl text-white space-y-6">
+  return <div className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl p-6 shadow-xl text-white space-y-6">
       {
     /* Widget Header */
   }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 border border-[#C89A2B]/40 text-[#C89A2B] uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4A017]/20 border border-[#D4A017]/40 text-[#D4A017] uppercase tracking-wider">
               Bunna Bank Daily Campaign Engine
             </span>
             <span className="flex items-center space-x-1 text-xs text-emerald-400 font-medium">
@@ -115,7 +115,7 @@ export const BranchCampaignWidget = ({
             </span>
           </div>
           <h2 className="text-xl font-bold text-white mt-1 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#C89A2B]" />
+            <Layers className="w-5 h-5 text-[#D4A017]" />
             Branch Daily Campaign Analytics ({branchName})
           </h2>
           <p className="text-xs text-gray-300">
@@ -130,7 +130,7 @@ export const BranchCampaignWidget = ({
     className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-semibold text-gray-200 transition-colors"
     title="Sync latest campaign data from persistent database"
   >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#C89A2B] ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#D4A017] ${isRefreshing ? "animate-spin" : ""}`} />
             <span>{syncStatus === "syncing" ? "Syncing..." : "Sync Data"}</span>
           </button>
 
@@ -141,7 +141,7 @@ export const BranchCampaignWidget = ({
             {periods.map((p) => <button
     key={p.id}
     onClick={() => setPeriod(p.id)}
-    className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all text-xs ${period === p.id ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md font-extrabold" : "text-gray-400 hover:text-white"}`}
+    className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all text-xs ${period === p.id ? "bg-[#D4A017] text-[#541718] shadow-md font-extrabold" : "text-gray-400 hover:text-white"}`}
   >
                 {p.label}
               </button>)}
@@ -156,10 +156,10 @@ export const BranchCampaignWidget = ({
         {
     /* Customer Base */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C89A2B]/50 transition-colors">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#D4A017]/50 transition-colors">
           <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
             <span>Customer Base</span>
-            <Users className="w-4 h-4 text-[#C89A2B]" />
+            <Users className="w-4 h-4 text-[#D4A017]" />
           </div>
           <div className="mt-3">
             <span className="text-2xl font-extrabold text-white">{totals.customerBase.toLocaleString()}</span>
@@ -170,7 +170,7 @@ export const BranchCampaignWidget = ({
         {
     /* Mobile Banking */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C89A2B]/50 transition-colors">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#D4A017]/50 transition-colors">
           <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
             <span>Mobile Banking</span>
             <Smartphone className="w-4 h-4 text-emerald-400" />
@@ -184,7 +184,7 @@ export const BranchCampaignWidget = ({
         {
     /* Internet Banking */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C89A2B]/50 transition-colors">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#D4A017]/50 transition-colors">
           <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
             <span>Internet Banking</span>
             <Globe className="w-4 h-4 text-sky-400" />
@@ -198,7 +198,7 @@ export const BranchCampaignWidget = ({
         {
     /* ATM Cards */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C89A2B]/50 transition-colors">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#D4A017]/50 transition-colors">
           <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
             <span>ATM Cards</span>
             <CreditCard className="w-4 h-4 text-purple-400" />
@@ -212,7 +212,7 @@ export const BranchCampaignWidget = ({
         {
     /* Merchant POS & QR */
   }
-        <div className="bg-[#6B3F1D]/80 border border-[#C89A2B]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#C89A2B]/50 transition-colors">
+        <div className="bg-[#541718]/80 border border-[#D4A017]/25 rounded-2xl p-4 flex flex-col justify-between hover:border-[#D4A017]/50 transition-colors">
           <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
             <span>Merchant POS / QR</span>
             <QrCode className="w-4 h-4 text-amber-400" />
@@ -227,9 +227,9 @@ export const BranchCampaignWidget = ({
       {
     /* Campaign Summary Stats Banner */
   }
-      <div className="bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#6B3F1D] border border-[#C89A2B]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#541718] border border-[#D4A017]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C89A2B] text-[#6B3F1D] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#D4A017] text-[#541718] flex items-center justify-center font-bold">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
@@ -245,7 +245,7 @@ export const BranchCampaignWidget = ({
         <div className="flex items-center space-x-6 text-right">
           <div>
             <span className="text-xs text-gray-400 block uppercase font-medium">Total Digital</span>
-            <span className="text-2xl font-black text-[#C89A2B]">
+            <span className="text-2xl font-black text-[#D4A017]">
               {totalDigitalActivations.toLocaleString()}
             </span>
           </div>

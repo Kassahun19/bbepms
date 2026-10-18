@@ -263,19 +263,19 @@ const KpiGroupDropdown = ({ value, onChange }) => {
     type="button"
     id="kpi-group-dropdown-trigger"
     onClick={() => setIsOpen((prev) => !prev)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 hover:border-[#C89A2B]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#C89A2B] shadow-inner cursor-pointer"
+    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32] border border-white/20 hover:border-[#D4A017]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#D4A017] shadow-inner cursor-pointer"
     aria-haspopup="listbox"
     aria-expanded={isOpen}
   >
         <div className="flex items-center space-x-2 truncate">
           {selectedGroup ? <span className="font-bold text-white text-xs tracking-wide">{selectedGroup.label}</span> : <span className="text-gray-400 text-xs italic">Select a KPI Group...</span>}
         </div>
-        <ChevronDown className={`w-4 h-4 text-[#C89A2B] shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-4 h-4 text-[#D4A017] shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && <div
     id="kpi-group-dropdown-menu"
-    className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#C89A2B]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md flex flex-col space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
+    className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#D4A017]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md flex flex-col space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
     role="listbox"
   >
           {KPI_GROUPS_LIST.map((group) => {
@@ -288,13 +288,13 @@ const KpiGroupDropdown = ({ value, onChange }) => {
         onChange(group.value);
         setIsOpen(false);
       }}
-      className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${isSelected ? "bg-[#C89A2B]/25 border border-[#C89A2B]/50 text-white shadow-sm" : "bg-black/25 hover:bg-[#4A2C17] border border-white/5 text-gray-200 hover:text-white"}`}
+      className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${isSelected ? "bg-[#D4A017]/25 border border-[#D4A017]/50 text-white shadow-sm" : "bg-black/25 hover:bg-[#1d2b32] border border-white/5 text-gray-200 hover:text-white"}`}
       role="option"
       aria-selected={isSelected}
     >
                 <div className="space-y-0.5 pr-2">
                   <div className="flex items-center space-x-2">
-                    <span className={`text-xs font-bold ${isSelected ? "text-[#C89A2B]" : "text-white"}`}>
+                    <span className={`text-xs font-bold ${isSelected ? "text-[#D4A017]" : "text-white"}`}>
                       {group.label}
                     </span>
                   </div>
@@ -302,7 +302,7 @@ const KpiGroupDropdown = ({ value, onChange }) => {
                     {group.description}
                   </p>
                 </div>
-                {isSelected && <Check className="w-4 h-4 text-[#C89A2B] shrink-0 mt-0.5" />}
+                {isSelected && <Check className="w-4 h-4 text-[#D4A017] shrink-0 mt-0.5" />}
               </button>;
   })}
         </div>}
@@ -333,7 +333,7 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
       type="button"
       disabled
       id="kpi-name-disabled-trigger"
-      className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17]/40 border border-white/10 text-xs text-gray-400 flex items-center justify-between cursor-not-allowed opacity-60"
+      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32]/40 border border-white/10 text-xs text-gray-400 flex items-center justify-between cursor-not-allowed opacity-60"
     >
           <span className="italic">Disabled — Please select a KPI Group first</span>
           <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
@@ -348,14 +348,14 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
       value={value}
       onChange={(e) => onCustomInput(e.target.value)}
       placeholder="Type custom KPI indicator name..."
-      className="w-full px-3.5 py-2 rounded-xl bg-[#4A2C17] border border-[#C89A2B]/60 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
+      className="w-full px-3.5 py-2 rounded-xl bg-[#1d2b32] border border-[#D4A017]/60 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#D4A017]"
       required
       autoFocus
     />
           <button
       type="button"
       onClick={() => setIsCustomEditing(false)}
-      className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] text-[#C89A2B] font-semibold whitespace-nowrap cursor-pointer"
+      className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] text-[#D4A017] font-semibold whitespace-nowrap cursor-pointer"
     >
             Presets
           </button>
@@ -367,22 +367,22 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
     type="button"
     id="kpi-name-dropdown-trigger"
     onClick={() => setIsOpen((prev) => !prev)}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 hover:border-[#C89A2B]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#C89A2B] shadow-inner cursor-pointer"
+    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32] border border-white/20 hover:border-[#D4A017]/70 text-xs text-white flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-[#D4A017] shadow-inner cursor-pointer"
     aria-haspopup="listbox"
     aria-expanded={isOpen}
   >
         <div className="flex items-center space-x-2 truncate">
           {value ? <span className="font-bold text-white text-xs truncate">{value}</span> : <span className="text-gray-400 text-xs italic">Select {category} KPI Name...</span>}
         </div>
-        <ChevronDown className={`w-4 h-4 text-[#C89A2B] shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-4 h-4 text-[#D4A017] shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && <div
     id="kpi-name-dropdown-menu"
-    className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#C89A2B]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md max-h-64 overflow-y-auto space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
+    className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#351C0C] border border-[#D4A017]/60 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md max-h-64 overflow-y-auto space-y-1.5 animate-in fade-in zoom-in-95 duration-150"
     role="listbox"
   >
-          <div className="px-2.5 py-1 text-[10px] font-bold text-[#C89A2B] uppercase tracking-wider border-b border-white/10">
+          <div className="px-2.5 py-1 text-[10px] font-bold text-[#D4A017] uppercase tracking-wider border-b border-white/10">
             Available {category} KPIs ({availableOptions.length})
           </div>
 
@@ -396,16 +396,16 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
         onChangePreset(opt);
         setIsOpen(false);
       }}
-      className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${isSelected ? "bg-[#C89A2B]/25 border border-[#C89A2B]/50 text-white shadow-sm" : "bg-black/25 hover:bg-[#4A2C17] border border-white/5 text-gray-200 hover:text-white"}`}
+      className={`w-full flex items-start justify-between p-2.5 rounded-xl text-left transition-all cursor-pointer ${isSelected ? "bg-[#D4A017]/25 border border-[#D4A017]/50 text-white shadow-sm" : "bg-black/25 hover:bg-[#1d2b32] border border-white/5 text-gray-200 hover:text-white"}`}
       role="option"
       aria-selected={isSelected}
     >
                 <div className="space-y-0.5 pr-2">
                   <div className="flex items-center space-x-2">
-                    <span className={`text-xs font-bold ${isSelected ? "text-[#C89A2B]" : "text-white"}`}>
+                    <span className={`text-xs font-bold ${isSelected ? "text-[#D4A017]" : "text-white"}`}>
                       {opt.name}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-black/40 text-[#C89A2B] font-mono font-bold">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-black/40 text-[#D4A017] font-mono font-bold">
                       {opt.code}
                     </span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/40 text-emerald-300 font-bold">
@@ -416,7 +416,7 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
                     {opt.description}
                   </p>
                 </div>
-                {isSelected && <Check className="w-4 h-4 text-[#C89A2B] shrink-0 mt-0.5" />}
+                {isSelected && <Check className="w-4 h-4 text-[#D4A017] shrink-0 mt-0.5" />}
               </button>;
   })}
 
@@ -427,7 +427,7 @@ const KpiNameDropdown = ({ category, value, onChangePreset, onCustomInput }) => 
       setIsCustomEditing(true);
       setIsOpen(false);
     }}
-    className="w-full py-1.5 px-2 text-center rounded-lg bg-white/5 hover:bg-[#C89A2B]/20 text-[11px] text-[#C89A2B] font-semibold transition-colors cursor-pointer"
+    className="w-full py-1.5 px-2 text-center rounded-lg bg-white/5 hover:bg-[#D4A017]/20 text-[11px] text-[#D4A017] font-semibold transition-colors cursor-pointer"
   >
               + Enter Custom Indicator Name
             </button>
@@ -830,7 +830,7 @@ export const AdminDashboard = ({
     branches: d.branchCount,
     employees: d.totalEmployees
   }));
-  const COLORS = ["#C89A2B", "#6B3F1D", "#10B981", "#3B82F6", "#F59E0B"];
+  const COLORS = ["#D4A017", "#541718", "#10B981", "#3B82F6", "#F59E0B"];
   const pendingCount = reports.filter((r) => r.status === "Pending").length;
   const approvedCount = reports.filter((r) => r.status === "Approved").length;
   const rejectedCount = reports.filter((r) => r.status === "Rejected").length;
@@ -838,13 +838,13 @@ export const AdminDashboard = ({
   const [employeeStatusFilter, setEmployeeStatusFilter] = useState("All");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
   const branchColumns = [
-    { key: "solId", header: "SOL ID", render: (b) => <span className="font-extrabold text-[#C89A2B] font-mono">{b.solId || b.code}</span> },
+    { key: "solId", header: "SOL ID", render: (b) => <span className="font-extrabold text-[#D4A017] font-mono">{b.solId || b.code}</span> },
     { key: "name", header: "Branch Name", render: (b) => <span className="font-semibold text-white">{b.name}</span> },
     { key: "phone", header: "Telephone Line(s)", render: (b) => <div className="flex items-center space-x-1"><Phone className="w-3 h-3 text-emerald-400 shrink-0" /><span>{b.phone || "+251 11 800 0000"}</span></div> },
     { key: "districtName", header: "Parent District / Area Office", render: (b) => <span className="font-medium text-white">{b.districtName}</span> },
     { key: "region", header: "Region", render: (b) => <span>{b.region || "Addis Ababa"}</span> },
     { key: "location", header: "Branch Address / Location" },
-    { key: "type", header: "Grade / Type", render: (b) => <span className="bg-[#C89A2B]/20 text-[#C89A2B] border border-[#C89A2B]/30 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">{b.type || "Grade I"}</span> },
+    { key: "type", header: "Grade / Type", render: (b) => <span className="bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap">{b.type || "Grade I"}</span> },
     { key: "status", header: "Status", render: (b) => <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${(b.status || "Active") === "Active" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-rose-500/20 text-rose-300 border border-rose-500/30"}`}>{b.status || "Active"}</span> },
     { key: "actions", header: "Actions", render: (b) => <div className="flex items-center justify-end space-x-1.5">
         <button onClick={() => setViewingBranch(b)} title="View Branch Details (👁)" className="p-1.5 rounded-lg bg-white/5 hover:bg-white/20 text-cyan-300 transition-colors cursor-pointer"><Eye className="w-4 h-4" /></button>
@@ -857,10 +857,10 @@ export const AdminDashboard = ({
       {
     /* Top Banner / Welcome Header */
   }
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#362011] border border-[#C89A2B]/30 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-white">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#362011] border border-[#D4A017]/30 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-white">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="bg-[#C89A2B] text-[#6B3F1D] font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase">
+            <span className="bg-[#D4A017] text-[#541718] font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase">
               Administrator Console
             </span>
             <span className="text-xs text-gray-300">Bunna Bank S.C. HQ</span>
@@ -876,9 +876,9 @@ export const AdminDashboard = ({
         <div className="flex items-center space-x-3">
           {onOpenProfile && <button
     onClick={onOpenProfile}
-    className="px-4 py-2.5 rounded-xl bg-[#4A2C17] hover:bg-white/10 border border-[#C89A2B]/40 text-xs font-bold flex items-center space-x-2 text-[#C89A2B]"
+    className="px-4 py-2.5 rounded-xl bg-[#1d2b32] hover:bg-white/10 border border-[#D4A017]/40 text-xs font-bold flex items-center space-x-2 text-[#D4A017]"
   >
-              <UserCheck className="w-4 h-4 text-[#C89A2B]" />
+              <UserCheck className="w-4 h-4 text-[#D4A017]" />
               <span>My Role Profile</span>
             </button>}
 
@@ -886,7 +886,7 @@ export const AdminDashboard = ({
     onClick={onOpenExportModal}
     className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold flex items-center space-x-2 text-white"
   >
-            <Download className="w-4 h-4 text-[#C89A2B]" />
+            <Download className="w-4 h-4 text-[#D4A017]" />
             <span>Export Reports</span>
           </button>
         </div>
@@ -929,7 +929,7 @@ export const AdminDashboard = ({
   ].map((tab) => <button
     key={tab.id}
     onClick={() => handleTabSelect(tab.id)}
-    className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${activeTab === tab.id ? "bg-[#C89A2B] text-[#6B3F1D] shadow-md font-extrabold" : "bg-[#4A2C17] hover:bg-white/5 border border-white/10 text-white"}`}
+    className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${activeTab === tab.id ? "bg-[#D4A017] text-[#541718] shadow-md font-extrabold" : "bg-[#1d2b32] hover:bg-white/5 border border-white/10 text-white"}`}
   >
             {tab.label}
           </button>)}
@@ -939,11 +939,11 @@ export const AdminDashboard = ({
     /* TAB FOR FISCAL YEAR MANAGEMENT */
   }
       {activeTab === "fiscalYears" && <div className="space-y-6">
-          <div className="bg-[#4A2C17]/80 backdrop-blur-md rounded-2xl p-6 border border-[#C89A2B]/30 shadow-xl">
+          <div className="bg-[#1d2b32]/80 backdrop-blur-md rounded-2xl p-6 border border-[#D4A017]/30 shadow-xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
               <div>
                 <h3 className="text-xl font-bold text-white flex items-center space-x-2">
-                  <CalendarIcon className="w-6 h-6 text-[#C89A2B]" />
+                  <CalendarIcon className="w-6 h-6 text-[#D4A017]" />
                   <span>Fiscal Year Management & Year-over-Year (YoY) Analytics</span>
                 </h3>
                 <p className="text-xs text-gray-300 mt-1">
@@ -952,7 +952,7 @@ export const AdminDashboard = ({
               </div>
               <button
     onClick={() => setIsNewFyModalOpen(true)}
-    className="px-4 py-2.5 bg-[#C89A2B] text-[#6B3F1D] rounded-xl font-bold text-xs flex items-center space-x-2 shadow-lg hover:bg-[#D8B45C] transition-all"
+    className="px-4 py-2.5 bg-[#D4A017] text-[#541718] rounded-xl font-bold text-xs flex items-center space-x-2 shadow-lg hover:bg-[#D8B45C] transition-all"
   >
                 <Plus className="w-4 h-4" />
                 <span>Create New Fiscal Year</span>
@@ -965,7 +965,7 @@ export const AdminDashboard = ({
             {comparisonData && <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
                 <div className="bg-[#3A2211] rounded-xl p-5 border border-white/10 shadow-md">
                   <span className="text-xs font-semibold text-gray-400">Current Active FY</span>
-                  <div className="text-xl font-bold text-[#C89A2B] mt-1">{comparisonData.currentFyName}</div>
+                  <div className="text-xl font-bold text-[#D4A017] mt-1">{comparisonData.currentFyName}</div>
                   <span className="text-[10px] text-emerald-400 flex items-center mt-1">
                     <CheckCircle2 className="w-3 h-3 mr-1" /> Active & Accepting Reports
                   </span>
@@ -1010,11 +1010,11 @@ export const AdminDashboard = ({
                       <th className="px-4 py-3 font-bold text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 bg-[#4A2C17]/40">
+                  <tbody className="divide-y divide-white/5 bg-[#1d2b32]/40">
                     {fiscalYears.map((fy) => {
     const isActive = fy.isActive || fy.is_active === 1 || fy.status === "ACTIVE";
     return <tr key={fy.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-3 font-mono font-bold text-[#C89A2B]">{fy.id}</td>
+                          <td className="px-4 py-3 font-mono font-bold text-[#D4A017]">{fy.id}</td>
                           <td className="px-4 py-3 font-bold text-white">{fy.name}</td>
                           <td className="px-4 py-3">{fy.startDate}</td>
                           <td className="px-4 py-3">{fy.endDate}</td>
@@ -1026,7 +1026,7 @@ export const AdminDashboard = ({
                           <td className="px-4 py-3 text-right space-x-2">
                             {!isActive && <button
       onClick={() => handleActivateFy(fy.id)}
-      className="px-3 py-1.5 bg-[#C89A2B] text-[#6B3F1D] font-bold rounded-lg text-[10px] hover:bg-[#D8B45C]"
+      className="px-3 py-1.5 bg-[#D4A017] text-[#541718] font-bold rounded-lg text-[10px] hover:bg-[#D8B45C]"
     >
                                 Activate FY
                               </button>}
@@ -1049,10 +1049,10 @@ export const AdminDashboard = ({
     /* New Fiscal Year Modal */
   }
           {isNewFyModalOpen && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-2xl p-6 w-full max-w-md shadow-2xl text-white">
+              <div className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-2xl p-6 w-full max-w-md shadow-2xl text-white">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
                   <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                    <CalendarIcon className="w-5 h-5 text-[#C89A2B]" />
+                    <CalendarIcon className="w-5 h-5 text-[#D4A017]" />
                     <span>Create New Fiscal Year</span>
                   </h3>
                   <button onClick={() => setIsNewFyModalOpen(false)} className="p-1 rounded-lg hover:bg-white/10 text-gray-300">
@@ -1106,7 +1106,7 @@ export const AdminDashboard = ({
                     <button type="button" onClick={() => setIsNewFyModalOpen(false)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                       Cancel
                     </button>
-                    <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                    <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
                       Create Fiscal Year
                     </button>
                   </div>
@@ -1184,33 +1184,33 @@ export const AdminDashboard = ({
     /* Top Metric Cards Grid */
   }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="p-5 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-lg text-white">
+            <div className="p-5 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-lg text-white">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Total Staff Employees</p>
                   <h3 className="text-2xl font-extrabold text-white mt-1">{employees.length.toLocaleString()}</h3>
                 </div>
-                <div className="p-3 rounded-xl bg-[#C89A2B]/20 text-[#C89A2B]">
+                <div className="p-3 rounded-xl bg-[#D4A017]/20 text-[#D4A017]">
                   <Users className="w-5 h-5" />
                 </div>
               </div>
               <p className="text-[11px] text-emerald-400 mt-3 font-semibold">+12% growth in 2026</p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-lg text-white">
+            <div className="p-5 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-lg text-white">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Active Branches</p>
                   <h3 className="text-2xl font-extrabold text-white mt-1">{branches.length} Branches</h3>
                 </div>
-                <div className="p-3 rounded-xl bg-[#C89A2B]/20 text-[#C89A2B]">
+                <div className="p-3 rounded-xl bg-[#D4A017]/20 text-[#D4A017]">
                   <Building2 className="w-5 h-5" />
                 </div>
               </div>
-              <p className="text-[11px] text-[#C89A2B] mt-3 font-semibold">Across {districts.length} Districts</p>
+              <p className="text-[11px] text-[#D4A017] mt-3 font-semibold">Across {districts.length} Districts</p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-lg text-white">
+            <div className="p-5 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-lg text-white">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Pending Approvals</p>
@@ -1223,7 +1223,7 @@ export const AdminDashboard = ({
               <p className="text-[11px] text-gray-400 mt-3 font-medium">Awaiting branch manager review</p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-lg text-white">
+            <div className="p-5 rounded-2xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-lg text-white">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Approved Reports</p>
@@ -1247,13 +1247,13 @@ export const AdminDashboard = ({
             {
     /* Chart 1: Performance Trends Area Chart */
   }
-            <div className="lg:col-span-8 p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white">
+            <div className="lg:col-span-8 p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white">
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h3 className="font-bold text-lg text-white">Financial Mobilization & Digital Activations Trend</h3>
                   <p className="text-xs text-gray-400">Monthly aggregate growth across all Bunna Bank branches</p>
                 </div>
-                <span className="bg-[#C89A2B]/20 text-[#C89A2B] px-3 py-1 rounded-full text-xs font-bold">2026 YTD</span>
+                <span className="bg-[#D4A017]/20 text-[#D4A017] px-3 py-1 rounded-full text-xs font-bold">2026 YTD</span>
               </div>
 
               <div className="h-72 w-full">
@@ -1261,8 +1261,8 @@ export const AdminDashboard = ({
                   <AreaChart data={trendData}>
                     <defs>
                       <linearGradient id="colorDeposits" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#C89A2B" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#C89A2B" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#D4A017" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#D4A017" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorDigital" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
@@ -1272,8 +1272,8 @@ export const AdminDashboard = ({
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" />
                     <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
                     <YAxis stroke="#9CA3AF" fontSize={12} />
-                    <Tooltip contentStyle={{ backgroundColor: "#6B3F1D", borderColor: "#C89A2B", borderRadius: "12px", fontSize: "12px" }} />
-                    <Area type="monotone" dataKey="deposits" name="Deposits (Million ETB)" stroke="#C89A2B" fillOpacity={1} fill="url(#colorDeposits)" />
+                    <Tooltip contentStyle={{ backgroundColor: "#541718", borderColor: "#D4A017", borderRadius: "12px", fontSize: "12px" }} />
+                    <Area type="monotone" dataKey="deposits" name="Deposits (Million ETB)" stroke="#D4A017" fillOpacity={1} fill="url(#colorDeposits)" />
                     <Area type="monotone" dataKey="digital" name="Digital Banking Activations" stroke="#10B981" fillOpacity={1} fill="url(#colorDigital)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -1283,7 +1283,7 @@ export const AdminDashboard = ({
             {
     /* Chart 2: District Distribution Bar Chart */
   }
-            <div className="lg:col-span-4 p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white flex flex-col justify-between">
+            <div className="lg:col-span-4 p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white flex flex-col justify-between">
               <div>
                 <h3 className="font-bold text-lg text-white mb-1">District Branch Density</h3>
                 <p className="text-xs text-gray-400 mb-4">Branch count distribution per district</p>
@@ -1293,15 +1293,15 @@ export const AdminDashboard = ({
                       <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" />
                       <XAxis dataKey="name" stroke="#9CA3AF" fontSize={10} />
                       <YAxis stroke="#9CA3AF" fontSize={10} />
-                      <Tooltip contentStyle={{ backgroundColor: "#6B3F1D", borderColor: "#C89A2B", borderRadius: "12px", fontSize: "12px" }} />
-                      <Bar dataKey="branches" name="Branches" fill="#C89A2B" radius={[6, 6, 0, 0]} />
+                      <Tooltip contentStyle={{ backgroundColor: "#541718", borderColor: "#D4A017", borderRadius: "12px", fontSize: "12px" }} />
+                      <Bar dataKey="branches" name="Branches" fill="#D4A017" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-white/10 text-center">
-                <span className="text-xs text-[#C89A2B] font-semibold">
+                <span className="text-xs text-[#D4A017] font-semibold">
                   Top Performing District: Addis Ababa East District
                 </span>
               </div>
@@ -1313,14 +1313,14 @@ export const AdminDashboard = ({
       {
     /* TAB 2: DISTRICTS & AREA OFFICES */
   }
-      {activeTab === "districts" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-5">
+      {activeTab === "districts" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-5">
           {
     /* Top Bar */
   }
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-white/10">
             <div>
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-[#C89A2B]" />
+                <MapPin className="w-5 h-5 text-[#D4A017]" />
                 <span>Districts & Area Office Management</span>
               </h3>
               <p className="text-xs text-gray-300 mt-0.5">
@@ -1329,7 +1329,7 @@ export const AdminDashboard = ({
             </div>
             <button
     onClick={() => setIsAddDistrictModalOpen(true)}
-    className="px-4 py-2.5 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C] transition-all shadow-md cursor-pointer"
+    className="px-4 py-2.5 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C] transition-all shadow-md cursor-pointer"
   >
               <Plus className="w-4 h-4" />
               <span>Add District / Area Office</span>
@@ -1350,19 +1350,19 @@ export const AdminDashboard = ({
       setDistrictSearch(e.target.value);
       setDistrictPage(1);
     }}
-    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#C89A2B]"
+    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A017]"
   />
             </div>
 
             <div className="flex items-center space-x-2 w-full sm:w-auto">
-              <Filter className="w-4 h-4 text-[#C89A2B]" />
+              <Filter className="w-4 h-4 text-[#D4A017]" />
               <select
     value={districtRegionFilter}
     onChange={(e) => {
       setDistrictRegionFilter(e.target.value);
       setDistrictPage(1);
     }}
-    className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none"
+    className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none"
   >
                 <option value="All">All Regions</option>
                 {uniqueRegions.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -1373,9 +1373,9 @@ export const AdminDashboard = ({
           {
     /* Table */
   }
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#6B3F1D]/50">
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#541718]/50">
             <table className="w-full text-left text-xs text-gray-300">
-              <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase tracking-wider border-b border-white/10">
+              <thead className="bg-[#541718] text-[#D4A017] font-bold uppercase tracking-wider border-b border-white/10">
                 <tr>
                   <th className="p-3">SOL ID / Code</th>
                   <th className="p-3">District / Area Office Name</th>
@@ -1393,7 +1393,7 @@ export const AdminDashboard = ({
                       No district or area office matched your search filters.
                     </td>
                   </tr> : paginatedDistricts.map((d) => <tr key={d.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-3 font-bold text-[#C89A2B] font-mono">
+                      <td className="p-3 font-bold text-[#D4A017] font-mono">
                         {d.solId || d.code} <span className="text-gray-400 font-normal text-[11px]">({d.code})</span>
                       </td>
                       <td className="p-3 font-semibold text-white">{d.name}</td>
@@ -1455,7 +1455,7 @@ export const AdminDashboard = ({
   >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-bold text-[#C89A2B]">Page {districtPage} of {totalDistrictPages}</span>
+              <span className="font-bold text-[#D4A017]">Page {districtPage} of {totalDistrictPages}</span>
               <button
     disabled={districtPage >= totalDistrictPages}
     onClick={() => setDistrictPage((prev) => Math.min(prev + 1, totalDistrictPages))}
@@ -1470,7 +1470,7 @@ export const AdminDashboard = ({
       {
     /* TAB 3: BRANCH MANAGEMENT */
   }
-      {activeTab === "branches" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-5">
+      {activeTab === "branches" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-5">
           {
     /* Top Bar with Export Options */
   }
@@ -1478,10 +1478,10 @@ export const AdminDashboard = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                  <Building className="w-5 h-5 text-[#C89A2B]" />
+                  <Building className="w-5 h-5 text-[#D4A017]" />
                   <span>Branch Directory & Sol ID Management</span>
                 </h3>
-                <span className="bg-[#C89A2B] text-[#6B3F1D] text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                <span className="bg-[#D4A017] text-[#541718] text-xs font-extrabold px-2.5 py-0.5 rounded-full">
                   {branches.length} Registered
                 </span>
               </div>
@@ -1520,7 +1520,7 @@ export const AdminDashboard = ({
 
               <button
     onClick={() => setIsAddBranchModalOpen(true)}
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C] transition-all shadow-md cursor-pointer ml-1"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C] transition-all shadow-md cursor-pointer ml-1"
   >
                 <Plus className="w-4 h-4" />
                 <span>Add New Branch</span>
@@ -1538,15 +1538,15 @@ export const AdminDashboard = ({
     defaultSortBy="name"
     filterState={{ districtId: branchDistrictFilter, region: branchRegionFilter, status: branchStatusFilter }}
     filters={<>
-                <select value={branchRegionFilter} onChange={(e) => setBranchRegionFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                <select value={branchRegionFilter} onChange={(e) => setBranchRegionFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none">
                   <option value="All">All Regions</option>
                   {uniqueRegions.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
-                <select value={branchDistrictFilter} onChange={(e) => setBranchDistrictFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                <select value={branchDistrictFilter} onChange={(e) => setBranchDistrictFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none">
                   <option value="All">All Districts</option>
                   {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
-                <select value={branchStatusFilter} onChange={(e) => setBranchStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                <select value={branchStatusFilter} onChange={(e) => setBranchStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none">
                   <option value="All">All Statuses</option>
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
@@ -1560,15 +1560,15 @@ export const AdminDashboard = ({
       {
     /* TAB 4: EMPLOYEES */
   }
-      {activeTab === "employees" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "employees" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-lg text-white">Employee Staff Roster</h3>
-            <span className="text-xs text-[#C89A2B]">{employees.length} Registered Users</span>
+            <span className="text-xs text-[#D4A017]">{employees.length} Registered Users</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-gray-300">
-              <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase">
+              <thead className="bg-[#541718] text-[#D4A017] font-bold uppercase">
                 <tr>
                   <th className="p-3">Staff ID</th>
                   <th className="p-3">Employee Name</th>
@@ -1582,7 +1582,7 @@ export const AdminDashboard = ({
               </thead>
               <tbody className="divide-y divide-white/10">
                 {employees.map((e) => <tr key={e.id} className="hover:bg-white/5">
-                    <td className="p-3 font-bold text-[#C89A2B]">{e.userId}</td>
+                    <td className="p-3 font-bold text-[#D4A017]">{e.userId}</td>
                     <td className="p-3 font-semibold text-white">{getUserFullName(e)}</td>
                     <td className="p-3"><span className="bg-white/10 px-2 py-0.5 rounded text-[10px] font-bold">{e.role}</span></td>
                     <td className="p-3">{e.jobTitle}</td>
@@ -1622,7 +1622,7 @@ export const AdminDashboard = ({
         onOpenAiSummary(e);
       }
     }}
-    className="px-2.5 py-1 rounded-lg bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] font-bold text-[11px] inline-flex items-center space-x-1 shadow transition-all cursor-pointer"
+    className="px-2.5 py-1 rounded-lg bg-[#D4A017] hover:bg-[#D8B45C] text-[#541718] font-bold text-[11px] inline-flex items-center space-x-1 shadow transition-all cursor-pointer"
   >
                           <Sparkles className="w-3 h-3" />
                           <span>AI Summary</span>
@@ -1639,17 +1639,17 @@ export const AdminDashboard = ({
       {
     /* TAB 4: EMPLOYEES */
   }
-      {activeTab === "employees" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "employees" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-lg text-white">Employee Staff Roster</h3>
-            <span className="text-xs text-[#C89A2B]">{employees.length} Registered Users</span>
+            <span className="text-xs text-[#D4A017]">{employees.length} Registered Users</span>
           </div>
           <ReusableDataTable
     fetchData={api.getPaginatedEmployees}
     columns={[
-      { key: "userId", header: "Staff ID", render: (u) => <span className="font-extrabold text-[#C89A2B] font-mono">{u.userId}</span> },
+      { key: "userId", header: "Staff ID", render: (u) => <span className="font-extrabold text-[#D4A017] font-mono">{u.userId}</span> },
       { key: "name", header: "Employee Name", render: (u) => <span className="font-semibold text-white">{u.firstName} {u.lastName}</span> },
-      { key: "role", header: "System Role", render: (u) => <span className="bg-[#C89A2B]/20 text-[#C89A2B] px-2 py-0.5 rounded font-bold">{u.role}</span> },
+      { key: "role", header: "System Role", render: (u) => <span className="bg-[#D4A017]/20 text-[#D4A017] px-2 py-0.5 rounded font-bold">{u.role}</span> },
       { key: "jobTitle", header: "Job Title" },
       { key: "branchName", header: "Assigned Branch" },
       { key: "districtName", header: "District" },
@@ -1662,16 +1662,16 @@ export const AdminDashboard = ({
     defaultSortBy="userId"
     filterState={{ role: employeeRoleFilter, status: employeeStatusFilter }}
     filters={<>
-                <select value={employeeRoleFilter} onChange={(e) => setEmployeeRoleFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                <select value={employeeRoleFilter} onChange={(e) => setEmployeeRoleFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none">
                   <option value="All">All Roles</option>
                   {["BOARD_OF_DIRECTORS", "CEO", "CHIEF_OFFICER", "DIRECTOR", "DISTRICT_DIRECTOR", "MANAGER", "EMPLOYEE"].map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
-                <select value={employeeStatusFilter} onChange={(e) => setEmployeeStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#6B3F1D] border border-white/20 text-xs text-white focus:outline-none">
+                <select value={employeeStatusFilter} onChange={(e) => setEmployeeStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl bg-[#541718] border border-white/20 text-xs text-white focus:outline-none">
                   <option value="All">All Statuses</option>
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
-                <button onClick={() => setIsAddEmployeeModalOpen(true)} className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]">
+                <button onClick={() => setIsAddEmployeeModalOpen(true)} className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]">
                   <Plus className="w-4 h-4" /><span>Add Employee</span>
                 </button>
               </>}
@@ -1681,7 +1681,7 @@ export const AdminDashboard = ({
       {
     /* TAB 5: KPIS */
   }
-      {activeTab === "kpis" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "kpis" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-lg text-white">Bunna Bank KPI Definitions & Weightings</h3>
             <button
@@ -1699,7 +1699,7 @@ export const AdminDashboard = ({
       };
       setEditingKpi(newK);
     }}
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]"
   >
               <Plus className="w-4 h-4" />
               <span>Define New KPI</span>
@@ -1707,10 +1707,10 @@ export const AdminDashboard = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {kpis.map((k) => <div key={k.id} className="p-4 rounded-2xl bg-[#6B3F1D] border border-[#C89A2B]/20 flex justify-between items-start">
+            {kpis.map((k) => <div key={k.id} className="p-4 rounded-2xl bg-[#541718] border border-[#D4A017]/20 flex justify-between items-start">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-xs text-[#C89A2B]">{k.code}</span>
+                    <span className="font-bold text-xs text-[#D4A017]">{k.code}</span>
                     <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded font-medium">{k.category}</span>
                   </div>
                   <h4 className="font-bold text-sm text-white mt-1">{k.name}</h4>
@@ -1718,7 +1718,7 @@ export const AdminDashboard = ({
                 </div>
                 <div className="text-right shrink-0 space-y-2 ml-3">
                   <div>
-                    <span className="text-base font-extrabold text-[#C89A2B]">{k.weight}%</span>
+                    <span className="text-base font-extrabold text-[#D4A017]">{k.weight}%</span>
                     <p className="text-[10px] text-gray-400">Weight</p>
                   </div>
                   <div className="flex items-center justify-end space-x-1">
@@ -1747,11 +1747,11 @@ export const AdminDashboard = ({
       {
     /* TAB 6: REPORTS */
   }
-      {activeTab === "reports" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "reports" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <h3 className="font-bold text-lg text-white">Daily Performance Reports Master Log</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-gray-300">
-              <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase">
+              <thead className="bg-[#541718] text-[#D4A017] font-bold uppercase">
                 <tr>
                   <th className="p-3">Report Date</th>
                   <th className="p-3">Employee</th>
@@ -1765,7 +1765,7 @@ export const AdminDashboard = ({
               </thead>
               <tbody className="divide-y divide-white/10">
                 {reports.map((r) => <tr key={r.id} className="hover:bg-white/5">
-                    <td className="p-3 font-bold text-[#C89A2B]">{r.reportDate}</td>
+                    <td className="p-3 font-bold text-[#D4A017]">{r.reportDate}</td>
                     <td className="p-3 font-semibold text-white">{r.employeeName}</td>
                     <td className="p-3">{r.branchName}</td>
                     <td className="p-3 font-bold text-emerald-400">ETB {r.depositsETB.toLocaleString()}</td>
@@ -1801,7 +1801,7 @@ export const AdminDashboard = ({
       {
     /* TAB 7: BANK HOLIDAYS */
   }
-      {activeTab === "holidays" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "holidays" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-lg text-white">Configured Official Bank Holidays</h3>
             <button
@@ -1815,7 +1815,7 @@ export const AdminDashboard = ({
       };
       setEditingHoliday(newH);
     }}
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs flex items-center space-x-1.5 hover:bg-[#D8B45C]"
   >
               <Plus className="w-4 h-4" />
               <span>Add Bank Holiday</span>
@@ -1823,9 +1823,9 @@ export const AdminDashboard = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {holidays.map((h) => <div key={h.id} className="p-4 rounded-2xl bg-[#6B3F1D] border border-[#C89A2B]/20 flex justify-between items-start">
+            {holidays.map((h) => <div key={h.id} className="p-4 rounded-2xl bg-[#541718] border border-[#D4A017]/20 flex justify-between items-start">
                 <div>
-                  <p className="font-bold text-xs text-[#C89A2B]">{h.date}</p>
+                  <p className="font-bold text-xs text-[#D4A017]">{h.date}</p>
                   <h4 className="font-bold text-sm text-white mt-0.5">{h.name}</h4>
                   <p className="text-xs text-gray-300 mt-1">{h.description}</p>
                 </div>
@@ -1854,11 +1854,11 @@ export const AdminDashboard = ({
       {
     /* TAB 8: AUDIT LOGS */
   }
-      {activeTab === "audit" && <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/30 shadow-xl text-white space-y-4">
+      {activeTab === "audit" && <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/30 shadow-xl text-white space-y-4">
           <h3 className="font-bold text-lg text-white">System Security & Audit Log History</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-gray-300">
-              <thead className="bg-[#6B3F1D] text-[#C89A2B] font-bold uppercase">
+              <thead className="bg-[#541718] text-[#D4A017] font-bold uppercase">
                 <tr>
                   <th className="p-3">Log ID</th>
                   <th className="p-3">User</th>
@@ -1871,7 +1871,7 @@ export const AdminDashboard = ({
               </thead>
               <tbody className="divide-y divide-white/10">
                 {auditLogs.map((l) => <tr key={l.id} className="hover:bg-white/5">
-                    <td className="p-3 font-bold text-[#C89A2B]">{l.id}</td>
+                    <td className="p-3 font-bold text-[#D4A017]">{l.id}</td>
                     <td className="p-3 font-semibold text-white">{l.userName}</td>
                     <td className="p-3">{l.userRole}</td>
                     <td className="p-3 font-mono text-emerald-400">{l.action}</td>
@@ -1888,10 +1888,10 @@ export const AdminDashboard = ({
     /* MODAL: ADD DISTRICT */
   }
       {isAddDistrictModalOpen && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-[#C89A2B]" />
+                <MapPin className="w-5 h-5 text-[#D4A017]" />
                 <span>Add New District</span>
               </h3>
               <button
@@ -1908,7 +1908,7 @@ export const AdminDashboard = ({
                 <select
     value={newDistrictType}
     onChange={(e) => setNewDistrictType(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   >
                   <option value="District">Regional City District</option>
                   <option value="Area Office">Zonal City District</option>
@@ -1922,7 +1922,7 @@ export const AdminDashboard = ({
     placeholder="e.g., Harar, Gondar, Nekemte"
     value={newDistrictName}
     onChange={(e) => setNewDistrictName(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -1934,7 +1934,7 @@ export const AdminDashboard = ({
     placeholder="e.g., 954, HRD, BDR"
     value={newDistrictCode}
     onChange={(e) => setNewDistrictCode(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -1946,7 +1946,7 @@ export const AdminDashboard = ({
     placeholder="e.g., Harari Region, Amhara Region"
     value={newDistrictRegion}
     onChange={(e) => setNewDistrictRegion(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -1958,7 +1958,7 @@ export const AdminDashboard = ({
     placeholder="e.g., Ato Solomon Worku"
     value={newDistrictManager}
     onChange={(e) => setNewDistrictManager(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
 
@@ -1972,7 +1972,7 @@ export const AdminDashboard = ({
                 </button>
                 <button
     type="submit"
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold hover:bg-[#D8B45C] transition-colors"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold hover:bg-[#D8B45C] transition-colors"
   >
                   Create District
                 </button>
@@ -1985,10 +1985,10 @@ export const AdminDashboard = ({
     /* MODAL: ADD BRANCH */
   }
       {isAddBranchModalOpen && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <Building className="w-5 h-5 text-[#C89A2B]" />
+                <Building className="w-5 h-5 text-[#D4A017]" />
                 <span>Add New Branch</span>
               </h3>
               <button
@@ -2005,7 +2005,7 @@ export const AdminDashboard = ({
                 <select
     value={newBranchDistrictId}
     onChange={(e) => setNewBranchDistrictId(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   >
                   <option value="">-- Choose Parent Office --</option>
@@ -2020,7 +2020,7 @@ export const AdminDashboard = ({
     placeholder="e.g., Harar Jugol Branch"
     value={newBranchName}
     onChange={(e) => setNewBranchName(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2032,7 +2032,7 @@ export const AdminDashboard = ({
     placeholder="e.g., 360, BDR-01, HRR-01"
     value={newBranchCode}
     onChange={(e) => setNewBranchCode(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2043,7 +2043,7 @@ export const AdminDashboard = ({
                   <select
     value={newBranchType}
     onChange={(e) => setNewBranchType(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   >
                     <option value="Grade I">Grade I</option>
                     <option value="Grade II">Grade II</option>
@@ -2059,7 +2059,7 @@ export const AdminDashboard = ({
     placeholder="e.g., Downtown Commercial"
     value={newBranchLocation}
     onChange={(e) => setNewBranchLocation(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
                 </div>
               </div>
@@ -2071,7 +2071,7 @@ export const AdminDashboard = ({
     placeholder="e.g., W/ro Bethlehem Tesfaye"
     value={newBranchManager}
     onChange={(e) => setNewBranchManager(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
 
@@ -2083,7 +2083,7 @@ export const AdminDashboard = ({
     placeholder="e.g., +251 11 890 1234"
     value={newBranchPhone}
     onChange={(e) => setNewBranchPhone(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
                 </div>
                 <div>
@@ -2091,7 +2091,7 @@ export const AdminDashboard = ({
                   <select
     value={newBranchStatus}
     onChange={(e) => setNewBranchStatus(e.target.value)}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -2109,7 +2109,7 @@ export const AdminDashboard = ({
                 </button>
                 <button
     type="submit"
-    className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold"
+    className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold"
   >
                   Create Branch
                 </button>
@@ -2122,9 +2122,9 @@ export const AdminDashboard = ({
     /* MODAL: VIEW DISTRICT DETAILS */
   }
       {viewingDistrict && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
-              <h3 className="font-bold text-lg text-[#C89A2B] flex items-center space-x-2">
+              <h3 className="font-bold text-lg text-[#D4A017] flex items-center space-x-2">
                 <MapPin className="w-5 h-5" />
                 <span>{viewingDistrict.name}</span>
               </h3>
@@ -2135,7 +2135,7 @@ export const AdminDashboard = ({
             <div className="space-y-3 text-xs text-gray-200">
               <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-gray-400">District Code / SOL ID:</span>
-                <span className="font-bold text-[#C89A2B] font-mono">{viewingDistrict.code} {viewingDistrict.solId ? `(SOL ${viewingDistrict.solId})` : ""}</span>
+                <span className="font-bold text-[#D4A017] font-mono">{viewingDistrict.code} {viewingDistrict.solId ? `(SOL ${viewingDistrict.solId})` : ""}</span>
               </div>
               <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-gray-400">Region / Zone:</span>
@@ -2175,7 +2175,7 @@ export const AdminDashboard = ({
                 </div>}
             </div>
             <div className="flex justify-end pt-2">
-              <button onClick={() => setViewingDistrict(null)} className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs">
+              <button onClick={() => setViewingDistrict(null)} className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs">
                 Close Details
               </button>
             </div>
@@ -2186,10 +2186,10 @@ export const AdminDashboard = ({
     /* MODAL: EDIT DISTRICT */
   }
       {editingDistrict && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <Edit2 className="w-5 h-5 text-[#C89A2B]" />
+                <Edit2 className="w-5 h-5 text-[#D4A017]" />
                 <span>Edit District Entry</span>
               </h3>
               <button onClick={() => setEditingDistrict(null)} className="text-gray-400 hover:text-white">
@@ -2203,7 +2203,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingDistrict.name}
     onChange={(e) => setEditingDistrict({ ...editingDistrict, name: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2213,7 +2213,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingDistrict.code}
     onChange={(e) => setEditingDistrict({ ...editingDistrict, code: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2223,7 +2223,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingDistrict.region}
     onChange={(e) => setEditingDistrict({ ...editingDistrict, region: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2233,14 +2233,14 @@ export const AdminDashboard = ({
     type="text"
     value={editingDistrict.managerName}
     onChange={(e) => setEditingDistrict({ ...editingDistrict, managerName: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setEditingDistrict(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
                   Save Changes
                 </button>
               </div>
@@ -2264,10 +2264,10 @@ export const AdminDashboard = ({
     /* MODAL: EDIT BRANCH */
   }
       {editingBranch && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <Edit2 className="w-5 h-5 text-[#C89A2B]" />
+                <Edit2 className="w-5 h-5 text-[#D4A017]" />
                 <span>Edit Branch Record</span>
               </h3>
               <button onClick={() => setEditingBranch(null)} className="text-gray-400 hover:text-white">
@@ -2281,7 +2281,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingBranch.name}
     onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2291,7 +2291,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingBranch.code}
     onChange={(e) => setEditingBranch({ ...editingBranch, code: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2300,7 +2300,7 @@ export const AdminDashboard = ({
                 <select
     value={editingBranch.type}
     onChange={(e) => setEditingBranch({ ...editingBranch, type: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   >
                   <option value="Grade I">Grade I</option>
                   <option value="Grade II">Grade II</option>
@@ -2315,7 +2315,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingBranch.location}
     onChange={(e) => setEditingBranch({ ...editingBranch, location: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
               <div>
@@ -2324,14 +2324,14 @@ export const AdminDashboard = ({
     type="text"
     value={editingBranch.managerName}
     onChange={(e) => setEditingBranch({ ...editingBranch, managerName: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setEditingBranch(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
                   Save Changes
                 </button>
               </div>
@@ -2343,9 +2343,9 @@ export const AdminDashboard = ({
     /* MODAL: VIEW EMPLOYEE DETAILS */
   }
       {viewingEmployee && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
-              <h3 className="font-bold text-lg text-[#C89A2B] flex items-center space-x-2">
+              <h3 className="font-bold text-lg text-[#D4A017] flex items-center space-x-2">
                 <UserCheck className="w-5 h-5" />
                 <span>{getUserFullName(viewingEmployee)}</span>
               </h3>
@@ -2356,7 +2356,7 @@ export const AdminDashboard = ({
             <div className="space-y-3 text-xs text-gray-200">
               <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-gray-400">Staff User ID:</span>
-                <span className="font-bold text-[#C89A2B] font-mono">{viewingEmployee.userId}</span>
+                <span className="font-bold text-[#D4A017] font-mono">{viewingEmployee.userId}</span>
               </div>
               <div className="flex justify-between border-b border-white/5 pb-2">
                 <span className="text-gray-400">Access Role:</span>
@@ -2380,7 +2380,7 @@ export const AdminDashboard = ({
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <button onClick={() => setViewingEmployee(null)} className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs">
+              <button onClick={() => setViewingEmployee(null)} className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs">
                 Close
               </button>
             </div>
@@ -2391,10 +2391,10 @@ export const AdminDashboard = ({
     /* MODAL: EDIT EMPLOYEE */
   }
       {editingEmployee && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <Edit2 className="w-5 h-5 text-[#C89A2B]" />
+                <Edit2 className="w-5 h-5 text-[#D4A017]" />
                 <span>Edit User Profile & Role</span>
               </h3>
               <button onClick={() => setEditingEmployee(null)} className="text-gray-400 hover:text-white">
@@ -2408,7 +2408,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingEmployee.firstName}
     onChange={(e) => setEditingEmployee({ ...editingEmployee, firstName: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2418,7 +2418,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingEmployee.lastName}
     onChange={(e) => setEditingEmployee({ ...editingEmployee, lastName: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2427,7 +2427,7 @@ export const AdminDashboard = ({
                 <select
     value={editingEmployee.role}
     onChange={(e) => setEditingEmployee({ ...editingEmployee, role: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   >
                   <option value="EMPLOYEE">EMPLOYEE (Staff Member)</option>
                   <option value="MANAGER">MANAGER (Branch Operations)</option>
@@ -2440,14 +2440,14 @@ export const AdminDashboard = ({
     type="text"
     value={editingEmployee.jobTitle}
     onChange={(e) => setEditingEmployee({ ...editingEmployee, jobTitle: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setEditingEmployee(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
                   Save Profile
                 </button>
               </div>
@@ -2459,10 +2459,10 @@ export const AdminDashboard = ({
     /* MODAL: VIEW REPORT DETAILS */
   }
       {viewingReport && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-lg text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
-                <h3 className="font-bold text-lg text-[#C89A2B]">Daily Report Details</h3>
+                <h3 className="font-bold text-lg text-[#D4A017]">Daily Report Details</h3>
                 <p className="text-xs text-gray-300">{viewingReport.reportDate} • {viewingReport.employeeName}</p>
               </div>
               <button onClick={() => setViewingReport(null)} className="text-gray-400 hover:text-white">
@@ -2480,7 +2480,7 @@ export const AdminDashboard = ({
               </div>
               <div className="p-3 bg-white/5 rounded-xl">
                 <span className="text-gray-400 block text-[10px]">Digital Financial Services</span>
-                <strong className="text-[#C89A2B] text-sm font-bold">ETB {viewingReport.digitalFinancialServicesETB.toLocaleString()}</strong>
+                <strong className="text-[#D4A017] text-sm font-bold">ETB {viewingReport.digitalFinancialServicesETB.toLocaleString()}</strong>
               </div>
               <div className="p-3 bg-white/5 rounded-xl">
                 <span className="text-gray-400 block text-[10px]">Account Openings</span>
@@ -2495,12 +2495,12 @@ export const AdminDashboard = ({
                 <strong className="text-white text-sm font-bold">{viewingReport.internetBankingActivations} Users</strong>
               </div>
             </div>
-            {viewingReport.managerComment && <div className="p-3 bg-[#4A2C17] border border-[#C89A2B]/30 rounded-xl text-xs">
-                <span className="text-[#C89A2B] font-bold block mb-0.5">Manager Feedback:</span>
+            {viewingReport.managerComment && <div className="p-3 bg-[#1d2b32] border border-[#D4A017]/30 rounded-xl text-xs">
+                <span className="text-[#D4A017] font-bold block mb-0.5">Manager Feedback:</span>
                 <p className="text-gray-200">{viewingReport.managerComment}</p>
               </div>}
             <div className="flex justify-end pt-2">
-              <button onClick={() => setViewingReport(null)} className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs">
+              <button onClick={() => setViewingReport(null)} className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs">
                 Close
               </button>
             </div>
@@ -2511,10 +2511,10 @@ export const AdminDashboard = ({
     /* MODAL: EDIT / DEFINE KPI */
   }
       {editingKpi && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <Award className="w-5 h-5 text-[#C89A2B]" />
+                <Award className="w-5 h-5 text-[#D4A017]" />
                 <span>Configure KPI Metric</span>
               </h3>
               <button onClick={() => setEditingKpi(null)} className="text-gray-400 hover:text-white">
@@ -2527,7 +2527,7 @@ export const AdminDashboard = ({
   }
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  1. KPI Group <span className="text-[#C89A2B]">*</span>
+                  1. KPI Group <span className="text-[#D4A017]">*</span>
                 </label>
                 <KpiGroupDropdown
     value={editingKpi.category}
@@ -2572,7 +2572,7 @@ export const AdminDashboard = ({
   }
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  2. KPI Name <span className="text-[#C89A2B]">*</span>
+                  2. KPI Name <span className="text-[#D4A017]">*</span>
                 </label>
                 <KpiNameDropdown
     category={editingKpi.category}
@@ -2601,14 +2601,14 @@ export const AdminDashboard = ({
   }
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  3. KPI Code <span className="text-[#C89A2B]">*</span>
+                  3. KPI Code <span className="text-[#D4A017]">*</span>
                 </label>
                 <input
     type="text"
     value={editingKpi.code}
     onChange={(e) => setEditingKpi({ ...editingKpi, code: e.target.value })}
     placeholder="e.g. KPI-DEP"
-    className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
+    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#D4A017]"
     required
   />
               </div>
@@ -2618,7 +2618,7 @@ export const AdminDashboard = ({
   }
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">
-                  4. Weighting Percentage (%) <span className="text-[#C89A2B]">*</span>
+                  4. Weighting Percentage (%) <span className="text-[#D4A017]">*</span>
                 </label>
                 <input
     type="number"
@@ -2626,7 +2626,7 @@ export const AdminDashboard = ({
     max={100}
     value={editingKpi.weight}
     onChange={(e) => setEditingKpi({ ...editingKpi, weight: Number(e.target.value) })}
-    className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
+    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#D4A017]"
     required
   />
               </div>
@@ -2642,7 +2642,7 @@ export const AdminDashboard = ({
     value={editingKpi.description}
     onChange={(e) => setEditingKpi({ ...editingKpi, description: e.target.value })}
     placeholder="Description of key performance metric..."
-    className="w-full px-3.5 py-2.5 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#C89A2B]"
+    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#D4A017]"
     rows={3}
   />
               </div>
@@ -2651,7 +2651,7 @@ export const AdminDashboard = ({
                 <button type="button" onClick={() => setEditingKpi(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300 hover:bg-white/20 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] text-xs font-bold transition-colors">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] hover:bg-[#D8B45C] text-[#541718] text-xs font-bold transition-colors">
                   Save Metric
                 </button>
               </div>
@@ -2663,10 +2663,10 @@ export const AdminDashboard = ({
     /* MODAL: EDIT / CREATE HOLIDAY */
   }
       {editingHoliday && <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#6B3F1D] border border-[#C89A2B]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
+          <div className="bg-[#541718] border border-[#D4A017]/40 rounded-3xl p-6 w-full max-w-md text-white space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-bold text-lg text-white flex items-center space-x-2">
-                <CalendarIcon className="w-5 h-5 text-[#C89A2B]" />
+                <CalendarIcon className="w-5 h-5 text-[#D4A017]" />
                 <span>Configure Bank Holiday</span>
               </h3>
               <button onClick={() => setEditingHoliday(null)} className="text-gray-400 hover:text-white">
@@ -2680,7 +2680,7 @@ export const AdminDashboard = ({
     type="text"
     value={editingHoliday.name}
     onChange={(e) => setEditingHoliday({ ...editingHoliday, name: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2690,7 +2690,7 @@ export const AdminDashboard = ({
     type="date"
     value={editingHoliday.date}
     onChange={(e) => setEditingHoliday({ ...editingHoliday, date: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
     required
   />
               </div>
@@ -2700,14 +2700,14 @@ export const AdminDashboard = ({
     type="text"
     value={editingHoliday.description}
     onChange={(e) => setEditingHoliday({ ...editingHoliday, description: e.target.value })}
-    className="w-full px-3 py-2 rounded-xl bg-[#4A2C17] border border-white/20 text-xs text-white focus:outline-none"
+    className="w-full px-3 py-2 rounded-xl bg-[#1d2b32] border border-white/20 text-xs text-white focus:outline-none"
   />
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setEditingHoliday(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] text-xs font-bold">
+                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
                   Save Holiday
                 </button>
               </div>

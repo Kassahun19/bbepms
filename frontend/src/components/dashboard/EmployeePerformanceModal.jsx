@@ -203,20 +203,20 @@ export const EmployeePerformanceModal = ({
   >
       <div
     ref={contentRef}
-    className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-6xl text-white shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+    className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl w-full max-w-6xl text-white shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
   >
         
         {
     /* Modal Header */
   }
-        <div className="p-6 bg-gradient-to-r from-[#6B3F1D] via-[#4A2C17] to-[#362011] border-b border-[#C89A2B]/30 flex items-center justify-between gap-4">
+        <div className="p-6 bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#362011] border-b border-[#D4A017]/30 flex items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#C89A2B]/20 border border-[#C89A2B]/50 flex items-center justify-center text-[#C89A2B] shadow-inner">
+            <div className="w-12 h-12 rounded-2xl bg-[#D4A017]/20 border border-[#D4A017]/50 flex items-center justify-center text-[#D4A017] shadow-inner">
               <BarChart3 className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#C89A2B] text-[#6B3F1D] uppercase tracking-wider">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#D4A017] text-[#541718] uppercase tracking-wider">
                   Manager Inspection Portal
                 </span>
                 <span className="text-xs text-gray-300 font-semibold">
@@ -235,7 +235,7 @@ export const EmployeePerformanceModal = ({
     className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white transition-all text-xs font-bold flex items-center gap-1.5"
     title="Print Performance Sheet"
   >
-              <Printer className="w-4 h-4 text-[#C89A2B]" />
+              <Printer className="w-4 h-4 text-[#D4A017]" />
               <span className="hidden sm:inline">Print</span>
             </button>
             <ModalCloseButton onClose={onClose} ariaLabel="Close employee performance dashboard" />
@@ -245,18 +245,18 @@ export const EmployeePerformanceModal = ({
         {
     /* Employee Selector Bar */
   }
-        <div className="p-4 bg-[#6B3F1D] border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-4 bg-[#541718] border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-            <label className="text-xs font-bold text-[#C89A2B] uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+            <label className="text-xs font-bold text-[#D4A017] uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
               <UserCheck className="w-4 h-4" /> Select Employee:
             </label>
             <div className="relative flex-1 max-w-md">
               <select
     value={selectedEmpId}
     onChange={(e) => setSelectedEmpId(e.target.value)}
-    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-[#C89A2B]/50 text-xs text-white font-bold focus:outline-none focus:border-[#C89A2B] cursor-pointer"
+    className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-[#D4A017]/50 text-xs text-white font-bold focus:outline-none focus:border-[#D4A017] cursor-pointer"
   >
-                {employees.map((emp) => <option key={emp.id} value={emp.id} className="bg-[#6B3F1D] text-white">
+                {employees.map((emp) => <option key={emp.id} value={emp.id} className="bg-[#541718] text-white">
                     {getUserFullName(emp)} — {emp.jobTitle || "CSO"} ({emp.userId || emp.id})
                   </option>)}
               </select>
@@ -269,13 +269,13 @@ export const EmployeePerformanceModal = ({
           <div className="flex items-center gap-1.5 bg-black/30 p-1 rounded-xl border border-white/10 self-start md:self-auto">
             <button
     onClick={() => setTimePeriod("AllTime")}
-    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${timePeriod === "AllTime" ? "bg-[#C89A2B] text-[#6B3F1D]" : "text-gray-300 hover:text-white"}`}
+    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${timePeriod === "AllTime" ? "bg-[#D4A017] text-[#541718]" : "text-gray-300 hover:text-white"}`}
   >
               To Date (Cumulative)
             </button>
             <button
     onClick={() => setTimePeriod("ThisMonth")}
-    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${timePeriod === "ThisMonth" ? "bg-[#C89A2B] text-[#6B3F1D]" : "text-gray-300 hover:text-white"}`}
+    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${timePeriod === "ThisMonth" ? "bg-[#D4A017] text-[#541718]" : "text-gray-300 hover:text-white"}`}
   >
               This Month
             </button>
@@ -290,13 +290,13 @@ export const EmployeePerformanceModal = ({
           {
     /* Employee Overview & Summary Card */
   }
-          {selectedEmployee && <div className="p-6 rounded-3xl bg-gradient-to-br from-[#6B3F1D] to-[#362011] border border-[#C89A2B]/30 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          {selectedEmployee && <div className="p-6 rounded-3xl bg-gradient-to-br from-[#541718] to-[#362011] border border-[#D4A017]/30 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               
               {
     /* Profile Details */
   }
               <div className="md:col-span-7 flex items-center space-x-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#C89A2B] text-[#6B3F1D] font-black text-2xl flex items-center justify-center shadow-lg uppercase">
+                <div className="w-16 h-16 rounded-2xl bg-[#D4A017] text-[#541718] font-black text-2xl flex items-center justify-center shadow-lg uppercase">
                   {selectedEmployee.firstName?.[0] || "E"}
                   {selectedEmployee.lastName?.[0] || "M"}
                 </div>
@@ -305,7 +305,7 @@ export const EmployeePerformanceModal = ({
                     <h3 className="text-xl font-extrabold text-white">
                       {getUserFullName(selectedEmployee)}
                     </h3>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-[#C89A2B] border border-[#C89A2B]/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-[#D4A017] border border-[#D4A017]/30">
                       ID: {selectedEmployee.userId || selectedEmployee.id}
                     </span>
                   </div>
@@ -327,10 +327,10 @@ export const EmployeePerformanceModal = ({
                     Overall Performance to Date
                   </span>
                   <div className="flex items-center justify-center sm:justify-end gap-2">
-                    <span className="text-3xl font-black text-[#C89A2B] font-mono">
+                    <span className="text-3xl font-black text-[#D4A017] font-mono">
                       {formatPerformancePercentage(overallAchievementPercent, 1)}
                     </span>
-                    <Award className="w-7 h-7 text-[#C89A2B]" />
+                    <Award className="w-7 h-7 text-[#D4A017]" />
                   </div>
                   <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold border ${ratingBadgeStyle}`}>
                     {ratingLabel}
@@ -339,9 +339,9 @@ export const EmployeePerformanceModal = ({
 
                 {onOpenAiSummary && <button
     onClick={() => onOpenAiSummary(selectedEmployee)}
-    className="w-full sm:w-auto px-4 py-3 rounded-2xl bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+    className="w-full sm:w-auto px-4 py-3 rounded-2xl bg-[#D4A017] hover:bg-[#D8B45C] text-[#541718] font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
   >
-                    <Sparkles className="w-4 h-4 text-[#6B3F1D]" />
+                    <Sparkles className="w-4 h-4 text-[#541718]" />
                     <span>AI Evaluate</span>
                   </button>}
               </div>
@@ -351,7 +351,7 @@ export const EmployeePerformanceModal = ({
     /* Quick Metrics Cards */
   }
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-2xl bg-[#6B3F1D] border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-[#541718] border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-300 font-bold uppercase">Submitted Daily Logs</span>
               <p className="text-2xl font-black text-white">{employeeReports.length}</p>
               <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
@@ -359,7 +359,7 @@ export const EmployeePerformanceModal = ({
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#6B3F1D] border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-[#541718] border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-300 font-bold uppercase">Deposits Mobilized</span>
               <p className="text-xl font-black text-amber-400">
                 ETB {(productPerformance.find((p) => p.key === "depositsETB")?.actual || 0).toLocaleString()}
@@ -369,7 +369,7 @@ export const EmployeePerformanceModal = ({
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#6B3F1D] border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-[#541718] border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-300 font-bold uppercase">Foreign Inflow</span>
               <p className="text-xl font-black text-emerald-400">
                 USD {(productPerformance.find((p) => p.key === "foreignCurrencyETB")?.actual || 0).toLocaleString(void 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -379,7 +379,7 @@ export const EmployeePerformanceModal = ({
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#6B3F1D] border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-[#541718] border border-white/10 space-y-1">
               <span className="text-[10px] text-gray-300 font-bold uppercase">Account Openings</span>
               <p className="text-2xl font-black text-purple-400">
                 {(productPerformance.find((p) => p.key === "accountOpenings")?.actual || 0).toLocaleString()}
@@ -396,7 +396,7 @@ export const EmployeePerformanceModal = ({
           <div className="flex flex-wrap items-center gap-3 border-b border-white/10 pb-2">
             <button
     onClick={() => setActiveViewTab("calendar")}
-    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "calendar" ? "bg-[#C89A2B] text-[#6B3F1D] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
+    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "calendar" ? "bg-[#D4A017] text-[#541718] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
   >
               <Target className="w-4 h-4" />
               <span>Calendar-Based Target & Weight breakdowns</span>
@@ -404,7 +404,7 @@ export const EmployeePerformanceModal = ({
 
             <button
     onClick={() => setActiveViewTab("products")}
-    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "products" ? "bg-[#C89A2B] text-[#6B3F1D] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
+    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "products" ? "bg-[#D4A017] text-[#541718] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
   >
               <BarChart3 className="w-4 h-4" />
               <span>Each Product's Performance Breakdown (8 Core Products)</span>
@@ -412,7 +412,7 @@ export const EmployeePerformanceModal = ({
 
             <button
     onClick={() => setActiveViewTab("submissions")}
-    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "submissions" ? "bg-[#C89A2B] text-[#6B3F1D] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
+    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${activeViewTab === "submissions" ? "bg-[#D4A017] text-[#541718] shadow" : "bg-white/5 text-gray-300 hover:bg-white/10"}`}
   >
               <Calendar className="w-4 h-4" />
               <span>Daily Submissions History ({employeeReports.length})</span>
@@ -437,7 +437,7 @@ export const EmployeePerformanceModal = ({
     const IconComp = prod.icon;
     return <div
       key={prod.key}
-      className="p-5 rounded-2xl bg-[#6B3F1D] border border-white/10 shadow-lg flex flex-col justify-between space-y-4 hover:border-[#C89A2B]/50 transition-all"
+      className="p-5 rounded-2xl bg-[#541718] border border-white/10 shadow-lg flex flex-col justify-between space-y-4 hover:border-[#D4A017]/50 transition-all"
     >
                       <div>
                         {
@@ -445,7 +445,7 @@ export const EmployeePerformanceModal = ({
     }
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center space-x-2">
-                            <div className="p-2 rounded-xl bg-white/10 text-[#C89A2B]">
+                            <div className="p-2 rounded-xl bg-white/10 text-[#D4A017]">
                               <IconComp className="w-5 h-5" />
                             </div>
                             <div>
@@ -472,7 +472,7 @@ export const EmployeePerformanceModal = ({
                               Target: {prod.isCurrency ? "ETB " : ""}{prod.target.toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-xl font-black text-[#C89A2B]">
+                          <p className="text-xl font-black text-[#D4A017]">
                             {prod.isCurrency ? "ETB " : ""}{prod.actual.toLocaleString()}
                           </p>
                         </div>
@@ -509,10 +509,10 @@ export const EmployeePerformanceModal = ({
               {
     /* Comprehensive Product Performance Summary Table */
   }
-              <div className="p-6 rounded-3xl bg-[#6B3F1D] border border-white/10 shadow-xl space-y-4">
+              <div className="p-6 rounded-3xl bg-[#541718] border border-white/10 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-extrabold text-white text-base flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-[#C89A2B]" />
+                    <BarChart3 className="w-5 h-5 text-[#D4A017]" />
                     Product Achievement Matrix (Target vs Actual To Date)
                   </h4>
                   <span className="text-xs text-gray-300">
@@ -522,7 +522,7 @@ export const EmployeePerformanceModal = ({
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs text-gray-300">
-                    <thead className="bg-[#4A2C17] text-[#C89A2B] font-bold uppercase text-[10px]">
+                    <thead className="bg-[#1d2b32] text-[#D4A017] font-bold uppercase text-[10px]">
                       <tr>
                         <th className="p-3">Product Name</th>
                         <th className="p-3">Code</th>
@@ -540,7 +540,7 @@ export const EmployeePerformanceModal = ({
     const isWarning = prod.achievementPercent >= 70 && prod.achievementPercent < 100;
     return <tr key={prod.key} className="hover:bg-white/5 transition-colors">
                             <td className="p-3 font-bold text-white flex items-center gap-2">
-                              <prod.icon className="w-4 h-4 text-[#C89A2B]" />
+                              <prod.icon className="w-4 h-4 text-[#D4A017]" />
                               <span>{prod.name}</span>
                             </td>
                             <td className="p-3 font-mono text-[10px] text-gray-400">{prod.code}</td>
@@ -548,7 +548,7 @@ export const EmployeePerformanceModal = ({
                             <td className="p-3 text-right font-mono font-semibold text-white">
                               {prod.isCurrency ? "ETB " : ""}{prod.target.toLocaleString()}
                             </td>
-                            <td className="p-3 text-right font-mono font-extrabold text-[#C89A2B]">
+                            <td className="p-3 text-right font-mono font-extrabold text-[#D4A017]">
                               {prod.isCurrency ? "ETB " : ""}{prod.actual.toLocaleString()}
                             </td>
                             <td className="p-3 text-right font-mono text-xs">
@@ -576,9 +576,9 @@ export const EmployeePerformanceModal = ({
           {
     /* TAB 2: DAILY SUBMISSIONS HISTORY */
   }
-          {activeViewTab === "submissions" && <div className="p-6 rounded-3xl bg-[#6B3F1D] border border-white/10 shadow-xl space-y-4">
+          {activeViewTab === "submissions" && <div className="p-6 rounded-3xl bg-[#541718] border border-white/10 shadow-xl space-y-4">
               <h4 className="font-extrabold text-white text-base flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#C89A2B]" />
+                <Calendar className="w-5 h-5 text-[#D4A017]" />
                 Daily Reports Submitted by {selectedEmployee ? getUserFullName(selectedEmployee) : "Employee"} ({employeeReports.length})
               </h4>
 
@@ -586,7 +586,7 @@ export const EmployeePerformanceModal = ({
                   No daily performance submissions found for this employee in the selected period.
                 </div> : <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs text-gray-300">
-                    <thead className="bg-[#4A2C17] text-[#C89A2B] font-bold uppercase text-[10px]">
+                    <thead className="bg-[#1d2b32] text-[#D4A017] font-bold uppercase text-[10px]">
                       <tr>
                         <th className="p-3">Report Date</th>
                         <th className="p-3">Deposits (ETB)</th>
@@ -600,12 +600,12 @@ export const EmployeePerformanceModal = ({
                     </thead>
                     <tbody className="divide-y divide-white/10">
                       {employeeReports.map((r) => <tr key={r.id} className="hover:bg-white/5 transition-colors">
-                          <td className="p-3 font-bold text-[#C89A2B]">{r.reportDate} ({r.dayOfWeek})</td>
+                          <td className="p-3 font-bold text-[#D4A017]">{r.reportDate} ({r.dayOfWeek})</td>
                           <td className="p-3 font-mono font-bold text-emerald-400">ETB {r.depositsETB?.toLocaleString()}</td>
                           <td className="p-3 font-mono">USD {r.foreignCurrencyETB?.toLocaleString(void 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           <td className="p-3 font-mono">ETB {r.digitalFinancialServicesETB?.toLocaleString()}</td>
                           <td className="p-3 font-bold">{r.accountOpenings}</td>
-                          <td className="p-3 font-bold text-[#C89A2B]">{r.mobileBankingActivations}</td>
+                          <td className="p-3 font-bold text-[#D4A017]">{r.mobileBankingActivations}</td>
                           <td className="p-3">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${r.status === "Approved" ? "bg-emerald-500/20 text-emerald-300" : r.status === "Pending" ? "bg-amber-500/20 text-amber-300" : r.status === "Returned" ? "bg-blue-500/20 text-blue-300" : "bg-rose-500/20 text-rose-300"}`}>
                               {r.status}
@@ -623,7 +623,7 @@ export const EmployeePerformanceModal = ({
         {
     /* Modal Footer */
   }
-        <div className="p-5 bg-[#6B3F1D] border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-5 bg-[#541718] border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-gray-300 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Bunna Bank S.C. Performance Management System • Live Branch Sync</span>
@@ -635,7 +635,7 @@ export const EmployeePerformanceModal = ({
       onClose();
       onOpenDirectMessage(selectedEmployee.id);
     }}
-    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#C89A2B] font-bold text-xs flex items-center justify-center gap-1.5"
+    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#D4A017] font-bold text-xs flex items-center justify-center gap-1.5"
   >
                 <MessageSquare className="w-4 h-4" />
                 <span>Message Employee</span>
@@ -643,7 +643,7 @@ export const EmployeePerformanceModal = ({
 
             <button
     onClick={onClose}
-    className="px-6 py-2.5 rounded-xl bg-[#C89A2B] hover:bg-[#D8B45C] text-[#6B3F1D] font-bold text-xs shadow-lg transition-all"
+    className="px-6 py-2.5 rounded-xl bg-[#D4A017] hover:bg-[#D8B45C] text-[#541718] font-bold text-xs shadow-lg transition-all"
   >
               Close Performance Inspection
             </button>

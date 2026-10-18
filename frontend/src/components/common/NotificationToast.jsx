@@ -27,9 +27,9 @@ export const NotificationToast = ({ type, message, onClose, duration = 5e3 }) =>
     warning: {
       icon: AlertTriangle,
       bg: "bg-amber-500",
-      text: "text-[#4A2C17]",
+      text: "text-[#1d2b32]",
       border: "border-amber-400",
-      iconColor: "text-[#4A2C17]"
+      iconColor: "text-[#1d2b32]"
     },
     info: {
       icon: Info,

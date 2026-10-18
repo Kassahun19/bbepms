@@ -70,26 +70,26 @@ export const BranchPerformanceDetailsModal = ({
   >
       <div
     ref={contentRef}
-    className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl w-full max-w-4xl text-white shadow-2xl mb-10 overflow-hidden"
+    className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl w-full max-w-4xl text-white shadow-2xl mb-10 overflow-hidden"
   >
         {
     /* Header */
   }
-        <div className="bg-gradient-to-r from-[#6B3F1D] to-[#4A2C17] p-6 border-b border-white/10 relative">
+        <div className="bg-gradient-to-r from-[#541718] to-[#1d2b32] p-6 border-b border-white/10 relative">
           <div className="absolute top-6 right-6">
             <ModalCloseButton onClose={onClose} ariaLabel="Close branch details modal" />
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C89A2B] to-[#6B3F1D] p-1 shadow-lg">
-              <div className="w-full h-full bg-[#6B3F1D] rounded-xl flex items-center justify-center">
-                <Building className="w-8 h-8 text-[#C89A2B]" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#541718] p-1 shadow-lg">
+              <div className="w-full h-full bg-[#541718] rounded-xl flex items-center justify-center">
+                <Building className="w-8 h-8 text-[#D4A017]" />
               </div>
             </div>
             <div>
               <h2 className="text-2xl font-black text-white">{branch.name}</h2>
               <div className="flex items-center space-x-3 text-sm text-gray-300 mt-1">
-                <span className="font-mono text-[#C89A2B]">SOL ID: {branch.solId || branch.code}</span>
+                <span className="font-mono text-[#D4A017]">SOL ID: {branch.solId || branch.code}</span>
                 <span>•</span>
                 <span>{branch.districtName}</span>
               </div>
@@ -102,7 +102,7 @@ export const BranchPerformanceDetailsModal = ({
     /* Top Info Cards */
   }
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-[#6B3F1D]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
+            <div className="bg-[#541718]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
               <div className="p-3 bg-blue-500/20 rounded-xl text-blue-400">
                 <Users className="w-6 h-6" />
               </div>
@@ -115,7 +115,7 @@ export const BranchPerformanceDetailsModal = ({
               </div>
             </div>
 
-            <div className="bg-[#6B3F1D]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
+            <div className="bg-[#541718]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
               <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400">
                 <Target className="w-6 h-6" />
               </div>
@@ -127,7 +127,7 @@ export const BranchPerformanceDetailsModal = ({
               </div>
             </div>
 
-            <div className="bg-[#6B3F1D]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
+            <div className="bg-[#541718]/50 border border-white/10 rounded-2xl p-4 flex items-center space-x-4">
               <div className="p-3 bg-purple-500/20 rounded-xl text-purple-400">
                 <Activity className="w-6 h-6" />
               </div>
@@ -144,7 +144,7 @@ export const BranchPerformanceDetailsModal = ({
     /* Time-Based Performance */
   }
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-[#C89A2B] mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2" /> Performance Timeline</h3>
+            <h3 className="text-sm font-bold text-[#D4A017] mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2" /> Performance Timeline</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
     { label: "Daily", value: stats.dailyAchieved },
@@ -163,7 +163,7 @@ export const BranchPerformanceDetailsModal = ({
     /* KPI Breakdown */
   }
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-[#C89A2B] flex items-center"><BarChart3 className="w-4 h-4 mr-2" /> KPI Achievements</h3>
+            <h3 className="text-sm font-bold text-[#D4A017] flex items-center"><BarChart3 className="w-4 h-4 mr-2" /> KPI Achievements</h3>
             
             {stats.kpiStats.length === 0 ? <div className="text-center p-8 bg-white/5 rounded-2xl border border-white/10 text-gray-400 text-sm">
                 No targets or reports available for this branch yet.
@@ -179,7 +179,7 @@ export const BranchPerformanceDetailsModal = ({
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-black text-[#C89A2B] font-mono">{formatPerformancePercentage(percent, 1)}</span>
+                          <span className="text-lg font-black text-[#D4A017] font-mono">{formatPerformancePercentage(percent, 1)}</span>
                         </div>
                       </div>
                       {
@@ -187,7 +187,7 @@ export const BranchPerformanceDetailsModal = ({
     }
                       <div className="w-full bg-black/40 h-2.5 rounded-full overflow-hidden">
                         <div
-      className="h-full bg-gradient-to-r from-[#C89A2B] to-emerald-400 rounded-full transition-all duration-1000"
+      className="h-full bg-gradient-to-r from-[#D4A017] to-emerald-400 rounded-full transition-all duration-1000"
       style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
     />
                       </div>

@@ -109,13 +109,13 @@ export const MessagingCenter = ({ currentUser, employees }) => {
   };
   const unreadCount = messages.filter((m) => !m.read).length;
   return <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#3A1F0D] p-5 rounded-3xl border border-[#C89A2B]/30 shadow-lg">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1d2b32] p-5 rounded-3xl border border-[#D4A017]/30 shadow-lg">
         <div>
-          <span className="bg-[#C89A2B] text-[#4A2C17] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="bg-[#D4A017] text-[#1d2b32] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             Secure Communications
           </span>
           <h2 className="text-xl font-black text-white mt-1 flex items-center space-x-2">
-            <MessageSquare className="w-6 h-6 text-[#C89A2B]" />
+            <MessageSquare className="w-6 h-6 text-[#D4A017]" />
             <span>Branch Messaging Center</span>
           </h2>
           <p className="text-xs text-gray-300 mt-0.5">
@@ -126,7 +126,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
         <div className="flex items-center space-x-2">
           <button
     onClick={() => setActiveTab("inbox")}
-    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "inbox" ? "bg-[#C89A2B] text-[#4A2C17]" : "bg-white/10 text-white hover:bg-white/20"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "inbox" ? "bg-[#D4A017] text-[#1d2b32]" : "bg-white/10 text-white hover:bg-white/20"}`}
   >
             <Bell className="w-4 h-4" />
             <span>Inbox ({unreadCount} Unread)</span>
@@ -135,7 +135,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
           {isManager && <>
               <button
     onClick={() => setActiveTab("sendIndividual")}
-    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "sendIndividual" ? "bg-[#C89A2B] text-[#4A2C17]" : "bg-white/10 text-white hover:bg-white/20"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "sendIndividual" ? "bg-[#D4A017] text-[#1d2b32]" : "bg-white/10 text-white hover:bg-white/20"}`}
   >
                 <User className="w-4 h-4" />
                 <span>Send to Employee</span>
@@ -143,7 +143,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
 
               <button
     onClick={() => setActiveTab("broadcast")}
-    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "broadcast" ? "bg-[#C89A2B] text-[#4A2C17]" : "bg-white/10 text-white hover:bg-white/20"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === "broadcast" ? "bg-[#D4A017] text-[#1d2b32]" : "bg-white/10 text-white hover:bg-white/20"}`}
   >
                 <Users className="w-4 h-4" />
                 <span>Send to All Employees</span>
@@ -162,24 +162,24 @@ export const MessagingCenter = ({ currentUser, employees }) => {
     /* TAB 1: INBOX */
   }
       {activeTab === "inbox" && <div className="space-y-4">
-          <div className="bg-[#3A1F0D] rounded-3xl border border-white/15 p-6 shadow-xl">
-            <h3 className="text-sm font-extrabold text-[#C89A2B] uppercase tracking-wider mb-4 flex items-center space-x-2">
+          <div className="bg-[#1d2b32] rounded-3xl border border-white/15 p-6 shadow-xl">
+            <h3 className="text-sm font-extrabold text-[#D4A017] uppercase tracking-wider mb-4 flex items-center space-x-2">
               <Bell className="w-4 h-4" />
               <span>Received Messages & Notifications ({messages.length})</span>
             </h3>
 
             {messages.length === 0 ? <div className="text-center py-12 text-gray-400 text-xs">
-                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#C89A2B]" />
+                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30 text-[#D4A017]" />
                 <p>Your inbox is currently empty.</p>
               </div> : <div className="space-y-3">
                 {messages.map((m) => <div
     key={m.id}
     onClick={() => handleOpenMessage(m)}
-    className={`p-4 rounded-2xl border transition-all cursor-pointer ${!m.read ? "bg-[#4A2C17] border-[#C89A2B] shadow-lg ring-1 ring-[#C89A2B]/40" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+    className={`p-4 rounded-2xl border transition-all cursor-pointer ${!m.read ? "bg-[#1d2b32] border-[#D4A017] shadow-lg ring-1 ring-[#D4A017]/40" : "bg-white/5 border-white/10 hover:border-white/20"}`}
   >
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
                       <div className="flex items-center space-x-2">
-                        {!m.read && <span className="w-2.5 h-2.5 rounded-full bg-[#C89A2B] animate-pulse" />}
+                        {!m.read && <span className="w-2.5 h-2.5 rounded-full bg-[#D4A017] animate-pulse" />}
                         <h4 className="font-bold text-white text-sm">{m.subject || "Branch Communication"}</h4>
                       </div>
                       <span className="text-[10px] text-gray-400 flex items-center space-x-1">
@@ -206,9 +206,9 @@ export const MessagingCenter = ({ currentUser, employees }) => {
       {
     /* TAB 2: SEND TO INDIVIDUAL EMPLOYEE */
   }
-      {activeTab === "sendIndividual" && isManager && <div className="bg-[#3A1F0D] rounded-3xl border border-white/15 p-6 shadow-xl max-w-2xl mx-auto">
+      {activeTab === "sendIndividual" && isManager && <div className="bg-[#1d2b32] rounded-3xl border border-white/15 p-6 shadow-xl max-w-2xl mx-auto">
           <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-white/10">
-            <User className="w-5 h-5 text-[#C89A2B]" />
+            <User className="w-5 h-5 text-[#D4A017]" />
             <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Send Private Message to Employee</h3>
           </div>
 
@@ -218,11 +218,11 @@ export const MessagingCenter = ({ currentUser, employees }) => {
               <select
     value={recipientId}
     onChange={(e) => setRecipientId(e.target.value)}
-    className="w-full px-4 py-2.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-4 py-2.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white focus:outline-none focus:border-[#D4A017]"
     required
   >
-                <option value="">-- Choose Employee Under Your Supervision --</option>
-                {branchEmployees.map((emp) => <option key={emp.id} value={emp.id}>
+                <option key="empty-emp" value="">-- Choose Employee Under Your Supervision --</option>
+                {branchEmployees.map((emp, index) => <option key={emp.id || `emp-opt-${index}`} value={emp.id}>
                     {getUserFullName(emp)} ({emp.jobTitle || "Employee"} - {emp.branchName || currentUser.branchName})
                   </option>)}
               </select>
@@ -238,7 +238,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
     value={subject}
     onChange={(e) => setSubject(e.target.value)}
     placeholder="e.g. Performance Review Feedback & Daily Targets"
-    className="w-full px-4 py-2.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-4 py-2.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
             </div>
 
@@ -249,7 +249,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
     onChange={(e) => setMessageContent(e.target.value)}
     rows={5}
     placeholder="Write your private message or instructions here..."
-    className="w-full px-4 py-2.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-4 py-2.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white focus:outline-none focus:border-[#D4A017]"
     required
   />
             </div>
@@ -265,7 +265,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
               <button
     type="submit"
     disabled={loading}
-    className="px-6 py-2.5 rounded-xl bg-[#C89A2B] hover:bg-amber-500 text-[#4A2C17] text-xs font-black shadow-lg flex items-center space-x-2"
+    className="px-6 py-2.5 rounded-xl bg-[#D4A017] hover:bg-amber-500 text-[#1d2b32] text-xs font-black shadow-lg flex items-center space-x-2"
   >
                 <Send className="w-4 h-4" />
                 <span>{loading ? "Sending..." : "Send Private Message"}</span>
@@ -277,9 +277,9 @@ export const MessagingCenter = ({ currentUser, employees }) => {
       {
     /* TAB 3: SEND TO ALL EMPLOYEES (BROADCAST) */
   }
-      {activeTab === "broadcast" && isManager && <div className="bg-[#3A1F0D] rounded-3xl border border-white/15 p-6 shadow-xl max-w-2xl mx-auto">
+      {activeTab === "broadcast" && isManager && <div className="bg-[#1d2b32] rounded-3xl border border-white/15 p-6 shadow-xl max-w-2xl mx-auto">
           <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-white/10">
-            <Users className="w-5 h-5 text-[#C89A2B]" />
+            <Users className="w-5 h-5 text-[#D4A017]" />
             <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Broadcast Message to All Branch Employees</h3>
           </div>
 
@@ -298,7 +298,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
     value={broadcastSubject}
     onChange={(e) => setBroadcastSubject(e.target.value)}
     placeholder="e.g. Urgent: End-of-Day Deposit Mobilization Briefing"
-    className="w-full px-4 py-2.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-4 py-2.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
             </div>
 
@@ -309,7 +309,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
     onChange={(e) => setBroadcastContent(e.target.value)}
     rows={5}
     placeholder="Type your branch-wide memo or instructions here..."
-    className="w-full px-4 py-2.5 rounded-xl bg-[#4A2C17] border border-white/15 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-4 py-2.5 rounded-xl bg-[#1d2b32] border border-white/15 text-xs text-white focus:outline-none focus:border-[#D4A017]"
     required
   />
             </div>
@@ -325,7 +325,7 @@ export const MessagingCenter = ({ currentUser, employees }) => {
               <button
     type="submit"
     disabled={loading}
-    className="px-6 py-2.5 rounded-xl bg-[#C89A2B] hover:bg-amber-500 text-[#4A2C17] text-xs font-black shadow-lg flex items-center space-x-2"
+    className="px-6 py-2.5 rounded-xl bg-[#D4A017] hover:bg-amber-500 text-[#1d2b32] text-xs font-black shadow-lg flex items-center space-x-2"
   >
                 <Send className="w-4 h-4" />
                 <span>{loading ? "Broadcasting..." : `Send to All (${branchEmployees.length} Staff)`}</span>

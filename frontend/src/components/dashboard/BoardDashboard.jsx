@@ -24,43 +24,43 @@ export const BoardDashboard = ({
   const totalDistricts = districts.length || 12;
   const bankAchievementPct = 87.4;
   const kpiGroups = ["Finance", "Stakeholder", "Internal Business", "Learning & Growth"];
-  return <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8">
+  return <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {
     /* Executive Header */
   }
-        <div className="bg-gradient-to-r from-[#5C3A21] to-[#7A4E2B] text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="bg-[#C89A2B] text-[#5C3A21] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 Board of Directors Governance
               </span>
-              <span className="text-amber-200 text-sm">Bunna Bank S.C.</span>
+              <span className="text-gray-600 text-sm">Bunna Bank S.C.</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
               Executive Strategic Oversight Dashboard
             </h1>
-            <p className="text-amber-100/90 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               Welcome, {currentUser.firstName} {currentUser.lastName} ({currentUser.jobTitle}). Organization-wide performance, strategic alignment, and board analytics.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-black/20 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-sm">
-              <span className="text-amber-300 font-medium">Fiscal Year:</span>{" "}
+            <div className="bg-gray-100 px-4 py-2 rounded-xl border border-gray-200 text-sm">
+              <span className="text-gray-700 font-medium">Fiscal Year:</span>{" "}
               <select
-    value={selectedFiscalYear}
-    onChange={(e) => setSelectedFiscalYear(e.target.value)}
-    className="bg-transparent text-white font-bold focus:outline-none cursor-pointer ml-1"
-  >
+                value={selectedFiscalYear}
+                onChange={(e) => setSelectedFiscalYear(e.target.value)}
+                className="bg-transparent text-gray-900 font-bold focus:outline-none cursor-pointer ml-1"
+              >
                 <option value="2026/2027" className="text-gray-900">FY 2026/2027</option>
                 <option value="2025/2026" className="text-gray-900">FY 2025/2026</option>
               </select>
             </div>
             <button
-    onClick={() => window.print()}
-    className="bg-[#C89A2B] hover:bg-[#b08522] text-[#5C3A21] font-semibold px-4 py-2 rounded-xl text-sm transition shadow flex items-center gap-2"
-  >
+              onClick={() => window.print()}
+              className="bg-[#541818] hover:bg-[#3d1011] text-white font-semibold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+            >
               <Printer className="w-4 h-4" /> Export Report
             </button>
           </div>
@@ -76,7 +76,7 @@ export const BoardDashboard = ({
                 <p className="text-xs font-semibold uppercase text-stone-500 tracking-wider">Overall Bank Performance</p>
                 <h3 className="text-3xl font-serif font-bold text-[#5C3A21] mt-2">{bankAchievementPct}%</h3>
               </div>
-              <div className="p-3 bg-amber-50 rounded-xl text-[#C89A2B]">
+              <div className="p-3 bg-amber-50 rounded-xl text-[#D4A017]">
                 <TrendingUp className="w-6 h-6" />
               </div>
             </div>
@@ -145,7 +145,7 @@ export const BoardDashboard = ({
     const score = scores[idx];
     return <div key={group} className="bg-stone-50/70 rounded-xl p-5 border border-stone-200/60">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold text-[#C89A2B] uppercase tracking-wider">Pillar {idx + 1}</span>
+                    <span className="text-xs font-bold text-[#D4A017] uppercase tracking-wider">Pillar {idx + 1}</span>
                     <span className="text-lg font-serif font-bold text-[#5C3A21]">{score}%</span>
                   </div>
                   <h4 className="font-semibold text-stone-800 text-sm mb-3">{group}</h4>
@@ -185,7 +185,7 @@ export const BoardDashboard = ({
     { id: "3", name: "Hawassa Area Office", code: "HWA", branchCount: 26, region: "Sidama" }
   ]).map((d, index) => <div key={d.id || index} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 hover:border-amber-200 transition-colors">
                   <div className="flex items-center gap-3">
-                    <span className="w-7 h-7 rounded-full bg-[#C89A2B]/20 text-[#5C3A21] font-bold text-xs flex items-center justify-center">
+                    <span className="w-7 h-7 rounded-full bg-[#D4A017]/20 text-[#5C3A21] font-bold text-xs flex items-center justify-center">
                       #{index + 1}
                     </span>
                     <div>
@@ -209,7 +209,7 @@ export const BoardDashboard = ({
             <div className="space-y-4">
               <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/60">
                 <h4 className="font-semibold text-sm text-amber-900 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-[#C89A2B]" /> Digital Transformation Acceleration
+                  <ShieldAlert className="w-4 h-4 text-[#D4A017]" /> Digital Transformation Acceleration
                 </h4>
                 <p className="text-xs text-amber-800/80 mt-1">
                   Board review indicates mobile banking and merchant POS activations are surging in urban districts. Recommended continued capital allocation for FY 2026/27.

@@ -50,8 +50,8 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
     };
   }, [employeeId]);
   if (loading) {
-    return <div className="flex flex-col items-center justify-center p-12 text-white bg-[#4A2C17]/40 border border-[#C89A2B]/20 rounded-3xl space-y-3">
-        <Loader2 className="w-8 h-8 text-[#C89A2B] animate-spin" />
+    return <div className="flex flex-col items-center justify-center p-12 text-white bg-[#1d2b32]/40 border border-[#D4A017]/20 rounded-3xl space-y-3">
+        <Loader2 className="w-8 h-8 text-[#D4A017] animate-spin" />
         <p className="text-xs text-gray-300 font-bold">Calculating calendar-based targets and performance...</p>
       </div>;
   }
@@ -97,14 +97,14 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
     { key: "thisSemiAnnual", label: "Semi-Annual" },
     { key: "thisYear", label: "Annual" }
   ];
-  return <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 shadow-xl w-full text-white space-y-6">
+  return <div className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl p-6 shadow-xl w-full text-white space-y-6">
       
       {
     /* Header and Period Tabs */
   }
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
-          <span className="bg-[#C89A2B]/20 text-[#C89A2B] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-[#C89A2B]/30">
+          <span className="bg-[#D4A017]/20 text-[#D4A017] font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-[#D4A017]/30">
             Calendar-Aware Performance System
           </span>
           <h3 className="text-lg font-black text-white mt-1">
@@ -122,7 +122,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
           {PERIODS.map((p) => <button
     key={p.key}
     onClick={() => setActivePeriod(p.key)}
-    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activePeriod === p.key ? "bg-[#C89A2B] text-[#4A2C17] shadow-md" : "text-gray-300 hover:text-white hover:bg-white/5"}`}
+    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activePeriod === p.key ? "bg-[#D4A017] text-[#1d2b32] shadow-md" : "text-gray-300 hover:text-white hover:bg-white/5"}`}
   >
               {p.label}
             </button>)}
@@ -135,7 +135,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-black/20 p-4 rounded-2xl border border-white/5 text-xs">
         <div className="md:col-span-8 flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-1.5 text-gray-300">
-            <Calendar className="w-4 h-4 text-[#C89A2B]" />
+            <Calendar className="w-4 h-4 text-[#D4A017]" />
             <span>Active Range:</span>
             <strong className="text-white">{periodInfo?.startDate} to {periodInfo?.endDate}</strong>
           </div>
@@ -158,8 +158,8 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             <span className={`text-sm font-bold ${ratingColor}`}>{ratingLabel}</span>
           </div>
           <div className="flex items-center gap-1.5 bg-black/40 px-3.5 py-2 rounded-xl border border-white/10">
-            <Award className="w-5 h-5 text-[#C89A2B]" />
-            <span className="text-xl font-black text-[#C89A2B]">{overallPerformance}%</span>
+            <Award className="w-5 h-5 text-[#D4A017]" />
+            <span className="text-xl font-black text-[#D4A017]">{overallPerformance}%</span>
           </div>
         </div>
       </div>
@@ -172,13 +172,13 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
         {
     /* DEPOSIT CARD (20%) */
   }
-        <div className="bg-[#6B3F1D]/40 border border-white/10 hover:border-[#C89A2B]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
+        <div className="bg-[#541718]/40 border border-white/10 hover:border-[#D4A017]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="bg-emerald-500/10 text-emerald-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20">
                 Weight: 20%
               </span>
-              <Coins className="w-4 h-4 text-[#C89A2B]" />
+              <Coins className="w-4 h-4 text-[#D4A017]" />
             </div>
             <div>
               <h4 className="text-xs uppercase text-gray-300 font-bold">1. Deposits Mobilized</h4>
@@ -196,7 +196,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             </div>
             <div className="flex justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
               <span>Weighted Contribution:</span>
-              <span className="font-bold text-[#C89A2B]">{weightedScores?.deposit}%</span>
+              <span className="font-bold text-[#D4A017]">{weightedScores?.deposit}%</span>
             </div>
           </div>
         </div>
@@ -204,13 +204,13 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
         {
     /* FCY CARD (15%) */
   }
-        <div className="bg-[#6B3F1D]/40 border border-white/10 hover:border-[#C89A2B]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
+        <div className="bg-[#541718]/40 border border-white/10 hover:border-[#D4A017]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="bg-teal-500/10 text-teal-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-teal-500/20">
                 Weight: 15%
               </span>
-              <DollarSign className="w-4 h-4 text-[#C89A2B]" />
+              <DollarSign className="w-4 h-4 text-[#D4A017]" />
             </div>
             <div>
               <h4 className="text-xs uppercase text-gray-300 font-bold">2. Foreign Currency (FCY)</h4>
@@ -228,7 +228,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             </div>
             <div className="flex justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
               <span>Weighted Contribution:</span>
-              <span className="font-bold text-[#C89A2B]">{weightedScores?.fcy}%</span>
+              <span className="font-bold text-[#D4A017]">{weightedScores?.fcy}%</span>
             </div>
           </div>
         </div>
@@ -236,13 +236,13 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
         {
     /* DFS CARD (20%) */
   }
-        <div className="bg-[#6B3F1D]/40 border border-white/10 hover:border-[#C89A2B]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
+        <div className="bg-[#541718]/40 border border-white/10 hover:border-[#D4A017]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="bg-blue-500/10 text-blue-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-blue-500/20">
                 Weight: 20%
               </span>
-              <TrendingUp className="w-4 h-4 text-[#C89A2B]" />
+              <TrendingUp className="w-4 h-4 text-[#D4A017]" />
             </div>
             <div>
               <h4 className="text-xs uppercase text-gray-300 font-bold">3. DFS Vol</h4>
@@ -260,7 +260,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             </div>
             <div className="flex justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
               <span>Weighted Contribution:</span>
-              <span className="font-bold text-[#C89A2B]">{weightedScores?.dfs}%</span>
+              <span className="font-bold text-[#D4A017]">{weightedScores?.dfs}%</span>
             </div>
           </div>
         </div>
@@ -268,13 +268,13 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
         {
     /* CUSTOMER BASE CARD (20%) */
   }
-        <div className="bg-[#6B3F1D]/40 border border-white/10 hover:border-[#C89A2B]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
+        <div className="bg-[#541718]/40 border border-white/10 hover:border-[#D4A017]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="bg-purple-500/10 text-purple-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-purple-500/20">
                 Weight: 20%
               </span>
-              <UserPlus className="w-4 h-4 text-[#C89A2B]" />
+              <UserPlus className="w-4 h-4 text-[#D4A017]" />
             </div>
             <div>
               <h4 className="text-xs uppercase text-gray-300 font-bold">4. Customer Base</h4>
@@ -292,7 +292,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             </div>
             <div className="flex justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
               <span>Weighted Contribution:</span>
-              <span className="font-bold text-[#C89A2B]">{weightedScores?.customerBase}%</span>
+              <span className="font-bold text-[#D4A017]">{weightedScores?.customerBase}%</span>
             </div>
           </div>
         </div>
@@ -300,13 +300,13 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
         {
     /* DIGITALS CATEGORY CARD (25%) */
   }
-        <div className="bg-[#6B3F1D]/40 border border-white/10 hover:border-[#C89A2B]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4 lg:col-span-1">
+        <div className="bg-[#541718]/40 border border-white/10 hover:border-[#D4A017]/40 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-4 lg:col-span-1">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="bg-amber-500/10 text-amber-300 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
                 Weight: 25%
               </span>
-              <Smartphone className="w-4 h-4 text-[#C89A2B]" />
+              <Smartphone className="w-4 h-4 text-[#D4A017]" />
             </div>
             <div>
               <h4 className="text-xs uppercase text-gray-300 font-bold">5. Digitals (Grouped)</h4>
@@ -324,7 +324,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
             </div>
             <div className="flex justify-between text-[11px] text-gray-400 pt-1 border-t border-white/5">
               <span>Weighted Contribution:</span>
-              <span className="font-bold text-[#C89A2B]">{weightedScores?.digitals}%</span>
+              <span className="font-bold text-[#D4A017]">{weightedScores?.digitals}%</span>
             </div>
           </div>
         </div>
@@ -336,8 +336,8 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
   }
       <div className="p-5 rounded-2xl bg-black/25 border border-white/5 space-y-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
-          <h4 className="text-xs uppercase font-extrabold text-[#C89A2B] flex items-center gap-1.5">
-            <Smartphone className="w-4 h-4 text-[#C89A2B]" />
+          <h4 className="text-xs uppercase font-extrabold text-[#D4A017] flex items-center gap-1.5">
+            <Smartphone className="w-4 h-4 text-[#D4A017]" />
             Digitals Category Sub-KPIs Performance Breakdown (Equal Weight Contribution to 25% Category)
           </h4>
           <span className="text-[10px] text-gray-400">Values scaled using active period reporting days</span>
@@ -348,7 +348,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
           {
     /* Mobile Activations */
   }
-          <div className="p-4 rounded-xl bg-[#6B3F1D]/25 border border-white/5 space-y-3">
+          <div className="p-4 rounded-xl bg-[#541718]/25 border border-white/5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-white flex items-center gap-1">
                 <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
@@ -365,7 +365,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
                 <span>Actual Achievement:</span>
                 <strong className="text-white">{Number(actuals?.mobileBanking).toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between pt-1 border-t border-white/10 text-[#C89A2B] font-bold">
+              <div className="flex justify-between pt-1 border-t border-white/10 text-[#D4A017] font-bold">
                 <span>Performance:</span>
                 <span>{achievements?.mobileBanking}%</span>
               </div>
@@ -375,7 +375,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
           {
     /* ATM */
   }
-          <div className="p-4 rounded-xl bg-[#6B3F1D]/25 border border-white/5 space-y-3">
+          <div className="p-4 rounded-xl bg-[#541718]/25 border border-white/5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-white flex items-center gap-1">
                 <CreditCard className="w-3.5 h-3.5 text-rose-400" />
@@ -392,7 +392,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
                 <span>Actual Achievement:</span>
                 <strong className="text-white">{Number(actuals?.atm).toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between pt-1 border-t border-white/10 text-[#C89A2B] font-bold">
+              <div className="flex justify-between pt-1 border-t border-white/10 text-[#D4A017] font-bold">
                 <span>Performance:</span>
                 <span>{achievements?.atm}%</span>
               </div>
@@ -402,7 +402,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
           {
     /* Merchant Activations */
   }
-          <div className="p-4 rounded-xl bg-[#6B3F1D]/25 border border-white/5 space-y-3">
+          <div className="p-4 rounded-xl bg-[#541718]/25 border border-white/5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-white flex items-center gap-1">
                 <QrCode className="w-3.5 h-3.5 text-amber-400" />
@@ -419,7 +419,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
                 <span>Actual Achievement:</span>
                 <strong className="text-white">{Number(actuals?.merchant).toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between pt-1 border-t border-white/10 text-[#C89A2B] font-bold">
+              <div className="flex justify-between pt-1 border-t border-white/10 text-[#D4A017] font-bold">
                 <span>Performance:</span>
                 <span>{achievements?.merchant}%</span>
               </div>
@@ -429,7 +429,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
           {
     /* Internet Activations */
   }
-          <div className="p-4 rounded-xl bg-[#6B3F1D]/25 border border-white/5 space-y-3">
+          <div className="p-4 rounded-xl bg-[#541718]/25 border border-white/5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-white flex items-center gap-1">
                 <Globe className="w-3.5 h-3.5 text-cyan-400" />
@@ -446,7 +446,7 @@ export const PeriodPerformanceDashboard = ({ employeeId }) => {
                 <span>Actual Achievement:</span>
                 <strong className="text-white">{Number(actuals?.internetBanking).toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between pt-1 border-t border-white/10 text-[#C89A2B] font-bold">
+              <div className="flex justify-between pt-1 border-t border-white/10 text-[#D4A017] font-bold">
                 <span>Performance:</span>
                 <span>{achievements?.internetBanking}%</span>
               </div>

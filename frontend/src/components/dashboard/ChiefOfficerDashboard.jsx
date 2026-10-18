@@ -53,34 +53,34 @@ export const ChiefOfficerDashboard = ({
     portfolioCategory = "Banking Transformation Portfolio";
     portfolioHighlights = ["Core Banking Upgrade", "Process Automation & Reengineering", "Digital-First Workflow Adoption"];
   }
-  return <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8 space-y-8">
+  return <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-8 space-y-8">
       
       {
     /* Chief Officer Header */
   }
-      <div className="bg-gradient-to-r from-[#3B2212] via-[#5C3A21] to-[#7A4E2B] text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="bg-[#C89A2B] text-[#3B2212] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               Executive Officer Directorate
             </span>
-            <span className="text-amber-200 text-sm">Bunna Bank Executive Committee</span>
-            <span className="text-xs bg-white/10 text-amber-100 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#C89A2B]" /> Last updated: {lastUpdated}
+            <span className="text-gray-600 text-sm">Bunna Bank Executive Committee</span>
+            <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full flex items-center gap-1.5 border border-gray-200">
+              <Clock className="w-3.5 h-3.5 text-[#541818]" /> Last updated: {lastUpdated}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
             {title}
           </h1>
-          <p className="text-amber-100/90 text-sm mt-1">
-            Welcome, {currentUser.firstName} {currentUser.lastName}. Managing portfolio: <strong className="text-white">{portfolioCategory}</strong>.
+          <p className="text-gray-600 text-sm mt-1">
+            Welcome, {currentUser.firstName} {currentUser.lastName}. Managing portfolio: <strong className="text-gray-900">{portfolioCategory}</strong>.
           </p>
         </div>
         <div>
           <button
-    onClick={() => window.print()}
-    className="bg-[#C89A2B] hover:bg-[#b08522] text-[#3B2212] font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow flex items-center gap-2"
-  >
+            onClick={() => window.print()}
+            className="bg-[#541818] hover:bg-[#3d1011] text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+          >
             <Printer className="w-4 h-4" /> Export Portfolio Report
           </button>
         </div>
@@ -134,7 +134,7 @@ export const ChiefOfficerDashboard = ({
           </div>
           <div className="space-y-4">
             {portfolioHighlights.map((highlight, idx) => <div key={idx} className="flex items-start gap-4 p-4 bg-stone-50 rounded-xl border border-stone-100">
-                <div className="p-2 bg-[#C89A2B]/20 text-[#5C3A21] rounded-lg mt-0.5">
+                <div className="p-2 bg-[#D4A017]/20 text-[#5C3A21] rounded-lg mt-0.5">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -153,21 +153,21 @@ export const ChiefOfficerDashboard = ({
     className="w-full text-left p-3.5 rounded-xl bg-stone-50 hover:bg-amber-50/60 border border-stone-200 transition text-sm font-medium text-stone-800 flex items-center justify-between"
   >
               <span>View Portfolio KPI Analytics</span>
-              <span className="text-[#C89A2B]">→</span>
+              <span className="text-[#D4A017]">→</span>
             </button>
             <button
     onClick={() => alert("Directorate reports synchronization initiated.")}
     className="w-full text-left p-3.5 rounded-xl bg-stone-50 hover:bg-amber-50/60 border border-stone-200 transition text-sm font-medium text-stone-800 flex items-center justify-between"
   >
               <span>Review Directorate Reports</span>
-              <span className="text-[#C89A2B]">→</span>
+              <span className="text-[#D4A017]">→</span>
             </button>
             <button
     onClick={() => alert("Official banking memo distribution portal opened.")}
     className="w-full text-left p-3.5 rounded-xl bg-stone-50 hover:bg-amber-50/60 border border-stone-200 transition text-sm font-medium text-stone-800 flex items-center justify-between"
   >
               <span>Issue Executive Memo</span>
-              <span className="text-[#C89A2B]">→</span>
+              <span className="text-[#D4A017]">→</span>
             </button>
           </div>
         </div>

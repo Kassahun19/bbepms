@@ -87,14 +87,14 @@ export const PerformanceCard = ({
   }
           <div className="relative shrink-0">
             <div
-    className={`w-13 h-13 rounded-2xl flex items-center justify-center border-2 transition-transform duration-300 group-hover:scale-105 ${classification.borderClass} ${entityType === "branch" ? "bg-gradient-to-br from-[#6B3F1D] to-[#362011] text-[#C89A2B]" : "bg-gradient-to-br from-[#4A2C17] to-[#1F0C05] text-white"}`}
+    className={`w-13 h-13 rounded-2xl flex items-center justify-center border-2 transition-transform duration-300 group-hover:scale-105 ${classification.borderClass} ${entityType === "branch" ? "bg-gradient-to-br from-[#541718] to-[#362011] text-[#D4A017]" : "bg-gradient-to-br from-[#1d2b32] to-[#1F0C05] text-white"}`}
   >
               {avatarUrl ? <img
     src={avatarUrl}
     alt={name}
     className="w-full h-full object-cover rounded-2xl"
     referrerPolicy="no-referrer"
-  /> : entityType === "branch" ? <Building2 className="w-6 h-6 text-[#C89A2B]" /> : <UserIcon className="w-6 h-6 text-amber-200" />}
+  /> : entityType === "branch" ? <Building2 className="w-6 h-6 text-[#D4A017]" /> : <UserIcon className="w-6 h-6 text-amber-200" />}
             </div>
             {classification.key === "OUTSTANDING" && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-r from-amber-400 to-emerald-400 text-black flex items-center justify-center text-[10px] font-black shadow-md">
                 ✨
@@ -140,7 +140,7 @@ export const PerformanceCard = ({
     /* Left: Huge Percentage & Result */
   }
         <div className="text-center md:text-left space-y-1 min-w-[140px]">
-          <span className="text-[10px] uppercase font-extrabold tracking-widest text-[#C89A2B]">
+          <span className="text-[10px] uppercase font-extrabold tracking-widest text-[#D4A017]">
             Overall Performance
           </span>
           <div className="flex items-baseline justify-center md:justify-start space-x-1">
@@ -198,7 +198,7 @@ export const PerformanceCard = ({
       {(achievement !== void 0 || target !== void 0) && <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
           <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center space-x-1">
-              <Target className="w-3 h-3 text-[#C89A2B]" />
+              <Target className="w-3 h-3 text-[#D4A017]" />
               <span>{targetLabel}</span>
             </span>
             <p className="text-sm font-black text-white">
@@ -275,7 +275,7 @@ export const PerformanceCard = ({
 
         <div className="flex items-center space-x-2">
           {actions}
-          {onClick && <span className="text-[10px] font-bold text-[#C89A2B] flex items-center group-hover:translate-x-1 transition-transform">
+          {onClick && <span className="text-[10px] font-bold text-[#D4A017] flex items-center group-hover:translate-x-1 transition-transform">
               <span>View Details</span>
               <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
             </span>}

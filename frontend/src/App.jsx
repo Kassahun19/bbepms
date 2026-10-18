@@ -166,8 +166,10 @@ export const App = () => {
     await api.markNotificationRead(id);
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
   };
-  const unreadNotificationCount = notifications.filter((n) => !n.read).length;
-  return <div className="min-h-screen bg-[#F8F7F4] text-[#252525] flex flex-col font-sans selection:bg-[#D9A514] selection:text-[#4A2815]">
+
+  const unreadNotificationCount = (notifications || []).filter((n) => !n.read && !n.isRead).length;
+
+  return <div className="min-h-screen bg-white text-gray-900 flex flex-col font-sans selection:bg-[#541818] selection:text-white">
       
       {
     /* HEADER */
@@ -461,12 +463,13 @@ export const App = () => {
   />
 
       <AIAssistantDrawer
-    isOpen={isAiDrawerOpen}
-    onClose={() => setIsAiDrawerOpen(false)}
-    userRole={currentUser?.role}
-    targetEmployee={aiTargetEmployee}
-    onClearTargetEmployee={() => setAiTargetEmployee(null)}
-  />
+        isOpen={isAiDrawerOpen}
+        onClose={() => setIsAiDrawerOpen(false)}
+        currentUser={currentUser}
+        userRole={currentUser?.role}
+        targetEmployee={aiTargetEmployee}
+        onClearTargetEmployee={() => setAiTargetEmployee(null)}
+      />
 
       <FloatingAiCoachButton
     onClick={() => setIsAiDrawerOpen(true)}

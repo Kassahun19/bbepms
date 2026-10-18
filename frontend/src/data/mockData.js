@@ -5210,7 +5210,7 @@ export const initialSystemSettings = {
   "bankShortName": "Bunna Bank",
   "bankCode": "BUNNA-ET",
   "tagline": "Bank of the Visionaries \u2014 Empowering Growth Across Ethiopia",
-  "logoUrl": "/bunna-logo.png",
+  "logoUrl": "/bunna-logo.jpg",
   "activeFiscalYearId": "FY-2025-2026",
   "workingDays": [
     "Monday",

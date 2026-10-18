@@ -45,8 +45,8 @@ export const EthiopiaCompetitorMap = ({
     onChange={(e) => setSelectedFilterBank(e.target.value)}
     className="bg-[#6B3F1D] border border-white/15 text-white text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-[#C89A2B] outline-none"
   >
-            <option value="ALL">All Banks operating</option>
-            {banks.map((b) => <option key={b.id} value={b.id}>{b.shortName} ({b.code})</option>)}
+            <option key="all-banks" value="ALL">All Banks operating</option>
+            {banks.map((b, index) => <option key={b.id || `bank-opt-${index}`} value={b.id}>{b.shortName} ({b.code})</option>)}
           </select>
         </div>
       </div>

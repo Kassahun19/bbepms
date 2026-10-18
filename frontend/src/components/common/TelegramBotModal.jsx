@@ -124,10 +124,10 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
         {
     /* Header */
   }
-        <div className="bg-gradient-to-r from-[#6B3F1D] to-[#8C5A3C] p-6 text-white flex justify-between items-center">
+        <div className="bg-gradient-to-r from-[#541718] to-[#8C5A3C] p-6 text-white flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/10 rounded-xl">
-              <Bot className="h-6 w-6 text-[#C89A2B]" />
+              <Bot className="h-6 w-6 text-[#D4A017]" />
             </div>
             <div>
               <h3 className="text-xl font-bold tracking-tight">Telegram Bot & Vercel Integration</h3>
@@ -157,7 +157,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                   <button
     onClick={handleSyncWebhook}
     disabled={isSyncingWebhook}
-    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#6B3F1D] hover:bg-[#523015] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+    className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#541718] hover:bg-[#523015] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isSyncingWebhook ? "animate-spin" : ""}`} />
                     <span>{isSyncingWebhook ? "Connecting..." : "Reconnect Webhook"}</span>
@@ -176,13 +176,13 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 bg-white p-3 rounded-lg border border-gray-200/80">
                 <div>
                   <span className="text-gray-400">Deployed App:</span>{" "}
-                  <a href="https://bbepms.vercel.app" target="_blank" rel="noreferrer" className="font-mono font-medium text-[#6B3F1D] hover:underline">
+                  <a href="https://bbepms.vercel.app" target="_blank" rel="noreferrer" className="font-mono font-medium text-[#541718] hover:underline">
                     bbepms.vercel.app
                   </a>
                 </div>
                 <div>
                   <span className="text-gray-400">Bot Handle:</span>{" "}
-                  <a href={botLink} target="_blank" rel="noreferrer" className="font-mono font-bold text-[#C89A2B] hover:underline">
+                  <a href={botLink} target="_blank" rel="noreferrer" className="font-mono font-bold text-[#D4A017] hover:underline">
                     {false ? "" : ""}{"@"}{botUsername}
                   </a>
                 </div>
@@ -192,7 +192,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
               </div>
 
               {syncMessage && <div className="mt-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-900 flex items-start space-x-2">
-                  <Info className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <Info className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <span>{syncMessage}</span>
                 </div>}
             </div>
@@ -203,7 +203,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
             <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200/50 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start space-x-3">
-                  <Info className="h-5 w-5 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <Info className="h-5 w-5 text-[#D4A017] shrink-0 mt-0.5" />
                   <div className="text-sm">
                     <span className="font-semibold text-gray-800">Your Account Link Status: </span>
                     {currentUser?.telegramChatId ? <span className="inline-flex items-center text-green-700 font-medium ml-1">
@@ -238,7 +238,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
               <div className="mt-3 pt-3 border-t border-amber-200/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-xs">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <Key className="h-4 w-4 text-[#C89A2B]" />
+                    <Key className="h-4 w-4 text-[#D4A017]" />
                     <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">Instant 6-Digit Linking Code</span>
                   </div>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -249,7 +249,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 <button
     onClick={handleGenerateLinkCode}
     disabled={isGeneratingCode}
-    className="px-4 py-2 bg-gradient-to-r from-[#6B3F1D] to-[#8C5A3C] hover:from-[#563217] hover:to-[#734930] text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center space-x-1.5 shrink-0"
+    className="px-4 py-2 bg-gradient-to-r from-[#541718] to-[#8C5A3C] hover:from-[#563217] hover:to-[#734930] text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center space-x-1.5 shrink-0"
   >
                   <RefreshCw className={`h-3.5 w-3.5 ${isGeneratingCode ? "animate-spin" : ""}`} />
                   <span>{isGeneratingCode ? "Generating Code..." : "\u26A1 Generate Linking Code"}</span>
@@ -301,7 +301,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
     /* Step 1 */
   }
                 <div className="flex space-x-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center font-bold text-sm shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-[#541718]/10 text-[#541718] flex items-center justify-center font-bold text-sm shrink-0">
                     1
                   </div>
                   <div className="flex-1 min-w-0">
@@ -314,7 +314,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
     href={botLink}
     target="_blank"
     rel="noopener noreferrer"
-    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#C89A2B] hover:bg-[#B08520] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
+    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#D4A017] hover:bg-[#B08520] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors"
   >
                         <Send className="h-3.5 w-3.5" />
                         <span>Open {false ? "" : ""}{"@"}{botUsername} in Telegram</span>
@@ -328,7 +328,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
     /* Step 2 */
   }
                 <div className="flex space-x-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center font-bold text-sm shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-[#541718]/10 text-[#541718] flex items-center justify-center font-bold text-sm shrink-0">
                     2
                   </div>
                   <div className="flex-1 min-w-0">
@@ -354,7 +354,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
     /* Step 3 */
   }
                 <div className="flex space-x-4 items-start">
-                  <div className="h-8 w-8 rounded-full bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center font-bold text-sm shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-[#541718]/10 text-[#541718] flex items-center justify-center font-bold text-sm shrink-0">
                     3
                   </div>
                   <div className="flex-1 min-w-0">
@@ -378,7 +378,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <Key className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <Key className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/link &lt;id&gt; &lt;pwd&gt;</span>
                     <p className="text-xs text-gray-500 mt-0.5">Links your Telegram chat to your profile.</p>
@@ -386,7 +386,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 </div>
 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <MessageSquare className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <MessageSquare className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/menu &amp; /start</span>
                     <p className="text-xs text-gray-500 mt-0.5">Launches interactive keyboard navigation.</p>
@@ -394,7 +394,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 </div>
 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <MessageSquare className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <MessageSquare className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/performance</span>
                     <p className="text-xs text-gray-500 mt-0.5">View consolidated deposit and digital KPI stats.</p>
@@ -402,7 +402,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 </div>
 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <MessageSquare className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <MessageSquare className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/leaderboard</span>
                     <p className="text-xs text-gray-500 mt-0.5">Lists top-performing districts and branches.</p>
@@ -410,7 +410,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 </div>
 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <MessageSquare className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <MessageSquare className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/announcements</span>
                     <p className="text-xs text-gray-500 mt-0.5">Get bank-wide high priority announcements.</p>
@@ -418,7 +418,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
                 </div>
 
                 <div className="p-3 bg-gray-50/50 rounded-xl border border-gray-100 flex items-start space-x-3">
-                  <MessageSquare className="h-4 w-4 text-[#C89A2B] shrink-0 mt-0.5" />
+                  <MessageSquare className="h-4 w-4 text-[#D4A017] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs font-bold text-gray-800">/coach &lt;query&gt;</span>
                     <p className="text-xs text-gray-500 mt-0.5">Consult BBEPMS AI Coach for tips.</p>
@@ -437,7 +437,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
             <button
     onClick={handleSyncWebhook}
     disabled={isSyncingWebhook}
-    className="text-xs font-medium text-[#6B3F1D] hover:underline inline-flex items-center space-x-1"
+    className="text-xs font-medium text-[#541718] hover:underline inline-flex items-center space-x-1"
   >
               <RefreshCw className={`h-3 w-3 ${isSyncingWebhook ? "animate-spin" : ""}`} />
               <span>Sync Webhook</span>
@@ -453,7 +453,7 @@ export const TelegramBotModal = ({ isOpen, onClose, currentUser }) => {
     href={botLink}
     target="_blank"
     rel="noopener noreferrer"
-    className="px-4 py-2 text-sm font-medium text-white bg-[#6B3F1D] hover:bg-[#523015] rounded-lg shadow-xs transition-colors inline-flex items-center space-x-2"
+    className="px-4 py-2 text-sm font-medium text-white bg-[#541718] hover:bg-[#523015] rounded-lg shadow-xs transition-colors inline-flex items-center space-x-2"
   >
                 <Bot className="h-4 w-4 text-amber-400" />
                 <span>Launch Bot</span>

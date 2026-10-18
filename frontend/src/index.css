@@ -1,65 +1,85 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bunna-primary: #6B3E1E;
-  --color-bunna-dark: #4A2815;
-  --color-bunna-secondary: #7A4825;
-  --color-bunna-gold: #D9A514;
-  --color-bunna-gold-bright: #F2C230;
-  --color-bunna-gold-light: #FFF4D6;
+  /* Requested Brand Color #541818 (Validated from #54181) */
+  --color-brand: #541818;
+  --color-brand-hover: #3d1011;
+  --color-brand-light: #5418181a;
+  --color-bunna-burgundy: #541818;
+  --color-bunna-burgundy-dark: #3d1011;
+  --color-bunna-green: #425727;
+  --color-bunna-olive: #726732;
+  --color-bunna-amber: #c17540;
+  --color-bunna-slate: #1d2b32;
+  --color-bunna-pine: #1e2917;
+  --color-bunna-gold: #D4A017;
   --color-bunna-white: #FFFFFF;
-  --color-bunna-offwhite: #F8F7F4;
-  --color-bunna-text-primary: #252525;
-  --color-bunna-text-secondary: #6B7280;
-  --color-bunna-border: #E5E0D8;
-  --color-bunna-success: #198754;
-  --color-bunna-warning: #D99A00;
-  --color-bunna-danger: #C0392B;
-  --color-bunna-info: #2563EB;
 
-  --color-primary: #6B3E1E;
-  --color-primary-hover: #4A2815;
-  --color-secondary: #D9A514;
-  --color-secondary-light: #F2C230;
-  --color-light-bg: #F8F7F4;
-  --color-primary-text: #252525;
-  --color-secondary-text: #6B7280;
-  --color-border-color: #E5E0D8;
-  --color-success: #198754;
+  /* Standard White UI Global Color Tokens */
+  --color-surface-white: #FFFFFF;
+  --color-surface-panel: #FFFFFF;
+  --color-surface-subtle: #F9FAFB;
+  --color-border-subtle: #E5E7EB;
 }
 
 :root {
-  --bunna-primary: #6B3E1E;
-  --bunna-dark: #4A2815;
-  --bunna-secondary: #7A4825;
-  --bunna-gold: #D9A514;
-  --bunna-gold-bright: #F2C230;
-  --bunna-gold-light: #FFF4D6;
-  --bunna-white: #FFFFFF;
-  --bunna-offwhite: #F8F7F4;
-  --bunna-text-primary: #252525;
-  --bunna-text-secondary: #6B7280;
-  --bunna-border: #E5E0D8;
-  --bunna-success: #198754;
-  --bunna-warning: #D99A00;
-  --bunna-danger: #C0392B;
-  --bunna-info: #2563EB;
+  /* Global Brand Tokens */
+  --brand-color: #541818;
+  --brand-hover: #3d1011;
+  --brand-light: rgba(84, 24, 24, 0.1);
+  --brand-border: rgba(84, 24, 24, 0.2);
 
-  --primary: #6B3E1E;
-  --primary-hover: #4A2815;
-  --secondary: #D9A514;
-  --secondary-light: #F2C230;
-  --white: #FFFFFF;
-  --light-bg: #F8F7F4;
-  --primary-text: #252525;
-  --secondary-text: #6B7280;
-  --border: #E5E0D8;
-  --success: #198754;
+  /* Clean White UI Tokens */
+  --bg-main: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-muted: #F9FAFB;
+  --border-main: #E5E7EB;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+
+  --bunna-burgundy: #541818;
+  --bunna-gold: #D4A017;
+  --bunna-slate: #1d2b32;
+  --bunna-green: #425727;
+  --bunna-amber: #c17540;
 }
 
+/* Base Body Styling: Strict Pure White Background Throughout */
 body {
-  background-color: #F8F7F4;
-  color: #252525;
+  background-color: #FFFFFF !important;
+  color: #111827;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
+/* Brand Button & Avatar Utility Classes */
+.bg-brand,
+.btn-brand,
+.bg-bunna-burgundy {
+  background-color: #541818 !important;
+  color: #FFFFFF !important;
+}
+
+.btn-brand:hover,
+.bg-brand:hover {
+  background-color: #3d1011 !important;
+}
+
+.avatar-brand {
+  background-color: #541818 !important;
+  color: #FFFFFF !important;
+}
+
+.text-brand {
+  color: #541818 !important;
+}
+
+.border-brand {
+  border-color: #541818 !important;
+}
+
+.ring-brand {
+  --tw-ring-color: #541818 !important;
+}

@@ -22,34 +22,34 @@ export const DirectorDashboard = ({
   }, []);
   const approvedReports = reports.filter((r) => r.status === "Approved");
   const directorateTitle = currentUser.jobTitle || "Directorate Performance Management";
-  return <div className="min-h-screen bg-[#FDFBF7] text-[#333333] p-4 sm:p-8 space-y-8">
+  return <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-8 space-y-8">
       
       {
     /* Director Header */
   }
-      <div className="bg-gradient-to-r from-[#4A2E18] to-[#6B3F1D] text-white rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="bg-[#C89A2B] text-[#4A2E18] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="bg-[#541818]/10 text-[#541818] border border-[#541818]/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               Directorate Management Portal
             </span>
-            <span className="text-amber-200 text-sm">Bunna Bank S.C.</span>
-            <span className="text-xs bg-white/10 text-amber-100 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#C89A2B]" /> Last updated: {lastUpdated}
+            <span className="text-gray-600 text-sm">Bunna Bank S.C.</span>
+            <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full flex items-center gap-1.5 border border-gray-200">
+              <Clock className="w-3.5 h-3.5 text-[#541818]" /> Last updated: {lastUpdated}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900">
             {directorateTitle}
           </h1>
-          <p className="text-amber-100/90 text-sm mt-1">
+          <p className="text-gray-600 text-sm mt-1">
             Welcome, {currentUser.firstName} {currentUser.lastName}. Monitoring assigned directorate KPIs, strategic targets, and team reports for FY {selectedFiscalYear}.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
-    onClick={() => window.print()}
-    className="bg-[#C89A2B] hover:bg-[#b08522] text-[#4A2E18] font-bold px-4 py-2.5 rounded-xl text-sm transition shadow flex items-center gap-2"
-  >
+            onClick={() => window.print()}
+            className="bg-[#541818] hover:bg-[#3d1011] text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
+          >
             <Printer className="w-4 h-4" /> Print Directorate Report
           </button>
         </div>
@@ -97,7 +97,7 @@ export const DirectorDashboard = ({
             <h3 className="text-xl font-serif font-bold text-[#5C3A21]">Directorate KPI Achievement & Overview</h3>
             <p className="text-stone-500 text-sm">Detailed tracking of performance indicators assigned to your directorate.</p>
           </div>
-          <span className="text-xs bg-[#C89A2B]/10 text-[#5C3A21] px-3 py-1.5 rounded-lg font-semibold">
+          <span className="text-xs bg-[#D4A017]/10 text-[#5C3A21] px-3 py-1.5 rounded-lg font-semibold">
             Live MySQL Sync
           </span>
         </div>
@@ -117,7 +117,7 @@ export const DirectorDashboard = ({
                 </div>
                 <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                   <div className="w-32 bg-stone-200 h-2 rounded-full overflow-hidden hidden sm:block">
-                    <div className="bg-[#C89A2B] h-full" style={{ width: `${score}%` }} />
+                    <div className="bg-[#D4A017] h-full" style={{ width: `${score}%` }} />
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-bold text-[#5C3A21]">{score}%</span>

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "node backend/server.js",
     "build": "vite build && esbuild backend/server.js --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && cp epms_persistent_data.json dist/ 2>/dev/null || true",
     "start": "node dist/server.cjs",
     "lint": "tsc --noEmit",

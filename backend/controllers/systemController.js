@@ -51,6 +51,68 @@ export const systemController = {
       timestamp: new Date().toISOString(),
       database: dbStatus
     });
+  },
+
+  async getPublicStats(req, res) {
+    try {
+      const { District } = await import('../models/District.js');
+      const { Branch } = await import('../models/Branch.js');
+      const { User } = await import('../models/User.js');
+      const { DailyPerformanceReport } = await import('../models/DailyPerformanceReport.js');
+
+      const [districts, branches, users, reports] = await Promise.all([
+        District.findAll(),
+        Branch.findAll(),
+        User.findAll(),
+        DailyPerformanceReport.findAll()
+      ]);
+
+      const totalDistricts = Array.isArray(districts) ? districts.length : 0;
+      const totalBranches = Array.isArray(branches) ? branches.length : 0;
+      const totalUsers = Array.isArray(users) ? users.length : 0;
+
+      // Calculate employees based on actual branch employee allocations in database
+      const branchStaffCount = Array.isArray(branches)
+        ? branches.reduce((sum, b) => sum + (Number(b.employee_count || b.employeeCount) || 0), 0)
+        : 0;
+      const districtStaffCount = Array.isArray(districts)
+        ? districts.reduce((sum, d) => sum + (Number(d.total_employees || d.totalEmployees) || 0), 0)
+        : 0;
+      
+      const totalEmployees = branchStaffCount > 0 ? branchStaffCount : (districtStaffCount > 0 ? districtStaffCount : totalUsers);
+
+      // Calculate approval efficiency from actual daily report records
+      const reportList = Array.isArray(reports) ? reports : [];
+      const totalReports = reportList.length;
+      const approvedReports = reportList.filter(r => (r.status || '').toLowerCase() === 'approved').length;
+      const pendingReports = reportList.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+      const rejectedReports = reportList.filter(r => (r.status || '').toLowerCase() === 'rejected').length;
+      const returnedReports = reportList.filter(r => (r.status || '').toLowerCase().includes('return')).length;
+
+      const approvalEfficiency = totalReports > 0
+        ? Number(((approvedReports / totalReports) * 100).toFixed(1))
+        : 0;
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          districtsCount: totalDistricts,
+          branchesCount: totalBranches,
+          employeesCount: totalEmployees,
+          registeredUsersCount: totalUsers,
+          branchStaffCount,
+          districtStaffCount,
+          totalReports,
+          approvedReports,
+          pendingReports,
+          rejectedReports,
+          returnedReports,
+          approvalEfficiency
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
   }
 };
 

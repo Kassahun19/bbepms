@@ -7,5 +7,6 @@ const router = Router();
 
 router.post('/chat', optionalAuth, coachController.askCoach);
 router.post('/query', optionalAuth, coachController.askCoach);
+router.post('/assistant', optionalAuth, coachController.askCoach);
 
 export default router;

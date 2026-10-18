@@ -7,6 +7,8 @@ import { requireRole } from '../middlewares/roleMiddleware.js';
 const router = Router();
 
 router.get('/health', systemController.getHealth);
+router.get('/public-stats', systemController.getPublicStats);
+router.get('/stats', systemController.getPublicStats);
 router.get('/audit-logs', authMiddleware, requireRole(['BANK_SUPER_ADMIN', 'ADMINISTRATOR']), systemController.getAuditLogs);
 router.get('/announcements', optionalAuth, systemController.getAnnouncements);
 router.post('/announcements', authMiddleware, requireRole(['BANK_SUPER_ADMIN', 'ADMINISTRATOR', 'CEO']), systemController.createAnnouncement);

@@ -18,15 +18,25 @@ const apiRouter = Router();
 apiRouter.use('/install', installRoutes);
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/users', userRoutes);
+apiRouter.use('/employees', userRoutes);
 apiRouter.use('/districts', districtRoutes);
 apiRouter.use('/branches', branchRoutes);
 apiRouter.use('/kpis', kpiRoutes);
 apiRouter.use('/targets', targetRoutes);
 apiRouter.use('/reports', reportRoutes);
+apiRouter.use('/kpi-reports', reportRoutes);
+apiRouter.use('/daily-reports', reportRoutes);
 apiRouter.use('/analytics', analyticsRoutes);
 apiRouter.use('/competitors', competitorRoutes);
 apiRouter.use('/coach', coachRoutes);
+apiRouter.use('/ai', coachRoutes);
 apiRouter.use('/system', systemRoutes);
+
+// Admin stats and overview aliases
+apiRouter.get('/admin/stats', async (req, res, next) => {
+  const { systemController } = await import('../controllers/systemController.js');
+  return systemController.getPublicStats(req, res, next);
+});
 
 // MySQL Compatibility aliases for frontend services
 apiRouter.get('/mysql/status', async (req, res) => {

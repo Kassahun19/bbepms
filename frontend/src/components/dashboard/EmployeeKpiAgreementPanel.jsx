@@ -138,11 +138,11 @@ export const EmployeeKpiAgreementPanel = ({
       {
     /* Overview Status Card */
   }
-      <div className="bg-[#4A2C17] border border-[#C89A2B]/40 rounded-3xl p-6 shadow-2xl text-white">
+      <div className="bg-[#1d2b32] border border-[#D4A017]/40 rounded-3xl p-6 shadow-2xl text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 border border-[#C89A2B]/40 text-[#C89A2B] uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4A017]/20 border border-[#D4A017]/40 text-[#D4A017] uppercase tracking-wider">
                 Two-Party Agreement Engine
               </span>
               {overallAgreementStatus === "PENDING" && <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 border border-amber-500/50 text-amber-300 animate-pulse flex items-center gap-1">
@@ -156,7 +156,7 @@ export const EmployeeKpiAgreementPanel = ({
                 </span>}
             </div>
             <h3 className="text-xl font-extrabold text-white mt-1 flex items-center gap-2">
-              <Target className="w-6 h-6 text-[#C89A2B]" />
+              <Target className="w-6 h-6 text-[#D4A017]" />
               My Official KPI Targets & Agreement Workflow
             </h3>
             <p className="text-xs text-gray-300">
@@ -293,7 +293,7 @@ export const EmployeeKpiAgreementPanel = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#C89A2B]" />
+            <Layers className="w-4 h-4 text-[#D4A017]" />
             Proposed & Active KPI Target Breakdown ({myTargets.length} Assigned Targets)
           </h4>
           <span className="text-xs text-gray-400">
@@ -301,7 +301,7 @@ export const EmployeeKpiAgreementPanel = ({
           </span>
         </div>
 
-        {myTargets.length === 0 ? <div className="p-8 rounded-3xl bg-[#4A2C17]/60 border border-[#C89A2B]/30 text-center space-y-3">
+        {myTargets.length === 0 ? <div className="p-8 rounded-3xl bg-[#1d2b32]/60 border border-[#D4A017]/30 text-center space-y-3">
             <Target className="w-12 h-12 text-gray-500 mx-auto" />
             <h4 className="text-base font-bold text-white">No Custom Targets Assigned Yet</h4>
             <p className="text-xs text-gray-400 max-w-md mx-auto">
@@ -316,7 +316,7 @@ export const EmployeeKpiAgreementPanel = ({
     const isCurrency = tgt.kpiUnit === "ETB" || tgt.kpiName && (tgt.kpiName.toLowerCase().includes("deposit") || tgt.kpiName.toLowerCase().includes("currency") || tgt.kpiName.toLowerCase().includes("financial"));
     return <div
       key={tgt.id}
-      className={`rounded-3xl p-5 border transition-all space-y-4 shadow-xl ${isPending ? "bg-[#4A2C17] border-amber-400/60 ring-2 ring-amber-400/20" : isRejected ? "bg-[#4A2C17]/80 border-rose-500/50" : isAccepted ? "bg-[#4A2C17]/80 border-[#C89A2B]/40 hover:border-[#C89A2B]" : "bg-[#4A2C17]/60 border-white/10"}`}
+      className={`rounded-3xl p-5 border transition-all space-y-4 shadow-xl ${isPending ? "bg-[#1d2b32] border-amber-400/60 ring-2 ring-amber-400/20" : isRejected ? "bg-[#1d2b32]/80 border-rose-500/50" : isAccepted ? "bg-[#1d2b32]/80 border-[#D4A017]/40 hover:border-[#D4A017]" : "bg-[#1d2b32]/60 border-white/10"}`}
     >
                   {
       /* Card Header */
@@ -361,7 +361,7 @@ export const EmployeeKpiAgreementPanel = ({
                   <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-gray-400 block">Proposed Annual Target:</span>
-                      <div className="text-xl font-black text-[#C89A2B] mt-0.5">
+                      <div className="text-xl font-black text-[#D4A017] mt-0.5">
                         {isCurrency ? "ETB " : ""}{(tgt.annualTarget || tgt.targetValue || 0).toLocaleString()}
                         <span className="text-xs font-normal text-gray-400 ml-1">/{tgt.period || "Annual"}</span>
                       </div>
@@ -400,7 +400,7 @@ export const EmployeeKpiAgreementPanel = ({
                         </div>
                         <div className="bg-white/5 p-1.5 rounded-lg">
                           <span className="text-gray-400 block">Annual:</span>
-                          <strong className="text-[#C89A2B]">{isCurrency ? "ETB " : ""}{tgt.periodTargets.annual?.toLocaleString()}</strong>
+                          <strong className="text-[#D4A017]">{isCurrency ? "ETB " : ""}{tgt.periodTargets.annual?.toLocaleString()}</strong>
                         </div>
                       </div>
                     </div>}
@@ -421,7 +421,7 @@ export const EmployeeKpiAgreementPanel = ({
     }
                   <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
                     <div className="flex items-center space-x-2">
-                      <Building2 className="w-3.5 h-3.5 text-[#C89A2B]" />
+                      <Building2 className="w-3.5 h-3.5 text-[#D4A017]" />
                       <span>{tgt.branchName || user.branchName || "Hamusit Branch"}</span>
                     </div>
 
@@ -432,7 +432,7 @@ export const EmployeeKpiAgreementPanel = ({
         setHistoryTarget(tgt);
         setShowHistoryModal(true);
       }}
-      className="text-[11px] text-[#C89A2B] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+      className="text-[11px] text-[#D4A017] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
     >
                           <History className="w-3 h-3" /> Audit Trail ({tgt.auditHistory.length})
                         </button>}
@@ -475,7 +475,7 @@ export const EmployeeKpiAgreementPanel = ({
   >
           <div
     ref={acceptModalRef}
-    className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl p-6 max-w-lg w-full text-white space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200"
+    className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl p-6 max-w-lg w-full text-white space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200"
   >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-emerald-400">
@@ -541,7 +541,7 @@ export const EmployeeKpiAgreementPanel = ({
   >
           <div
     ref={rejectModalRef}
-    className="bg-[#4A2C17] border border-rose-500 rounded-3xl p-6 max-w-lg w-full text-white space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200"
+    className="bg-[#1d2b32] border border-rose-500 rounded-3xl p-6 max-w-lg w-full text-white space-y-5 shadow-2xl animate-in fade-in zoom-in duration-200"
   >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-rose-400">
@@ -619,11 +619,11 @@ export const EmployeeKpiAgreementPanel = ({
   >
           <div
     ref={historyModalRef}
-    className="bg-[#4A2C17] border border-[#C89A2B] rounded-3xl p-6 max-w-xl w-full text-white space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col"
+    className="bg-[#1d2b32] border border-[#D4A017] rounded-3xl p-6 max-w-xl w-full text-white space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col"
   >
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center space-x-2">
-                <History className="w-5 h-5 text-[#C89A2B]" />
+                <History className="w-5 h-5 text-[#D4A017]" />
                 <h3 className="text-base font-black text-white">
                   Target Agreement History & Audit Trail
                 </h3>
@@ -641,7 +641,7 @@ export const EmployeeKpiAgreementPanel = ({
     className="p-3 rounded-2xl bg-black/40 border border-white/10 space-y-1.5 text-xs"
   >
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-extrabold text-[#C89A2B] uppercase">
+                    <span className="font-extrabold text-[#D4A017] uppercase">
                       Action: {entry.action}
                     </span>
                     <span className="text-gray-400">
@@ -666,7 +666,7 @@ export const EmployeeKpiAgreementPanel = ({
             <div className="pt-3 border-t border-white/10 flex justify-end">
               <button
     onClick={() => setShowHistoryModal(false)}
-    className="px-5 py-2 rounded-xl bg-[#C89A2B] text-[#6B3F1D] font-bold text-xs"
+    className="px-5 py-2 rounded-xl bg-[#D4A017] text-[#541718] font-bold text-xs"
   >
                 Close Audit History
               </button>

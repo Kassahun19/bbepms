@@ -372,7 +372,7 @@ export const BranchEmployeeManagementPanel = ({
   >
           <div
     ref={addModalRef}
-    className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6"
+    className="bg-[#08321E] border border-[#D4AF37]/40 w-full max-w-xl rounded-3xl p-6 text-white shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
   >
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-extrabold text-lg text-[#D4AF37] flex items-center space-x-2">

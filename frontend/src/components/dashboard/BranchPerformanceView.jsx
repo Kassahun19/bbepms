@@ -145,7 +145,7 @@ export const BranchPerformanceView = ({
     "KPI-007": { icon: QrCode, color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30", bar: "bg-orange-500" },
     "KPI-008": { icon: CreditCard, color: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/30", bar: "bg-teal-500" }
   };
-  const contributionPieColors = ["#C89A2B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#F59E0B", "#64748B"];
+  const contributionPieColors = ["#D4A017", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#F59E0B", "#64748B"];
   return <div id="branch-performance-view" className="space-y-6 animate-in fade-in duration-300">
       
       {

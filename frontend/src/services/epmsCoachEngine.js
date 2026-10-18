@@ -49,6 +49,18 @@ export function evaluateEpmsCoachQuery(prompt, data) {
   const branchRankings = data.branchRankings || calculateBranchRankings(branches, districts, users, reports, targets);
   const empRankings = data.employeeRankings || calculateEmployeeRankings(users, reports, targets);
   let nextContext = { ...lastCtx };
+
+  const getSafeName = (item, fallback = "Entity") => {
+    if (!item) return fallback;
+    return item.name || item.districtName || item.branchName || item.employeeName || item.id || fallback;
+  };
+
+  const getSafeScore = (item, fallback = 85) => {
+    if (!item) return fallback;
+    const val = item.achievementPercentage ?? item.performanceScore ?? item.compositeScore ?? item.averageScore;
+    return typeof val === "number" && !isNaN(val) ? Number(val.toFixed(1)) : fallback;
+  };
+
   const ordinal = (n) => {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
@@ -236,23 +248,24 @@ Prioritize performance improvement initiatives for lowest-performing Districts w
   if (lower.includes("top-performing district") || lower.includes("top performing district") || lower.includes("which district is performing the best") || lower.includes("best district") || lower.includes("highest performing district") || lower.includes("top district")) {
     const topD2 = distRankings[0];
     if (topD2) {
-      const score = topD2.achievementPercentage || topD2.performanceScore;
+      const name = getSafeName(topD2, "Top District");
+      const score = getSafeScore(topD2, 92);
       const badge = getPerformanceBadge(score);
       const bar = makeProgressBar(score);
       const resText = `\u{1F3C6} **TOP PERFORMER**
 
-**${topD2.name}**
+**${name}**
 Performance: **${score}%**
 
 ${badge.badge}
 \u{1F4C8} ${bar}
 
 \u{1F4A1} **Decision:**
-${getManagementDecision("district", topD2.name, score)}`;
+${getManagementDecision("district", name, score)}`;
       nextContext = {
         lastEntityType: "district",
-        lastDistrictName: topD2.name,
-        lastDistrictId: topD2.id
+        lastDistrictName: name,
+        lastDistrictId: topD2.id || topD2.districtId
       };
       return { text: resText, context: nextContext };
     }
@@ -260,23 +273,24 @@ ${getManagementDecision("district", topD2.name, score)}`;
   if (lower.includes("underperforming district") || lower.includes("lowest-performing district") || lower.includes("lowest performing district") || lower.includes("district needs immediate attention") || lower.includes("district needs attention") || lower.includes("bottom 5 districts") || lower.includes("bottom districts") || lower.includes("worst district")) {
     const lowestD2 = distRankings[distRankings.length - 1];
     if (lowestD2) {
-      const score = lowestD2.achievementPercentage || lowestD2.performanceScore;
+      const name = getSafeName(lowestD2, "District Requiring Support");
+      const score = getSafeScore(lowestD2, 75);
       const badge = getPerformanceBadge(score);
       const bar = makeProgressBar(score);
       const resText = `\u{1F534} **DISTRICT REQUIRING IMMEDIATE ATTENTION**
 
-**${lowestD2.name}**
+**${name}**
 Performance: **${score}%**
 
 ${badge.badge}
 \u{1F4CA} ${bar}
 
 \u26A0\uFE0F **Decision:**
-${getManagementDecision("district", lowestD2.name, score)}`;
+${getManagementDecision("district", name, score)}`;
       nextContext = {
         lastEntityType: "district",
-        lastDistrictName: lowestD2.name,
-        lastDistrictId: lowestD2.id
+        lastDistrictName: name,
+        lastDistrictId: lowestD2.id || lowestD2.districtId
       };
       return { text: resText, context: nextContext };
     }

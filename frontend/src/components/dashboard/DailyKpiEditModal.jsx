@@ -93,7 +93,7 @@ export const DailyKpiEditModal = ({
   >
       <div
     ref={contentRef}
-    className="bg-gradient-to-b from-[#4A2C17] to-[#2E1B0E] border border-[#C89A2B]/50 rounded-3xl p-6 w-full max-w-xl text-white shadow-2xl space-y-5"
+    className="bg-gradient-to-b from-[#1d2b32] to-[#2E1B0E] border border-[#D4A017]/50 rounded-3xl p-6 w-full max-w-xl text-white shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
   >
         
         {
@@ -101,14 +101,14 @@ export const DailyKpiEditModal = ({
   }
         <div className="flex items-start justify-between border-b border-white/10 pb-4">
           <div>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C89A2B]/20 text-[#C89A2B] uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4A017]/20 text-[#D4A017] uppercase tracking-wider">
               Edit Daily Performance
             </span>
             <h3 className="text-xl font-black text-white mt-1">
               Daily KPI Record: {report.reportDate} ({report.dayOfWeek})
             </h3>
             <p className="text-xs text-gray-300">
-              Employee: <strong className="text-[#C89A2B]">{report.employeeName}</strong> • {report.branchName || "Hamusit Branch (SOL 360)"}
+              Employee: <strong className="text-[#D4A017]">{report.employeeName}</strong> • {report.branchName || "Hamusit Branch (SOL 360)"}
             </p>
           </div>
           <ModalCloseButton onClose={requestClose} ariaLabel="Close edit daily KPI dialog" />
@@ -125,7 +125,7 @@ export const DailyKpiEditModal = ({
     /* 5 Core Numeric KPI Fields */
   }
           <div className="space-y-2">
-            <label className="text-xs font-bold text-[#C89A2B] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#D4A017] uppercase tracking-wider block">
               Core Daily KPI Metrics
             </label>
 
@@ -144,7 +144,7 @@ export const DailyKpiEditModal = ({
     min="0"
     value={customerOnboarding}
     onChange={(e) => setCustomerOnboarding(Number(e.target.value))}
-    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-sm font-bold text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-sm font-bold text-white focus:outline-none focus:border-[#D4A017]"
   />
               </div>
 
@@ -262,7 +262,7 @@ export const DailyKpiEditModal = ({
               <select
     value={status}
     onChange={(e) => setStatus(e.target.value)}
-    className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs font-bold text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs font-bold text-white focus:outline-none focus:border-[#D4A017]"
   >
                 <option value="Approved">Approved</option>
                 <option value="Pending">Pending</option>
@@ -279,7 +279,7 @@ export const DailyKpiEditModal = ({
     value={managerComment}
     onChange={(e) => setManagerComment(e.target.value)}
     placeholder="Optional feedback..."
-    className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   >
               </input>
             </div>
@@ -300,7 +300,7 @@ export const DailyKpiEditModal = ({
             <button
     type="submit"
     disabled={loading}
-    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C89A2B] to-[#D8B45C] hover:brightness-110 text-[#6B3F1D] font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all"
+    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A017] to-[#D8B45C] hover:brightness-110 text-[#541718] font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all"
   >
               <Save className="w-4 h-4" />
               <span>{loading ? "Saving..." : "Save KPI Changes"}</span>

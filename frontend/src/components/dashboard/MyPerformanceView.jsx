@@ -151,11 +151,11 @@ export const MyPerformanceView = ({
       {
     /* 1. TOP HEADER & PERIOD NAVIGATION BAR */
   }
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#4A2C17] via-[#3A1F0D] to-[#251205] border border-[#C89A2B]/40 shadow-2xl">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#1d2b32] via-[#1d2b32] to-[#251205] border border-[#D4A017]/40 shadow-2xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center space-x-2.5">
-              <span className="px-3 py-1 rounded-full text-[10px] font-black bg-[#C89A2B] text-[#3A1F0D] uppercase tracking-wider shadow">
+              <span className="px-3 py-1 rounded-full text-[10px] font-black bg-[#D4A017] text-[#1d2b32] uppercase tracking-wider shadow">
                 Employee Performance Portal
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
@@ -163,11 +163,11 @@ export const MyPerformanceView = ({
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-2 flex items-center gap-2">
-              <BarChart3 className="w-7 h-7 text-[#C89A2B]" />
+              <BarChart3 className="w-7 h-7 text-[#D4A017]" />
               <span>My Performance & KPI Achievements</span>
             </h2>
             <p className="text-xs sm:text-sm text-amber-100/80 font-medium mt-1">
-              Officer: <strong className="text-white">{getUserFullName(currentUser)}</strong> ({currentUser.jobTitle || "Customer Service Officer"}) • Branch: <strong className="text-[#C89A2B]">{currentUser.branchName || "Bunna Branch"}</strong>
+              Officer: <strong className="text-white">{getUserFullName(currentUser)}</strong> ({currentUser.jobTitle || "Customer Service Officer"}) • Branch: <strong className="text-[#D4A017]">{currentUser.branchName || "Bunna Branch"}</strong>
             </p>
           </div>
 
@@ -189,7 +189,7 @@ export const MyPerformanceView = ({
     className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white flex items-center space-x-1.5 transition-all cursor-pointer shadow"
     title="Print Performance Scorecard"
   >
-              <Printer className="w-4 h-4 text-[#C89A2B]" />
+              <Printer className="w-4 h-4 text-[#D4A017]" />
               <span>Print Scorecard</span>
             </button>
           </div>
@@ -206,7 +206,7 @@ export const MyPerformanceView = ({
       setSelectedPeriod(p.id);
       setCustomRangeActive(false);
     }}
-    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex flex-col items-center sm:flex-row sm:space-x-1.5 ${selectedPeriod === p.id && !customRangeActive ? "bg-[#C89A2B] text-[#3A1F0D] font-black shadow-lg scale-105 ring-2 ring-[#C89A2B]/40" : "bg-black/30 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex flex-col items-center sm:flex-row sm:space-x-1.5 ${selectedPeriod === p.id && !customRangeActive ? "bg-[#D4A017] text-[#1d2b32] font-black shadow-lg scale-105 ring-2 ring-[#D4A017]/40" : "bg-black/30 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"}`}
   >
                 <span>{p.label}</span>
                 <span className="text-[10px] opacity-75 font-normal">({p.sub})</span>
@@ -214,7 +214,7 @@ export const MyPerformanceView = ({
 
             <button
     onClick={() => setCustomRangeActive(!customRangeActive)}
-    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${customRangeActive ? "bg-[#C89A2B] text-[#3A1F0D] font-black shadow-lg ring-2 ring-[#C89A2B]/40" : "bg-black/30 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"}`}
+    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${customRangeActive ? "bg-[#D4A017] text-[#1d2b32] font-black shadow-lg ring-2 ring-[#D4A017]/40" : "bg-black/30 text-gray-300 hover:bg-white/10 hover:text-white border border-white/10"}`}
   >
               <Filter className="w-3.5 h-3.5" />
               <span>Custom Date</span>
@@ -229,8 +229,8 @@ export const MyPerformanceView = ({
         {
     /* Custom Date Range Selector Bar */
   }
-        {customRangeActive && <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-[#C89A2B]/30 flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-[#C89A2B] flex items-center gap-1.5">
+        {customRangeActive && <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-[#D4A017]/30 flex flex-wrap items-center gap-3">
+            <span className="text-xs font-bold text-[#D4A017] flex items-center gap-1.5">
               <Calendar className="w-4 h-4" /> Custom Range:
             </span>
             <div className="flex items-center space-x-2">
@@ -239,7 +239,7 @@ export const MyPerformanceView = ({
     type="date"
     value={customStartDate}
     onChange={(e) => setCustomStartDate(e.target.value)}
-    className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
             </div>
             <div className="flex items-center space-x-2">
@@ -248,7 +248,7 @@ export const MyPerformanceView = ({
     type="date"
     value={customEndDate}
     onChange={(e) => setCustomEndDate(e.target.value)}
-    className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-[#C89A2B]"
+    className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs text-white focus:outline-none focus:border-[#D4A017]"
   />
             </div>
             {(customStartDate || customEndDate) && <button
@@ -319,7 +319,7 @@ export const MyPerformanceView = ({
           {
     /* Target Realization & Daily Submission Rate */
   }
-          <div className="p-5 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl flex-1 flex flex-col justify-between">
+          <div className="p-5 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl flex-1 flex flex-col justify-between">
             <div>
               <div className="flex items-center space-x-2">
                 <Target className="w-5 h-5 text-emerald-400" />
@@ -361,11 +361,11 @@ export const MyPerformanceView = ({
           {
     /* Reporting Consistency & History Overview */
   }
-          <div className="p-5 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl flex-1 flex flex-col justify-between">
+          <div className="p-5 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl flex-1 flex flex-col justify-between">
             <div>
               <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-[#C89A2B]" />
-                <span className="text-xs font-black text-[#C89A2B] uppercase tracking-wider">
+                <Calendar className="w-5 h-5 text-[#D4A017]" />
+                <span className="text-xs font-black text-[#D4A017] uppercase tracking-wider">
                   Reporting Verification Log
                 </span>
               </div>
@@ -403,7 +403,7 @@ export const MyPerformanceView = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Zap className="w-5 h-5 text-[#C89A2B]" />
+            <Zap className="w-5 h-5 text-[#D4A017]" />
             <h3 className="text-lg font-black text-white">
               Core KPI Performance Breakdown ({performanceResult.periodLabel})
             </h3>
@@ -419,7 +419,7 @@ export const MyPerformanceView = ({
     const isExceeded = kpi.performancePercentage >= 100;
     return <div
       key={kpi.kpiId}
-      className={`p-5 rounded-3xl bg-[#4A2C17] border ${cfg.border} shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between space-y-3 group`}
+      className={`p-5 rounded-3xl bg-[#1d2b32] border ${cfg.border} shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between space-y-3 group`}
     >
                 <div>
                   <div className="flex items-start justify-between">
@@ -428,7 +428,7 @@ export const MyPerformanceView = ({
                         <Icon className={`w-4 h-4 ${cfg.color}`} />
                       </div>
                       <div>
-                        <h4 className="text-xs font-extrabold text-white group-hover:text-[#C89A2B] transition-colors line-clamp-1">
+                        <h4 className="text-xs font-extrabold text-white group-hover:text-[#D4A017] transition-colors line-clamp-1">
                           {kpi.kpiName}
                         </h4>
                         <span className="text-[10px] text-gray-400 font-mono">{kpi.kpiCode}</span>
@@ -481,25 +481,25 @@ export const MyPerformanceView = ({
       {
     /* 4. PERFORMANCE COMPARISON MATRIX TABLE */
   }
-      <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl space-y-4">
+      <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#C89A2B]" />
+              <Layers className="w-5 h-5 text-[#D4A017]" />
               <span>Target vs. Actual Comparative Matrix</span>
             </h3>
             <p className="text-xs text-gray-300">
               Detailed breakdown of periodic targets, actuals, achievement variance, and completion status
             </p>
           </div>
-          <span className="text-xs text-[#C89A2B] font-extrabold bg-black/40 px-3 py-1 rounded-xl border border-white/10">
+          <span className="text-xs text-[#D4A017] font-extrabold bg-black/40 px-3 py-1 rounded-xl border border-white/10">
             Window: {performanceResult.periodLabel}
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-300">
-            <thead className="bg-black/40 text-[#C89A2B] font-extrabold uppercase text-[11px]">
+            <thead className="bg-black/40 text-[#D4A017] font-extrabold uppercase text-[11px]">
               <tr>
                 <th className="p-3.5 rounded-l-xl">KPI Name & Code</th>
                 <th className="p-3.5">Category</th>
@@ -561,11 +561,11 @@ export const MyPerformanceView = ({
       {
     /* 5. INTERACTIVE PERFORMANCE PROGRESS TREND GRAPH */
   }
-      <div className="p-6 rounded-3xl bg-[#4A2C17] border border-[#C89A2B]/40 shadow-xl space-y-6">
+      <div className="p-6 rounded-3xl bg-[#1d2b32] border border-[#D4A017]/40 shadow-xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div>
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-[#C89A2B]" />
+              <TrendingUp className="w-5 h-5 text-[#D4A017]" />
               <h3 className="text-lg font-black text-white">
                 Monthly Performance Trajectory & Target Realization
               </h3>
@@ -587,7 +587,7 @@ export const MyPerformanceView = ({
   ].map((m) => <button
     key={m.id}
     onClick={() => setChartMetric(m.id)}
-    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${chartMetric === m.id ? "bg-[#C89A2B] text-[#3A1F0D] font-black shadow" : "bg-black/30 text-gray-300 hover:bg-white/10"}`}
+    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${chartMetric === m.id ? "bg-[#D4A017] text-[#1d2b32] font-black shadow" : "bg-black/30 text-gray-300 hover:bg-white/10"}`}
   >
                 {m.label}
               </button>)}
@@ -602,34 +602,34 @@ export const MyPerformanceView = ({
             {chartMetric === "overall" ? <AreaChart data={monthlyTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C89A2B" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#C89A2B" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#D4A017" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#D4A017" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} domain={[0, "auto"]} unit="%" />
                 <Tooltip
-    contentStyle={{ backgroundColor: "#251205", borderColor: "#C89A2B", borderRadius: "1rem", color: "#fff" }}
+    contentStyle={{ backgroundColor: "#251205", borderColor: "#D4A017", borderRadius: "1rem", color: "#fff" }}
     formatter={(val) => [`${val}%`, "Score"]}
   />
                 <Legend />
-                <Area type="monotone" dataKey="score" name="Achieved Score %" stroke="#C89A2B" strokeWidth={3} fillOpacity={1} fill="url(#scoreGradient)" />
+                <Area type="monotone" dataKey="score" name="Achieved Score %" stroke="#D4A017" strokeWidth={3} fillOpacity={1} fill="url(#scoreGradient)" />
                 <Line type="monotone" dataKey="targetScore" name="Target (100%)" stroke="#10b981" strokeDasharray="5 5" strokeWidth={2} dot={false} />
               </AreaChart> : chartMetric === "financial" ? <BarChart data={monthlyTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} unit="%" />
-                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#C89A2B", borderRadius: "1rem", color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#D4A017", borderRadius: "1rem", color: "#fff" }} />
                 <Legend />
-                <Bar dataKey="depositsAch" name="Deposits %" fill="#C89A2B" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="depositsAch" name="Deposits %" fill="#D4A017" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="fcyAch" name="FCY Inflow %" fill="#10b981" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="dfsAch" name="Digital Financial Services %" fill="#3b82f6" radius={[6, 6, 0, 0]} />
               </BarChart> : chartMetric === "customer" ? <LineChart data={monthlyTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} unit="%" />
-                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#C89A2B", borderRadius: "1rem", color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#D4A017", borderRadius: "1rem", color: "#fff" }} />
                 <Legend />
                 <Line type="monotone" dataKey="customerAch" name="Account Openings %" stroke="#a855f7" strokeWidth={3} />
                 <Line type="monotone" dataKey="targetScore" name="Target (100%)" stroke="#10b981" strokeDasharray="5 5" />
@@ -637,7 +637,7 @@ export const MyPerformanceView = ({
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} unit="%" />
-                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#C89A2B", borderRadius: "1rem", color: "#fff" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#251205", borderColor: "#D4A017", borderRadius: "1rem", color: "#fff" }} />
                 <Legend />
                 <Bar dataKey="digitalScore" name="Digital Banking Channels (MB, IB, QR, ATM) Weighted Score %" fill="#06b6d4" radius={[6, 6, 0, 0]} />
               </BarChart>}
