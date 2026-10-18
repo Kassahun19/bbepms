@@ -207,7 +207,7 @@ export const ManagerDailyKpiReportsTable = ({
     return list;
   }, [branchReports, selectedEmployeeId, selectedStatus, datePreset, startDate, endDate, selectedDayOfWeek, searchTerm, todayStr, weekStartStr, monthStartStr, yearStartStr]);
   const filteredSums = useMemo(() => {
-    return filteredReports.reduce(
+    return filteredReports.filter(r => r.status === 'Approved').reduce(
       (acc, r) => {
         const v = getKpiValues(r);
         return {
@@ -860,7 +860,7 @@ export const ManagerDailyKpiReportsTable = ({
               <tfoot className="bg-gradient-to-r from-[#0B4228] via-[#08321E] to-[#051F13] text-white font-extrabold border-t-2 border-[#D4AF37]">
                 <tr>
                   <td colSpan={3} className="p-4 text-xs font-black text-[#D4AF37] uppercase tracking-wider">
-                    FILTERED SUMS ({filteredReports.length} records)
+                    FILTERED SUMS ({filteredReports.filter(r => r.status === 'Approved').length} records)
                   </td>
                   <td className="p-4 text-center font-black text-blue-300 text-sm">
                     <AnimatedCounter value={filteredSums.onboarding} />
@@ -881,7 +881,7 @@ export const ManagerDailyKpiReportsTable = ({
                     ETB <AnimatedCounter value={filteredSums.deposits} />
                   </td>
                   <td className="p-4 text-right font-mono font-black text-amber-300 text-sm whitespace-nowrap">
-                    ETB <AnimatedCounter value={filteredSums.fcy} />
+                    USD <AnimatedCounter value={filteredSums.fcy} />
                   </td>
                   <td colSpan={2} className="p-4 text-right text-[11px] text-gray-300 font-normal">
                     Branch Aggregated Total

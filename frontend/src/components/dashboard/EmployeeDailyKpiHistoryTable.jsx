@@ -184,7 +184,7 @@ export const EmployeeDailyKpiHistoryTable = ({
     return list;
   }, [myReports, datePreset, startDate, endDate, selectedDayOfWeek, searchTerm, todayStr, weekStartStr, monthStartStr, yearStartStr]);
   const filteredSums = useMemo(() => {
-    return filteredReports.reduce(
+    return filteredReports.filter(r => r.status === 'Approved').reduce(
       (acc, r) => {
         const v = getKpiValues(r);
         return {
@@ -788,7 +788,7 @@ export const EmployeeDailyKpiHistoryTable = ({
               <tfoot className="bg-gradient-to-r from-[#541718] via-[#1d2b32] to-[#362011] text-white font-extrabold border-t-2 border-[#D4A017]">
                 <tr>
                   <td colSpan={3} className="p-4 text-xs font-black text-[#D8B45C] uppercase tracking-wider">
-                    FILTERED SUMS ({filteredReports.length} records)
+                    FILTERED SUMS ({filteredReports.filter(r => r.status === 'Approved').length} records)
                   </td>
                   <td className="p-4 text-center font-black text-blue-300 text-sm">
                     <AnimatedCounter value={filteredSums.onboarding} />
@@ -809,7 +809,7 @@ export const EmployeeDailyKpiHistoryTable = ({
                     ETB <AnimatedCounter value={filteredSums.deposits} />
                   </td>
                   <td className="p-4 text-right font-mono font-black text-amber-300 text-sm whitespace-nowrap">
-                    ETB <AnimatedCounter value={filteredSums.fcy} />
+                    USD <AnimatedCounter value={filteredSums.fcy} />
                   </td>
                   <td colSpan={2} className="p-4 text-right text-[11px] text-gray-300 font-normal">
                     Permanent Records Saved
