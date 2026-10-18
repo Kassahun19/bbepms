@@ -153,7 +153,7 @@ export const api = {
       if ((rawId === "mgr_360" || rawId === "1323" || rawId === "manager" || cleanRawId === "manager") && u.role === "MANAGER") {
         return true;
       }
-      if ((rawId === "emp_1001" || rawId === "4994" || rawId === "2213" || rawId === "employee" || cleanRawId === "employee" || rawId === "cso") && u.role === "EMPLOYEE") {
+      if (u.role === "EMPLOYEE" && (u.userId === rawId || rawId === "employee" || cleanRawId === "employee" || rawId === "cso")) {
         return true;
       }
       return false;
