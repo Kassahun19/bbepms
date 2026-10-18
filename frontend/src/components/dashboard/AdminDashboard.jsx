@@ -629,9 +629,11 @@ export const AdminDashboard = ({
   const [viewingReport, setViewingReport] = useState(null);
   const [editingKpi, setEditingKpi] = useState(null);
   const [editingHoliday, setEditingHoliday] = useState(null);
+  const [isDistrictLoading, setIsDistrictLoading] = useState(false);
   const handleUpdateDistrictSubmit = async (e) => {
     e.preventDefault();
     if (!editingDistrict) return;
+    setIsDistrictLoading(true);
     try {
       await api.updateDistrict(editingDistrict.id, editingDistrict);
       showToast(`District "${editingDistrict.name}" updated successfully!`, "success");
@@ -639,6 +641,8 @@ export const AdminDashboard = ({
       onRefreshData();
     } catch (err) {
       showToast("Failed to update district", "error");
+    } finally {
+      setIsDistrictLoading(false);
     }
   };
   const handleDeleteDistrict = async (id, name) => {
@@ -2240,8 +2244,8 @@ export const AdminDashboard = ({
                 <button type="button" onClick={() => setEditingDistrict(null)} className="px-4 py-2 rounded-xl bg-white/10 text-xs text-gray-300">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold">
-                  Save Changes
+                <button type="submit" disabled={isDistrictLoading} className="px-4 py-2 rounded-xl bg-[#D4A017] text-[#541718] text-xs font-bold disabled:opacity-50">
+                  {isDistrictLoading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

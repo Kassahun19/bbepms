@@ -102,6 +102,14 @@ function generateClientSideAiResponse(prompt, userRole, userId, contextData) {
   };
 }
 export const api = {
+  getCurrentUser: () => {
+    try {
+      const saved = localStorage.getItem("bunna_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  },
   // Auth
   login: async (userId, password) => {
     const rawId = (userId || "").trim().toLowerCase();

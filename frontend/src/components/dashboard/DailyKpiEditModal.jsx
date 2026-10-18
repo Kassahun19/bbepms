@@ -264,11 +264,20 @@ export const DailyKpiEditModal = ({
     onChange={(e) => setStatus(e.target.value)}
     className="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/20 text-xs font-bold text-white focus:outline-none focus:border-[#D4A017]"
   >
-                <option value="Approved">Approved</option>
-                <option value="Pending">Pending</option>
-                <option value="Returned">Returned</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Draft">Draft</option>
+                {["BANK_SUPER_ADMIN", "ADMINISTRATOR", "MANAGER"].includes(api.getCurrentUser()?.role) ? (
+                  <>
+                    <option value="Approved">Approved</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Returned">Returned</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Draft">Draft</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Pending">Pending</option>
+                    <option value="Draft">Draft</option>
+                  </>
+                )}
               </select>
             </div>
 
